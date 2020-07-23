@@ -1,0 +1,13 @@
+{
+  "id": 1,
+  "name": "Foo",
+  "price": "incorrect",
+  "tags": [
+    "Bar",
+    "Eek"
+  ],
+  "stock": {
+    "warehouse": 300,
+    "retail": 20
+  }
+}

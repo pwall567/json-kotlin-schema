@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-anyof",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "anyOf": [
+        {
+          "const": "AAA"
+        },
+        {
+          "format": "date"
+        }
+      ]
+    }
+  }
+}

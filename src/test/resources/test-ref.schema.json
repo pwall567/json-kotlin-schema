@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-ref",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "$ref": "#/$defs/amount"
+    },
+    "bbb": {
+      "$ref": "#/$defs/amount"
+    },
+    "ccc": {
+      "$ref": "#/$defs/amount"
+    }
+  },
+  "$defs": {
+    "amount": {
+      "type": "number"
+    }
+  }
+}

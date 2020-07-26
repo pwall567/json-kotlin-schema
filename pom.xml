@@ -1,128 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>net.pwall.json</groupId>
-    <artifactId>json-kotlin-schema</artifactId>
-    <version>0.1-SNAPSHOT</version>
-    <name>Kotlin implementation of JSON Schema</name>
-    <packaging>jar</packaging>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.pwall.json</groupId>
+  <artifactId>json-kotlin-schema</artifactId>
+  <version>0.2</version>
+  <name>Kotlin implementation of JSON Schema</name>
+  <packaging>jar</packaging>
+  <url>https://github.com/pwall567/json-kotlin-schema</url>
+
+  <parent>
+    <groupId>net.pwall.maven</groupId>
+    <artifactId>maven-kotlin</artifactId>
+    <version>1.2</version>
+  </parent>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>The MIT License (MIT)</name>
+      <url>http://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com/pwall567/json-kotlin-schema.git</connection>
     <url>https://github.com/pwall567/json-kotlin-schema</url>
+  </scm>
 
-    <parent>
-        <groupId>net.pwall.maven</groupId>
-        <artifactId>maven-kotlin</artifactId>
-        <version>1.2</version>
-    </parent>
+  <developers>
+    <developer>
+      <id>pwall@pwall.net</id>
+      <name>Peter Wall</name>
+      <email>pwall@pwall.net</email>
+      <url>https://pwall.net</url>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>Australia/Sydney</timezone>
+    </developer>
+  </developers>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-    </properties>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>jcenter</id>
+      <name>JCenter</name>
+      <url>https://jcenter.bintray.com/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
-    <licenses>
-        <license>
-            <name>The MIT License (MIT)</name>
-            <url>http://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <dependencies>
+    <dependency>
+      <groupId>net.pwall.json</groupId>
+      <artifactId>json-kotlin-pointer</artifactId>
+      <version>0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>net.pwall.json</groupId>
+      <artifactId>jsonutil</artifactId>
+      <version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>net.pwall.util</groupId>
+      <artifactId>javautil</artifactId>
+      <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-reflect</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-    <scm>
-        <connection>scm:git:git://github.com/pwall567/json-kotlin-schema.git</connection>
-        <url>https://github.com/pwall567/json-kotlin-schema</url>
-    </scm>
-
-    <developers>
-        <developer>
-            <id>pwall@pwall.net</id>
-            <name>Peter Wall</name>
-            <email>pwall@pwall.net</email>
-            <url>https://pwall.net</url>
-            <roles>
-                <role>architect</role>
-                <role>developer</role>
-            </roles>
-            <timezone>Australia/Sydney</timezone>
-        </developer>
-    </developers>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jcenter</id>
-            <name>JCenter</name>
-            <url>https://jcenter.bintray.com/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <dependencies>
-        <dependency>
-            <groupId>net.pwall.json</groupId>
-            <artifactId>json-kotlin-pointer</artifactId>
-            <version>0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>net.pwall.json</groupId>
-            <artifactId>jsonutil</artifactId>
-            <version>3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.pwall.util</groupId>
-            <artifactId>javautil</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.pwall.json</groupId>
-            <artifactId>json-kotlin</artifactId>
-            <version>3.8</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jetbrains.dokka</groupId>
-                <artifactId>dokka-maven-plugin</artifactId>
-                <configuration>
-                    <sourceDirectories>
-                        <dir>src/main/kotlin</dir>
-                    </sourceDirectories>
-                    <externalDocumentationLinks>
-                        <link>
-                            <url>https://pwall.net/oss/jsonutil/</url>
-                        </link>
-                        <link>
-                            <url>https://pwall.net/oss/json-kotlin/</url>
-                        </link>
-                    </externalDocumentationLinks>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jetbrains.dokka</groupId>
+        <artifactId>dokka-maven-plugin</artifactId>
+        <configuration>
+          <sourceDirectories>
+            <dir>src/main/kotlin</dir>
+          </sourceDirectories>
+          <externalDocumentationLinks>
+            <link>
+              <url>https://pwall.net/oss/jsonutil/</url>
+            </link>
+            <link>
+              <url>https://pwall.net/oss/json-kotlin/</url>
+            </link>
+          </externalDocumentationLinks>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

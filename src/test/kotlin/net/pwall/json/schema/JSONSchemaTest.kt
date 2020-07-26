@@ -1,3 +1,28 @@
+/*
+ * @(#) JSONSchemaTest.kt
+ *
+ * json-kotlin-schema Kotlin implementation of JSON Schema
+ * Copyright (c) 2020 Peter Wall
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package net.pwall.json.schema
 
 import kotlin.test.Test
@@ -10,7 +35,6 @@ import net.pwall.json.JSONObject
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.JSON
 import net.pwall.json.JSONFormat
-import net.pwall.json.JSONSerializer
 
 class JSONSchemaTest {
 
@@ -28,7 +52,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate example schema with wrong property type`() {
@@ -38,7 +62,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate example schema with value out of range`() {
@@ -48,7 +72,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate example schema with array item of wrong type`() {
@@ -58,7 +82,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate example schema with reference`() {
@@ -68,7 +92,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate enum`() {
@@ -80,7 +104,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json2)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate const`() {
@@ -92,7 +116,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json2)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate string length`() {
@@ -104,7 +128,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json2)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate string pattern`() {
@@ -116,7 +140,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json2)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate string format`() {
@@ -128,13 +152,13 @@ class JSONSchemaTest {
         val validateResult2 = schema.validate(json2)
         expect(false) { validateResult2.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult2)))
+        println(formatter.format(validateResult2.toJSON()))
         val json3 = JSON.parse("""{"dateTest":"2020-07-22"}""")
         expect(true) { schema.validate(json3).valid }
         val json4 = JSON.parse("""{"dateTest":"wrong"}""")
         val validateResult4 = schema.validate(json4)
         expect(false) { validateResult4.valid }
-        println(formatter.format(JSONSerializer.serialize(validateResult4)))
+        println(formatter.format(validateResult4.toJSON()))
     }
 
     @Test fun `should validate schema with anyOf`() {
@@ -148,7 +172,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json3)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate schema with not`() {
@@ -160,7 +184,7 @@ class JSONSchemaTest {
         val validateResult = schema.validate(json2)
         expect(false) { validateResult.valid }
         val formatter = JSONFormat()
-        println(formatter.format(JSONSerializer.serialize(validateResult)))
+        println(formatter.format(validateResult.toJSON()))
     }
 
     @Test fun `should validate string of JSON`() {

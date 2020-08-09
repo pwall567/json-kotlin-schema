@@ -133,7 +133,8 @@ class CodeGenerator(
             if (property.isObject) {
                 // TODO - how do we handle nested classes?
                 // we always generate as nested classes for now, look at alternatives later
-                parentConstraints.nestedClasses.add(property) // to be continued...
+                parentConstraints.nestedClasses.add(property)
+                analyseConstraints(parentConstraints, property)
                 property.localTypeName = property.capitalisedName
                 if (property.name !in constraints.required)
                     property.nullable = true

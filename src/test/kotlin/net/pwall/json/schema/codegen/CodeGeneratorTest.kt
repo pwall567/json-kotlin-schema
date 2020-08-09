@@ -86,6 +86,17 @@ class CodeGeneratorTest {
         expect(expectedExample) { stringWriter.toString() }
     }
 
+    @Test fun `should output deeply nested class class`() {
+        val input = File("src/test/resources/test-nested-object.schema.json")
+        val codeGenerator = CodeGenerator()
+        codeGenerator.baseDirectoryName = "dummy"
+        val stringWriter = StringWriter()
+        codeGenerator.outputResolver = outputCapture("dummy", emptyList(), "TestNestedObject", "kt", stringWriter)
+        codeGenerator.basePackageName = "com.example"
+        codeGenerator.generate(input)
+        expect(expectedNested) { stringWriter.toString() }
+    }
+
     companion object {
 
         private fun outputCapture(expectedBaseDirectory: String, expectedSubdirectories: List<String>,
@@ -216,6 +227,24 @@ data class Test(
     data class Stock(
             val warehouse: BigDecimal,
             val retail: BigDecimal
+    )
+
+}
+"""
+
+        const val expectedNested =
+"""package com.example
+
+data class TestNestedObject(
+        val nested: Nested
+) {
+
+    data class Nested(
+            val deeper: Deeper
+    )
+
+    data class Deeper(
+            val deepest: String
     )
 
 }

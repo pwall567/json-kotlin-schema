@@ -32,7 +32,7 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.Output
 import java.net.URI
 
-class RequiredValidator(uri: URI?, location: JSONPointer, private val properties: List<String>) :
+class RequiredValidator(uri: URI?, location: JSONPointer, val properties: List<String>) :
         JSONSchema.Validator(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("required")

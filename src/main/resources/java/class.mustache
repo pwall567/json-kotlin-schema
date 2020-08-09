@@ -1,0 +1,50 @@
+{{#packageName}}package {{&packageName}};
+
+{{/packageName}}{{>system_imports}}{{#imports}}import {{&.}};
+{{#last}}
+{{/last}}{{/imports}}{{#description}}/**
+ * {{&description}}
+ */
+{{/description}}public class {{&nameFromURI}} {
+
+{{#properties}}    private final {{>type}} {{&name}};
+{{/properties}}
+    public {{&nameFromURI}}(
+            {{#properties}}{{>type}} {{&name}}{{^last}},
+            {{/last}}{{/properties}}
+    ) {
+{{#properties}}{{^isPrimitive}}{{^nullable}}        if ({{&name}} == null)
+            throw new IllegalArgumentException("Must not be null - {{&name}}");
+{{/nullable}}{{/isPrimitive}}{{>validation}}        this.{{&name}} = {{&name}};
+{{/properties}}    }
+{{#properties}}
+    public {{>type}} get{{&capitalisedName}}() {
+        return {{&name}};
+    }
+{{/properties}}
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (!(other instanceof {{&nameFromURI}}))
+            return false;
+        {{&nameFromURI}} typedOther = ({{&nameFromURI}})other;
+{{#properties}}{{#isPrimitive}}        if ({{&name}} != typedOther.{{&name}})
+{{/isPrimitive}}{{^isPrimitive}}{{#nullable}}        if ({{&name}} == null && typedOther.{{&name}} != null ||
+                {{&name}} != null && !{{&name}}.equals(typedOther.{{&name}}))
+{{/nullable}}{{^nullable}}        if (!{{&name}}.equals(typedOther.{{&name}}))
+{{/nullable}}{{/isPrimitive}}            return false;
+{{/properties}}        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+{{#properties}}        hash ^= {{#isInt}}{{&name}}{{/isInt}}{{^isInt}}{{#isLong}}(int){{&name}}{{/isLong}}{{^isLong}}{{!
+}}{{#isBoolean}}{{&name}} ? 1 : 0{{/isBoolean}}{{^isBoolean}}{{!
+}}{{#nullable}}{{&name}} != null ? {{&name}}.hashCode() : 0{{/nullable}}{{^nullable}}{{!
+}}{{&name}}.hashCode(){{/nullable}}{{/isBoolean}}{{/isLong}}{{/isInt}};
+{{/properties}}        return hash;
+    }
+
+}

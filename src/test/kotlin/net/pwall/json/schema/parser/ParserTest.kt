@@ -32,6 +32,8 @@ import kotlin.test.expect
 import java.io.File
 import java.net.URI
 
+import net.pwall.json.JSON
+import net.pwall.json.JSONObject
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
@@ -73,6 +75,24 @@ class ParserTest {
             JSONSchema.parse(filename)
         }
         expect("Schema is not boolean or object - root") { errorMessage.message }
+    }
+
+    @Test fun `should pre-load directory`() {
+        val dirName = "src/test/resources/test1"
+        val parser = Parser()
+        parser.preLoad(dirName)
+        expect(true) { parser.parseFile("http://pwall.net/test/schema/person") is JSONObject }
+    }
+
+    @Test fun `should parse reference following pre-load`() {
+        val dirName = "src/test/resources/test1"
+        val parser = Parser()
+        parser.preLoad(dirName)
+        val schema = parser.parse("$dirName/person/person.schema.json")
+        val person = JSON.parse(File("src/test/resources/person.json"))
+        expect (true) { schema.validate(person).valid }
+        val wrongPerson = JSON.parse(File("src/test/resources/person-invalid-uuid.json"))
+        expect (false) { schema.validate(wrongPerson).valid }
     }
 
 }

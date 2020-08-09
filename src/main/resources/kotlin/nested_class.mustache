@@ -1,0 +1,10 @@
+{{#description}}    /**
+     * {{&description}}
+     */
+{{/description}}    data class {{&capitalisedName}}(
+{{#properties}}{{#schema}}{{#description}}            /** {{&safeDescription}} */
+{{/description}}{{/schema}}            val {{&name}}: {{>type}}{{#nullable}}? = null{{/nullable}}{{^last}},{{/last}}
+{{/properties}}    ){{#validationsPresent}} {
+        init {
+{{#properties}}{{>validation}}{{/properties}}        }
+}{{/validationsPresent}}

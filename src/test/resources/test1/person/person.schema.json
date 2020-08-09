@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test/schema/person",
+  "title": "Person",
+  "description": "A class to represent a person",
+  "type": "object",
+  "required": ["id", "name"],
+  "properties": {
+    "id": {
+      "$ref": "http://pwall.net/test/schema/utility#/$defs/personId",
+      "description": "Id of the person"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the person"
+    }
+  }
+}

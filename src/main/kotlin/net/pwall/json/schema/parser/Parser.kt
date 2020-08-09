@@ -26,6 +26,9 @@
 package net.pwall.json.schema.parser
 
 import java.io.File
+import java.io.InputStream
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.net.URI
 
 import net.pwall.json.JSON
@@ -43,6 +46,7 @@ import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.validation.ConstValidator
 import net.pwall.json.schema.validation.EnumValidator
@@ -56,15 +60,39 @@ import net.pwall.json.schema.validation.RequiredValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 
-class Parser {
+class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
+    @Suppress("unused")
     val schemaVersion201909 = listOf("http://json-schema.org/draft/2019-09/schema",
             "https://json-schema.org/draft/2019-09/schema")
+    @Suppress("unused")
     val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
             "https://json-schema.org/draft-07/schema")
 
-    val jsonCache: MutableMap<String, JSONValue> = mutableMapOf()
-    val schemaCache: MutableMap<URI, JSONSchema> = mutableMapOf()
+    private val jsonCache: MutableMap<String, JSONValue> = mutableMapOf()
+    private val schemaCache: MutableMap<URI, JSONSchema> = mutableMapOf()
+
+    fun preLoad(filename: String) {
+        preLoad(File(filename))
+    }
+
+    fun preLoad(file: File) {
+        when {
+            file.isDirectory -> file.listFiles()?.forEach { if (!it.name.startsWith('.')) preLoad(it) }
+            file.isFile -> {
+                if (file.name.endsWith(".json", ignoreCase = true))
+                    JSON.parse(file).cacheByURI()
+            }
+        }
+    }
+
+    private fun JSONValue?.cacheByURI() {
+        if (this is JSONObject) {
+            getStringOrNull(JSONPointer.root.child("\$id"))?.let {
+                jsonCache[URI(it).dropFragment().toString()] = this
+            }
+        }
+    }
 
     fun parse(filename: String): JSONSchema = parse(File(filename))
 
@@ -82,21 +110,14 @@ class Parser {
         }
     }
 
-    private fun parseFile(uriString: String): JSONValue {
+    fun parseFile(uriString: String): JSONValue {
         jsonCache[uriString]?.let { return it }
         try {
             val uri = URI(uriString)
-            if (uri.scheme != "file")
-                throw JSONSchemaException("Can't read non-file URL - $uriString")
-            val json = JSON.parse(uri.toURL().openStream()) ?:
-            throw JSONSchemaException("Schema file is null - $uriString")
+            val json = JSON.parse(uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")) ?:
+                    throw JSONSchemaException("Schema file is null - $uriString")
             jsonCache[uriString] = json
-            if (json is JSONObject) {
-                json.getStringOrNull(JSONPointer.root.child("\$id"))?.let {
-                    val secondCacheKey = URI(it).dropFragment().toString()
-                    jsonCache[secondCacheKey] = json
-                }
-            }
+            json.cacheByURI()
             return json
         }
         catch (e: Exception) {
@@ -117,7 +138,7 @@ class Parser {
             return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else JSONSchema.False(parentUri, pointer)
         if (schemaJSON !is JSONObject)
             throw JSONSchemaException("Schema is not boolean or object - ${pointer.pointerOrRoot()}")
-        val id = schemaJSON.getStringOrNull(pointer.child("\$id"))
+        val id = schemaJSON.getStringOrNull("\$id")
         val uri = when {
             id == null -> parentUri
             parentUri == null -> URI(id).dropFragment()
@@ -130,14 +151,14 @@ class Parser {
             }
             schemaCache[fragmentURI] = JSONSchema.False(uri, pointer)
         }
-        val title = schemaJSON.getStringOrNull(pointer.child("title"))
-        val description = schemaJSON.getStringOrNull(pointer.child("description"))
+        val title = schemaJSON.getStringOrNull("title")
+        val description = schemaJSON.getStringOrNull("description")
 
         val children = mutableListOf<JSONSchema>()
         for (entry in schemaJSON.entries) {
             when (entry.key) {
                 "\$ref" -> children.add(parseRef(json, pointer.child("type"), uri, entry.value))
-                "\$defs", "\$schema", "\$id", "title", "description" -> {}
+                "\$defs", "\$schema", "\$id", "\$comment", "title", "description" -> {}
                 "allOf" -> children.add(parseArrayValidator(json, pointer.child("allOf"), uri, entry.value,
                         JSONSchema.Companion::allOf))
                 "anyOf" -> children.add(parseArrayValidator(json, pointer.child("anyOf"), uri, entry.value,
@@ -184,10 +205,6 @@ class Parser {
         return creator(uri, pointer, array.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
     }
 
-    private fun parseNot(json: JSONValue, pointer: JSONPointer, uri: URI?): JSONSchema {
-        return JSONSchema.Not(uri, pointer, parseSchema(json, pointer, uri))
-    }
-
     private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefValidator {
         if (value !is JSONString)
             throw JSONPointerException("\$ref must be string - $pointer")
@@ -196,7 +213,8 @@ class Parser {
             refURI.substringBefore('#') to refURI.substringAfter('#')
         else
             refURI to ""
-        val refJSON = if (refURIPath == uri.toString()) json else parseFile(refURIPath)
+        val refJSON = if (refURIPath == uri.toString()) json else
+                parseFile(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath)
         val refPointer = JSONPointer.fromURIFragment("#$refURIFragment")
         if (!refPointer.exists(refJSON))
             throw JSONSchemaException("\$ref not found $value - $pointer")
@@ -261,16 +279,18 @@ class Parser {
     private fun parseConst(pointer: JSONPointer, uri: URI?, value: JSONValue?) = ConstValidator(uri, pointer, value)
 
     private fun parseNumberLimit(pointer: JSONPointer, uri: URI?, condition: NumberValidator.ValidationType,
-                                 value: JSONValue?): NumberValidator {
+            value: JSONValue?): NumberValidator {
         if (value !is JSONNumberValue)
-            throw JSONSchemaException("Must be number - ${pointer.pointerOrRoot()}")
+            throw JSONSchemaException("Must be number (was ${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
         val number: Number = when (value) {
+            is JSONDouble, // should not happen
+            is JSONFloat,
             is JSONDecimal -> value.bigDecimalValue()
-            is JSONDouble -> value.toDouble()
-            is JSONFloat -> value.toFloat()
             is JSONLong -> value.toLong()
-            else -> value.toInt()
+            else -> value.toInt() // includes JSONInteger, JSONZero
         }
+        if (condition == NumberValidator.ValidationType.MULTIPLE_OF && !number.isPositive())
+            throw JSONSchemaException("multipleOf must be greater than 0 - ${pointer.pointerOrRoot()}")
         return NumberValidator(uri, pointer, number, condition)
     }
 
@@ -288,7 +308,7 @@ class Parser {
             Regex(value.get())
         }
         catch (e: Exception) {
-            throw JSONSchemaException("pattern invalid ${value.toJSON()} - ${pointer.pointerOrRoot()}")
+            throw JSONSchemaException("pattern invalid (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
         }
         return PatternValidator(uri, pointer, regex)
     }
@@ -298,26 +318,56 @@ class Parser {
     private fun URI.dropFragment(): URI =
             toString().let { if (it.endsWith('#')) URI(it.dropLast(1)) else this }
 
-    fun parseDraft07(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
-        return JSONSchema.False(parentUri, pointer) // TODO temporary
+    private fun parseDraft07(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
+        return parseSchema(json, pointer, parentUri) // temporary - treat as 201909
     }
 
-    fun JSONObject.getStringOrNull(pointer: JSONPointer): String? {
-        if (!pointer.exists(this))
-            return null
-        val value = pointer.eval(this)
-        if (value !is JSONString)
-            throw JSONSchemaException("Incorrect $pointer")
-        return value.get()
-    }
+    companion object {
 
-    fun JSONObject.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
-        if (!pointer.exists(this))
-            return default
-        val value = pointer.eval(this)
-        if (value !is JSONString)
-            throw JSONSchemaException("Incorrect $pointer")
-        return value.get()
+        val defaultURIResolver: (URI) -> InputStream? = { uri ->
+                if (uri.scheme == "file") uri.toURL().openStream() else null }
+
+        fun JSONObject.getStringOrNull(key: String): String? =
+                get(key)?.let { if (it is JSONString) it.get() else throw JSONSchemaException("Incorrect $key") }
+
+        fun JSONObject.getStringOrNull(pointer: JSONPointer): String? {
+            if (!pointer.exists(this))
+                return null
+            val value = pointer.eval(this)
+            if (value !is JSONString)
+                throw JSONSchemaException("Incorrect $pointer")
+            return value.get()
+        }
+
+        @Suppress("unused")
+        fun JSONObject.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
+            if (!pointer.exists(this))
+                return default
+            val value = pointer.eval(this)
+            if (value !is JSONString)
+                throw JSONSchemaException("Incorrect $pointer")
+            return value.get()
+        }
+
+        @Suppress("unused")
+        fun Number.isZero(): Boolean = when (this) {
+            is BigDecimal -> this == BigDecimal.ZERO
+            is BigInteger -> this == BigInteger.ZERO
+            is Double -> this == 0.0
+            is Float -> this == 0.0F
+            is Long -> this == 0L
+            else -> this.toInt() == 0
+        }
+
+        fun Number.isPositive(): Boolean = when (this) {
+            is BigDecimal -> this > BigDecimal.ZERO
+            is BigInteger -> this > BigInteger.ZERO
+            is Double -> this > 0.0
+            is Float -> this > 0.0F
+            is Long -> this > 0L
+            else -> this.toInt() > 0
+        }
+
     }
 
 }

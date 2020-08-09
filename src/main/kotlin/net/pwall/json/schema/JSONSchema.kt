@@ -43,11 +43,14 @@ import net.pwall.json.schema.parser.Parser
 /**
  * A JSON Schema.
  *
- * @constructor
- * @param   uri         the id URI for the schema
- * @param   location    the JSON Pointer for the location of the schema
+ * @author  Peter Wall
  */
-sealed class JSONSchema(val uri: URI?, val location: JSONPointer) {
+sealed class JSONSchema(
+        /** The URI for the schema */
+        val uri: URI?,
+        /** The JSON Pointer for the location of the schema */
+        val location: JSONPointer
+) {
 
     enum class Type(val value: String) {
         NULL("null"),
@@ -61,6 +64,10 @@ sealed class JSONSchema(val uri: URI?, val location: JSONPointer) {
 
     val absoluteLocation: String?
             get() = uri?.let { "$it${location.schemaURIFragment()}" }
+
+    open val description: String? = null
+
+    open val title: String? = null
 
     open fun childLocation(pointer: JSONPointer): JSONPointer = pointer
 
@@ -147,7 +154,7 @@ sealed class JSONSchema(val uri: URI?, val location: JSONPointer) {
 
     }
 
-    class ArrayValidator(uri: URI?, location: JSONPointer, val name: String, private val array: List<JSONSchema>,
+    class ArrayValidator(uri: URI?, location: JSONPointer, val name: String, val array: List<JSONSchema>,
                          val resultValid: (Int) -> Boolean) : JSONSchema(uri, location) {
 
         override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(name)
@@ -183,7 +190,7 @@ sealed class JSONSchema(val uri: URI?, val location: JSONPointer) {
 
     abstract class Validator(uri: URI?, location: JSONPointer) : JSONSchema(uri, location)
 
-    class General(val schemaVersion: String, val title: String?, val description: String?, uri: URI?,
+    class General(val schemaVersion: String, override val title: String?, override val description: String?, uri: URI?,
             location: JSONPointer, val children: List<JSONSchema>) : JSONSchema(uri, location) {
 
         override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output {

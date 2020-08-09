@@ -1,0 +1,17 @@
+{{#packageName}}package {{&packageName}}
+
+{{/packageName}}{{>system_imports}}{{#imports}}import {{&.}}
+{{#last}}
+{{/last}}{{/imports}}{{#description}}/**
+ * {{&description}}
+ */
+{{/description}}data class {{&nameFromURI}}(
+{{#properties}}{{#schema}}{{#description}}        /** {{&safeDescription}} */
+{{/description}}{{/schema}}        val {{&name}}: {{>type}}{{#nullable}}? = null{{/nullable}}{{^last}},{{/last}}
+{{/properties}}){{#validationsOrNestedClassesPresent}} {
+{{#validationsPresent}}
+    init {
+{{#properties}}{{>validation}}{{/properties}}    }
+{{/validationsPresent}}{{#nestedClasses}}
+{{>nested_class}}{{/nestedClasses}}
+}{{/validationsOrNestedClassesPresent}}

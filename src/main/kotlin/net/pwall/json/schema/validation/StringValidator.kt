@@ -32,7 +32,7 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.Output
 import java.net.URI
 
-class StringValidator(uri: URI?, location: JSONPointer, private val condition: ValidationType, private val value: Int) :
+class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {
 
     enum class ValidationType(val keyword: String) {

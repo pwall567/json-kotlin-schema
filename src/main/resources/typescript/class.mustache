@@ -1,0 +1,7 @@
+{{#description}}/**
+ * {{&description}}
+ */
+{{/description}}interface {{&nameFromURI}} {
+{{#properties}}    {{&name}}{{#nullable}}?{{/nullable}}: {{>type}}{{^last}},
+{{/last}}{{/properties}}
+}

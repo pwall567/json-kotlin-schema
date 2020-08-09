@@ -99,7 +99,8 @@ open class Constraints(val schema: JSONSchema) {
                 uriName.endsWith(".json", ignoreCase = true) -> uriName.dropLast(5)
                 else -> uriName
             }
-            uriNameWithoutSuffix.split('-').joinToString(separator = "") { part -> Strings.capitalise(part) }
+            uriNameWithoutSuffix.split('-', '.').joinToString(separator = "") { part -> Strings.capitalise(part) }.
+                    sanitiseName()
         }
     }
 
@@ -196,6 +197,22 @@ open class Constraints(val schema: JSONSchema) {
     enum class SystemClass { LIST, DECIMAL, DATE, DATE_TIME, TIME, DURATION, UUID, VALIDATION }
 
     companion object {
+
+        fun String.sanitiseName(): String {
+            for (i in 0 until length) {
+                val ch = this[i]
+                if (!(ch in 'A'..'Z' || ch in 'a'..'z' || ch in '0'..'9')) {
+                    val sb = StringBuilder(substring(0, i))
+                    for (j in i + 1 until length) {
+                        val ch2 = this[j]
+                        if (ch2 in 'A'..'Z' || ch2 in 'a'..'z' || ch2 in '0'..'9')
+                            sb.append(ch)
+                    }
+                    return sb.toString()
+                }
+            }
+            return this
+        }
 
         private fun Number?.belowLimitForInt(limit: Long): Boolean = when (this) {
             null -> false

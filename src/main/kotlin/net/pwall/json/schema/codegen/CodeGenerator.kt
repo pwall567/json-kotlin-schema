@@ -93,11 +93,17 @@ class CodeGenerator(
     private fun generate(parser: Parser, inputDir: File, subDirectories: List<String>) {
         inputDir.listFiles()?.forEach {
             when {
-                it.isDirectory -> { generate(parser, it, subDirectories + it.name) }
+                it.isDirectory -> { generate(parser, it, subDirectories + it.name.mapDirectoryName()) }
                 it.isFile -> { generate(parser.parse(it), subDirectories) }
             }
         }
     }
+
+    private fun String.mapDirectoryName(): String = StringBuilder().also {
+        for (ch in this)
+            if (ch in 'a'..'z' || ch in 'A'..'Z' || ch in '0'..'9')
+                it.append(ch)
+    }.toString()
 
     fun generate(schema: JSONSchema, subDirectories: List<String>) {
         process(schema)?.let { constraints ->

@@ -138,7 +138,7 @@ class CodeGenerator(
                     for (i in 1..1000) {
                         if (i == 1000)
                             throw JSONSchemaException("Too many identically named inner classes - $innerClassName")
-                        if (!parentConstraints.nestedClasses.any { "${it.capitalisedName}$i" == "$innerClassName$i" }) {
+                        if (!parentConstraints.nestedClasses.any { it.capitalisedName == "$innerClassName$i" }) {
                             property.overridingName = "$innerClassName$i"
                             break
                         }

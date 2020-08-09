@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.3.7] - 2020-08-10
+### Changed
+- Fix bug in handling of identically-named nested classes in code generation
+
 ## [0.3.6] - 2020-08-10
 ### Changed
 - Allow for identically-named nested classes in code generation

@@ -1,7 +1,7 @@
 {{#description}}    /**
      * {{&description}}
      */
-{{/description}}    data class {{&capitalisedName}}(
+{{/description}}    data class {{&className}}(
 {{#properties}}{{#schema}}{{#description}}            /** {{&safeDescription}} */
 {{/description}}{{/schema}}            val {{&name}}: {{>type}}{{#nullable}}? = null{{/nullable}}{{^last}},{{/last}}
 {{/properties}}    ){{#validationsPresent}} {

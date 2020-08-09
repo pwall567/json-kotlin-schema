@@ -5,6 +5,8 @@ import net.pwall.util.Strings
 
 class NamedConstraints(schema: JSONSchema, val name: String) : Constraints(schema) {
 
+    var overridingName: String? = null
+
     @Suppress("unused")
     val propertyName: String
         get() = name
@@ -12,6 +14,10 @@ class NamedConstraints(schema: JSONSchema, val name: String) : Constraints(schem
     @Suppress("unused")
     val capitalisedName: String
         get() = Strings.capitalise(name)
+
+    @Suppress("unused")
+    val className: String
+        get() = overridingName ?: capitalisedName
 
     @Suppress("unused")
     val nameFromURIOrName: String

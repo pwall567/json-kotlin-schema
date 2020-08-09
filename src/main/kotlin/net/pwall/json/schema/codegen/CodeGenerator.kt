@@ -132,7 +132,18 @@ class CodeGenerator(
         constraints.properties.forEach { property ->
             if (property.isObject) {
                 // TODO - how do we handle nested classes?
-                // we always generate as nested classes for now, look at alternatives later
+                // answer - we always generate as nested classes for now, look at alternatives later
+                val innerClassName = property.capitalisedName
+                if (parentConstraints.nestedClasses.any { it.capitalisedName == innerClassName }) {
+                    for (i in 1..1000) {
+                        if (i == 1000)
+                            throw JSONSchemaException("Too many identically named inner classes - $innerClassName")
+                        if (!parentConstraints.nestedClasses.any { "${it.capitalisedName}$i" == "$innerClassName$i" }) {
+                            property.overridingName = "$innerClassName$i"
+                            break
+                        }
+                    }
+                }
                 parentConstraints.nestedClasses.add(property)
                 analyseConstraints(parentConstraints, property)
                 property.localTypeName = property.capitalisedName

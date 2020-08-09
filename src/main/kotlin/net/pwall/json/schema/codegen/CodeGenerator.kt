@@ -293,8 +293,6 @@ class CodeGenerator(
 
     private fun processGeneral(general: JSONSchema.General, constraints: Constraints) {
         general.children.forEach { processSchema(it, constraints) }
-        if (constraints.uri == null)
-            constraints.uri = general.uri
     }
 
     companion object {

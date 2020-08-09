@@ -10,7 +10,7 @@ import java.net.URI
 
 open class Constraints(val schema: JSONSchema) {
 
-    var uri: URI? = null
+    var uri: URI? = schema.uri
 
     var packageName: String? = null
     var description: String? = null

@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.3.4] - 2020-08-09
+### Changed
+- change handling of schema id uri
+
 ## [0.3.3] - 2020-08-09
 ### Changed
 - sanitise class names on code generation

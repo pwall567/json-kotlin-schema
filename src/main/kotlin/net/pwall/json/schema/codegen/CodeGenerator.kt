@@ -26,6 +26,15 @@ class CodeGenerator(
         var derivePackageFromStructure: Boolean = true
 ) {
 
+    var schemaParser: Parser? = null
+
+    private val defaultSchemaParser: Parser by lazy {
+        Parser()
+    }
+
+    private val actualSchemaParser: Parser
+        get() = schemaParser ?: defaultSchemaParser
+
     var templateParser: net.pwall.mustache.parser.Parser? = null
 
     private val defaultTemplateParser: net.pwall.mustache.parser.Parser by lazy {
@@ -73,7 +82,7 @@ class CodeGenerator(
     }
 
     fun generate(inputDir: File, subDirectories: List<String> = emptyList()) {
-        val parser = Parser()
+        val parser = actualSchemaParser
         parser.preLoad(inputDir)
         when {
             inputDir.isFile -> generate(parser.parse(inputDir), subDirectories)

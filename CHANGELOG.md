@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.4] - 2020-08-16
+### Changed
+- Multiple changes, including separation of `validate`, `validateBasic`, `validateDetailed` and their respective
+output classes
+
 ## [0.3.7] - 2020-08-10
 ### Changed
 - Fix bug in handling of identically-named nested classes in code generation

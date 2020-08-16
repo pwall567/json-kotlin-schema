@@ -31,7 +31,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
 
-import net.pwall.json.JSON
 import net.pwall.json.JSONArray
 import net.pwall.json.JSONBoolean
 import net.pwall.json.JSONDecimal
@@ -48,80 +47,59 @@ import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.subschema.ItemSchema
+import net.pwall.json.schema.subschema.PropertySchema
+import net.pwall.json.schema.subschema.RefSchema
+import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ConstValidator
+import net.pwall.json.schema.validation.DefaultValidator
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.FormatValidator
-import net.pwall.json.schema.validation.ItemValidator
 import net.pwall.json.schema.validation.NumberValidator
 import net.pwall.json.schema.validation.PatternValidator
-import net.pwall.json.schema.validation.PropertyValidator
-import net.pwall.json.schema.validation.RefValidator
-import net.pwall.json.schema.validation.RequiredValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 
-class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
+class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
-    @Suppress("unused")
-    val schemaVersion201909 = listOf("http://json-schema.org/draft/2019-09/schema",
-            "https://json-schema.org/draft/2019-09/schema")
-    @Suppress("unused")
-    val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
-            "https://json-schema.org/draft-07/schema")
+    private val jsonReader = JSONReader(uriResolver)
 
-    private val jsonCache: MutableMap<String, JSONValue> = mutableMapOf()
-    private val schemaCache: MutableMap<URI, JSONSchema> = mutableMapOf()
+    private val schemaCache = mutableMapOf<URI, JSONSchema>()
 
     fun preLoad(filename: String) {
-        preLoad(File(filename))
+        jsonReader.preLoad(filename)
     }
 
     fun preLoad(file: File) {
-        when {
-            file.isDirectory -> file.listFiles()?.forEach { if (!it.name.startsWith('.')) preLoad(it) }
-            file.isFile -> {
-                if (file.name.endsWith(".json", ignoreCase = true))
-                    JSON.parse(file).cacheByURI()
-            }
-        }
+        jsonReader.preLoad(file)
     }
 
-    private fun JSONValue?.cacheByURI() {
-        if (this is JSONObject) {
-            getStringOrNull(JSONPointer.root.child("\$id"))?.let {
-                jsonCache[URI(it).dropFragment().toString()] = this
-            }
-        }
-    }
+    fun parseFile(filename: String): JSONSchema = parse(File(filename))
 
-    fun parse(filename: String): JSONSchema = parse(File(filename))
+    fun parseURI(uriString: String): JSONSchema = parse(URI(uriString))
 
     fun parse(file: File): JSONSchema {
         if (!file.isFile)
             throw JSONSchemaException("Invalid file - $file")
-        val json = parseFile("file://${file.absolutePath}")
+        val uri = file.toURI()
+        schemaCache[uri]?.let { return it }
+        val json = jsonReader.readJSON(file)
+        return parse(json, uri)
+    }
+
+    fun parse(uri: URI): JSONSchema {
+        schemaCache[uri]?.let { return it }
+        val json = jsonReader.readJSON(uri)
+        return parse(json, uri)
+    }
+
+    private fun parse(json: JSONValue, uri: URI): JSONSchema {
         val schemaVersion = (json as? JSONObject)?.getStringOrNull(JSONPointer.root.child("\$schema"))
         val pointer = JSONPointer.root
-        val uri = URI("file://${file.absolutePath}")
         return when (schemaVersion) {
             in schemaVersion201909 -> parseSchema(json, pointer, uri)
             in schemaVersionDraft07 -> parseDraft07(json, pointer, uri)
             else -> parseSchema(json, pointer, uri)
-        }
-    }
-
-    fun parseFile(uriString: String): JSONValue {
-        jsonCache[uriString]?.let { return it }
-        try {
-            val uri = URI(uriString)
-            val json = JSON.parse(uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")) ?:
-                    throw JSONSchemaException("Schema file is null - $uriString")
-            jsonCache[uriString] = json
-            json.cacheByURI()
-            return json
-        }
-        catch (e: Exception) {
-            throw JSONSchemaException("Error reading schema file - $uriString", e)
         }
     }
 
@@ -135,7 +113,8 @@ class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         val schemaJSON = pointer.eval(json)
         if (schemaJSON is JSONBoolean)
-            return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else JSONSchema.False(parentUri, pointer)
+            return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else
+                    JSONSchema.False(parentUri, pointer)
         if (schemaJSON !is JSONObject)
             throw JSONSchemaException("Schema is not boolean or object - ${pointer.pointerOrRoot()}")
         val id = schemaJSON.getStringOrNull("\$id")
@@ -159,12 +138,13 @@ class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
             when (entry.key) {
                 "\$ref" -> children.add(parseRef(json, pointer.child("type"), uri, entry.value))
                 "\$defs", "\$schema", "\$id", "\$comment", "title", "description" -> {}
-                "allOf" -> children.add(parseArrayValidator(json, pointer.child("allOf"), uri, entry.value,
+                "default" -> children.add(DefaultValidator(uri, pointer.child("default"), entry.value))
+                "allOf" -> children.add(parseCombinationSchema(json, pointer.child("allOf"), uri, entry.value,
                         JSONSchema.Companion::allOf))
-                "anyOf" -> children.add(parseArrayValidator(json, pointer.child("anyOf"), uri, entry.value,
+                "anyOf" -> children.add(parseCombinationSchema(json, pointer.child("anyOf"), uri, entry.value,
                         JSONSchema.Companion::anyOf))
-                "oneOf" -> children.add(parseArrayValidator(json, pointer.child("oneOf"), uri, entry.value,
-                        JSONSchema.Companion::anyOf))
+                "oneOf" -> children.add(parseCombinationSchema(json, pointer.child("oneOf"), uri, entry.value,
+                        JSONSchema.Companion::oneOf))
                 "not" -> children.add(JSONSchema.Not(uri, pointer.child("not"),
                         parseSchema(json, pointer.child("not"), uri)))
                 "type" -> children.add(parseType(pointer.child("type"), uri, entry.value))
@@ -198,45 +178,45 @@ class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         return result
     }
 
-    private fun parseArrayValidator(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
+    private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
             creator: (URI?, JSONPointer, List<JSONSchema>) -> JSONSchema): JSONSchema {
         if (array !is JSONArray)
             throw JSONPointerException("Compound must take array - $pointer")
         return creator(uri, pointer, array.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
     }
 
-    private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefValidator {
+    private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefSchema {
         if (value !is JSONString)
             throw JSONPointerException("\$ref must be string - $pointer")
-        val refURI = (if (uri == null) URI(value.get()) else uri.resolve(value.get())).toString()
-        val (refURIPath, refURIFragment) = if (refURI.contains('#'))
-            refURI.substringBefore('#') to refURI.substringAfter('#')
+        val refURIString = (if (uri == null) URI(value.get()) else uri.resolve(value.get())).toString()
+        val (refURIPath, refURIFragment) = if (refURIString.contains('#'))
+            refURIString.substringBefore('#') to refURIString.substringAfter('#')
         else
-            refURI to ""
+            refURIString to ""
         val refJSON = if (refURIPath == uri.toString()) json else
-                parseFile(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath)
+                jsonReader.readJSON(URI(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath))
         val refPointer = JSONPointer.fromURIFragment("#$refURIFragment")
         if (!refPointer.exists(refJSON))
             throw JSONSchemaException("\$ref not found $value - $pointer")
         val target = parseSchema(refJSON, refPointer, URI(refURIPath))
-        return RefValidator(uri, pointer, target)
+        return RefSchema(uri, pointer, target)
     }
 
-    private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?): ItemValidator {
-        return ItemValidator(uri, pointer, parseSchema(json, pointer, uri))
+    private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?): ItemSchema {
+        return ItemSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
 
     private fun parseProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?):
-            PropertyValidator {
+            PropertySchema {
         if (value !is JSONObject)
             throw JSONSchemaException("properties must be object - $pointer")
         val properties = mutableListOf<Pair<String, JSONSchema>>()
         for (key in value.keys)
             properties.add(key to parseSchema(json, pointer.child(key), uri))
-        return PropertyValidator(uri, pointer, properties)
+        return PropertySchema(uri, pointer, properties)
     }
 
-    private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredValidator {
+    private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredSchema {
         if (value !is JSONArray)
             throw JSONSchemaException("required must be array - ${pointer.pointerOrRoot()}")
         val properties = mutableListOf<String>()
@@ -245,7 +225,7 @@ class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                 throw JSONSchemaException("required items must be string - ${pointer.child(i)}")
             properties.add(entry.get())
         }
-        return RequiredValidator(uri, pointer, properties)
+        return RequiredSchema(uri, pointer, properties)
     }
 
     private fun parseType(pointer: JSONPointer, uri: URI?, value: JSONValue?): TypeValidator {
@@ -315,17 +295,24 @@ class Parser(val uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
     private fun JSONPointer.pointerOrRoot() = if (this == JSONPointer.root) "root" else toString()
 
-    private fun URI.dropFragment(): URI =
-            toString().let { if (it.endsWith('#')) URI(it.dropLast(1)) else this }
-
     private fun parseDraft07(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         return parseSchema(json, pointer, parentUri) // temporary - treat as 201909
     }
 
     companion object {
 
+        @Suppress("unused")
+        val schemaVersion201909 = listOf("http://json-schema.org/draft/2019-09/schema",
+                "https://json-schema.org/draft/2019-09/schema")
+        @Suppress("unused")
+        val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
+                "https://json-schema.org/draft-07/schema")
+
         val defaultURIResolver: (URI) -> InputStream? = { uri ->
                 if (uri.scheme == "file") uri.toURL().openStream() else null }
+
+        fun URI.dropFragment(): URI =
+                toString().let { if (it.contains('#')) URI(it.substringBefore('#')) else this }
 
         fun JSONObject.getStringOrNull(key: String): String? =
                 get(key)?.let { if (it is JSONString) it.get() else throw JSONSchemaException("Incorrect $key") }

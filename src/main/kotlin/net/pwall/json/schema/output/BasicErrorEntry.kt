@@ -1,5 +1,5 @@
 /*
- * @(#) RefValidator.kt
+ * @(#) BasicErrorEntry.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -23,24 +23,21 @@
  * SOFTWARE.
  */
 
-package net.pwall.json.schema.validation
+package net.pwall.json.schema.output
 
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
-import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.Output
-import java.net.URI
+class BasicErrorEntry(
+        val keywordLocation: String,
+        val absoluteKeywordLocation: String? = null,
+        val instanceLocation: String,
+        val error: String
+) {
 
-class RefValidator(uri: URI?, location: JSONPointer, val target: JSONSchema) : JSONSchema.Validator(uri, location) {
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is BasicErrorEntry && keywordLocation == other.keywordLocation &&
+            absoluteKeywordLocation == other.absoluteKeywordLocation &&
+            instanceLocation == other.instanceLocation && error == other.error
 
-    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("\$ref")
-
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output =
-            target.validate(relativeLocation, json, instanceLocation)
-
-    override fun equals(other: Any?): Boolean =
-            this === other || other is RefValidator && super.equals(other) && target == other.target
-
-    override fun hashCode(): Int = super.hashCode() xor target.hashCode()
+    override fun hashCode(): Int = keywordLocation.hashCode() xor absoluteKeywordLocation.hashCode() xor
+            instanceLocation.hashCode() xor error.hashCode()
 
 }

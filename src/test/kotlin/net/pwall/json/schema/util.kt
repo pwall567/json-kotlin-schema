@@ -27,22 +27,36 @@ package net.pwall.json.schema
 
 import net.pwall.json.JSONArray
 import net.pwall.json.JSONObject
+import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
+import net.pwall.json.schema.output.DetailedOutput
 import net.pwall.json.schema.output.Output
 
 fun Output.toJSON(): JSONObject = JSONObject().also { result ->
-        result.putValue("valid", valid)
-        if (this is BasicOutput) {
-            result.putValue("keywordLocation", keywordLocation)
-            absoluteKeywordLocation?.let { result.putValue("absoluteKeywordLocation", it) }
-            result.putValue("instanceLocation", instanceLocation)
-            error?.let { result.putValue("error", it) }
-            annotation?.let { result.putValue("annotation", it) }
-            errors?.let {
-                result.put("errors", JSONArray(it.map { e -> e.toJSON() }))
-            }
-            annotations?.let {
-                result.put("annotations", JSONArray(it.map { e -> e.toJSON() }))
-            }
+    result.putValue("valid", valid)
+    if (this is BasicOutput) {
+        errors?.let {
+            result.put("errors", JSONArray(it.map { e -> e.toJSON() }))
         }
     }
+    if (this is DetailedOutput) {
+        result.putValue("keywordLocation", keywordLocation)
+        absoluteKeywordLocation?.let { result.putValue("absoluteKeywordLocation", it) }
+        result.putValue("instanceLocation", instanceLocation)
+        error?.let { result.putValue("error", it) }
+        annotation?.let { result.putValue("annotation", it) }
+        errors?.let {
+            result.put("errors", JSONArray(it.map { e -> e.toJSON() }))
+        }
+        annotations?.let {
+            result.put("annotations", JSONArray(it.map { e -> e.toJSON() }))
+        }
+    }
+}
+
+fun BasicErrorEntry.toJSON(): JSONObject = JSONObject().also { result ->
+    result.putValue("keywordLocation", keywordLocation)
+    absoluteKeywordLocation?.let { result.putValue("absoluteKeywordLocation", it) }
+    result.putValue("instanceLocation", instanceLocation)
+    result.putValue("error", error)
+}

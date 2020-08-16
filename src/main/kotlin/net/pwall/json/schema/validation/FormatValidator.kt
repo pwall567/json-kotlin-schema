@@ -31,7 +31,7 @@ import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.Output
+import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.validation.JSONValidation
 
 class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : JSONSchema.Validator(uri, location) {
@@ -60,12 +60,25 @@ class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : 
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("format")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output {
+    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         if (instance !is JSONString)
-            return trueOutput
+            return true
+        return validFormat(instance.get())
+    }
+
+    override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+            BasicErrorEntry? {
+        val instance = instanceLocation.eval(json)
+        if (instance !is JSONString)
+            return null
         val str = instance.get()
-        val result: Boolean = when (type) {
+        return if (validFormat(str)) null else createBasicErrorEntry(relativeLocation, instanceLocation,
+                "String fails format check: ${type.keyword}, was $str")
+    }
+
+    private fun validFormat(str: String): Boolean {
+        return when (type) {
             FormatType.DATE_TIME -> JSONValidation.isDateTime(str)
             FormatType.DATE -> JSONValidation.isDate(str)
             FormatType.TIME -> JSONValidation.isTime(str)
@@ -86,9 +99,12 @@ class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : 
             FormatType.RELATIVE_JSON_POINTER -> true
             FormatType.REGEX -> true
         }
-        return if (result) trueOutput else createError(relativeLocation, instanceLocation,
-                "String fails format check: ${type.keyword}, was $str")
     }
+
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is FormatValidator && super.equals(other) && type == other.type
+
+    override fun hashCode(): Int = super.hashCode() xor type.hashCode()
 
     companion object {
 

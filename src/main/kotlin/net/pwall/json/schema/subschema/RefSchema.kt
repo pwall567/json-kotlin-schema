@@ -1,5 +1,5 @@
 /*
- * @(#) ConstValidator.kt
+ * @(#) RefSchema.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -23,30 +23,38 @@
  * SOFTWARE.
  */
 
-package net.pwall.json.schema.validation
+package net.pwall.json.schema.subschema
 
 import java.net.URI
 
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.BasicErrorEntry
+import net.pwall.json.schema.output.BasicOutput
+import net.pwall.json.schema.output.DetailedOutput
 
-class ConstValidator(uri: URI?, location: JSONPointer, val value: JSONValue?) : JSONSchema.Validator(uri, location) {
+class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema) : JSONSchema.SubSchema(uri, location) {
 
-    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("const")
+    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("\$ref")
 
     override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean =
-        instanceLocation.eval(json) == value
+            target.validate(relativeLocation, json, instanceLocation)
 
-    override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
-            BasicErrorEntry? = instanceLocation.eval(json).let { if (it == value) null else
-                    createBasicErrorEntry(relativeLocation, instanceLocation,
-                            "Does not match constant: ${it.toErrorDisplay()}") }
+    override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+            BasicOutput = target.validateBasic(relativeLocation, json, instanceLocation)
 
-    override fun equals(other: Any?): Boolean =
-            this === other || other is ConstValidator && super.equals(other) && value == other.value
+    override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+            DetailedOutput {
+        val refResult = target.validateDetailed(relativeLocation, json, instanceLocation)
+        return if (refResult.valid)
+            createAnnotation(relativeLocation, instanceLocation, "\$ref schema valid")
+        else
+            createError(relativeLocation, instanceLocation, "\$ref schema invalid", listOf(refResult))
+    }
 
-    override fun hashCode(): Int = super.hashCode() xor value.hashCode()
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is RefSchema && super.equals(other) && target == other.target
+
+    override fun hashCode(): Int = super.hashCode() xor target.hashCode()
 
 }

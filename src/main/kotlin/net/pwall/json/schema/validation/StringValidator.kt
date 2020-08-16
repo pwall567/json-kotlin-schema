@@ -25,12 +25,13 @@
 
 package net.pwall.json.schema.validation
 
+import java.net.URI
+
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.Output
-import java.net.URI
+import net.pwall.json.schema.output.BasicErrorEntry
 
 class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {
@@ -42,16 +43,22 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(condition.keyword)
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output {
+    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONString)
-            return trueOutput
-        val result: Boolean = when (condition) {
-            ValidationType.MAX_LENGTH -> instance.length <= value
-            ValidationType.MIN_LENGTH -> instance.length >= value
-        }
-        return if (result) trueOutput else createError(relativeLocation, instanceLocation,
-                "String fails length check: ${condition.keyword} $value, was ${instance.length}")
+        return instance !is JSONString || validLength(instance)
+    }
+
+    override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+            BasicErrorEntry? {
+        val instance = instanceLocation.eval(json)
+        return if (instance !is JSONString || validLength(instance)) null else
+                createBasicErrorEntry(relativeLocation, instanceLocation,
+                        "String fails length check: ${condition.keyword} $value, was ${instance.length}")
+    }
+
+    private fun validLength(instance: JSONString): Boolean = when (condition) {
+        ValidationType.MAX_LENGTH -> instance.length <= value
+        ValidationType.MIN_LENGTH -> instance.length >= value
     }
 
     override fun equals(other: Any?): Boolean =

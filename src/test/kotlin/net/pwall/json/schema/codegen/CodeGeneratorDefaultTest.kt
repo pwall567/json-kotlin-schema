@@ -1,5 +1,5 @@
 /*
- * @(#) OutputResolver.kt
+ * @(#) CodeGeneratorDefaultTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -25,6 +25,40 @@
 
 package net.pwall.json.schema.codegen
 
-import java.io.Writer
+import kotlin.test.Test
+import kotlin.test.expect
 
-typealias OutputResolver = (String, List<String>, String, String) -> Writer
+import java.io.File
+import java.io.StringWriter
+
+class CodeGeneratorDefaultTest {
+
+    @Test fun `should output class with default value`() {
+        val input = File("src/test/resources/test-default.schema.json")
+        val codeGenerator = CodeGenerator()
+        codeGenerator.baseDirectoryName = "dummy"
+        val stringWriter = StringWriter()
+        codeGenerator.outputResolver =
+                CodeGeneratorTestUtil.outputCapture("dummy", emptyList(), "TestDefault", "kt", stringWriter)
+        codeGenerator.basePackageName = "com.example"
+        codeGenerator.generate(input)
+        expect(expectedDefault) { stringWriter.toString() }
+    }
+
+    companion object {
+
+        const val expectedDefault =
+"""package com.example
+
+
+data class TestDefault(
+        val aaa: Long = 8,
+        val bbb: String? = null,
+        val ccc: String = "CCC",
+        val ddd: List<Long> = listOf(123, 456)
+)
+"""
+
+    }
+
+}

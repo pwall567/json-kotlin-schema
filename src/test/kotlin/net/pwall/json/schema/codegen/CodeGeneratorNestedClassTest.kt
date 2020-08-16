@@ -1,5 +1,5 @@
 /*
- * @(#) OutputResolver.kt
+ * @(#) CodeGeneratorNestedClassTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -25,6 +25,46 @@
 
 package net.pwall.json.schema.codegen
 
-import java.io.Writer
+import kotlin.test.Test
+import kotlin.test.expect
 
-typealias OutputResolver = (String, List<String>, String, String) -> Writer
+import java.io.File
+import java.io.StringWriter
+
+class CodeGeneratorNestedClassTest {
+
+    @Test fun `should output deeply nested class`() {
+        val input = File("src/test/resources/test-nested-object.schema.json")
+        val codeGenerator = CodeGenerator()
+        codeGenerator.baseDirectoryName = "dummy"
+        val stringWriter = StringWriter()
+        codeGenerator.outputResolver =
+                CodeGeneratorTestUtil.outputCapture("dummy", emptyList(), "TestNestedObject", "kt", stringWriter)
+        codeGenerator.basePackageName = "com.example"
+        codeGenerator.generate(input)
+        expect(expectedNested) { stringWriter.toString() }
+    }
+
+    companion object {
+
+        const val expectedNested =
+"""package com.example
+
+data class TestNestedObject(
+        val nested: Nested
+) {
+
+    data class Nested(
+            val deeper: Deeper
+    )
+
+    data class Deeper(
+            val deepest: String
+    )
+
+}
+"""
+
+    }
+
+}

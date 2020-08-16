@@ -7,7 +7,8 @@
  */
 {{/description}}data class {{&nameFromURI}}(
 {{#properties}}{{#schema}}{{#description}}        /** {{&safeDescription}} */
-{{/description}}{{/schema}}        val {{&name}}: {{>type}}{{#nullable}}? = null{{/nullable}}{{^last}},{{/last}}
+{{/description}}{{/schema}}        val {{&name}}: {{>type}}{{^isRequired}} = {{!
+}}{{#defaultValue}}{{>default_value}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}{{/isRequired}}{{^last}},{{/last}}
 {{/properties}}){{#validationsOrNestedClassesPresent}} {
 {{#validationsPresent}}
     init {

@@ -1,5 +1,5 @@
 /*
- * @(#) NamedConstraints.kt
+ * @(#) CodeGeneratorExampleTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -25,27 +25,51 @@
 
 package net.pwall.json.schema.codegen
 
-import net.pwall.json.schema.JSONSchema
-import net.pwall.util.Strings
+import kotlin.test.Test
+import kotlin.test.expect
 
-class NamedConstraints(schema: JSONSchema, val name: String) : Constraints(schema) {
+import java.io.File
+import java.io.StringWriter
 
-    var overridingName: String? = null
+class CodeGeneratorExampleTest {
 
-    @Suppress("unused")
-    val propertyName: String
-        get() = name
+    @Test fun `should output example data class`() {
+        val input = File("src/test/resources/example.schema.json")
+        val codeGenerator = CodeGenerator()
+        codeGenerator.baseDirectoryName = "dummy"
+        val stringWriter = StringWriter()
+        codeGenerator.outputResolver =
+                CodeGeneratorTestUtil.outputCapture("dummy", emptyList(), "Test", "kt", stringWriter)
+        codeGenerator.basePackageName = "com.example"
+        codeGenerator.generate(input)
+        expect(expectedExample) { stringWriter.toString() }
+    }
 
-    @Suppress("unused")
-    val capitalisedName: String
-        get() = Strings.capitalise(name)
+    companion object {
 
-    @Suppress("unused")
-    val className: String
-        get() = overridingName ?: capitalisedName
+        const val expectedExample =
+"""package com.example
 
-    @Suppress("unused")
-    val nameFromURIOrName: String
-        get() = nameFromURI ?: capitalisedName
+import java.math.BigDecimal
+
+data class Test(
+        /** Product identifier */
+        val id: BigDecimal,
+        /** Name of the product */
+        val name: String,
+        val price: BigDecimal,
+        val tags: List<String>? = null,
+        val stock: Stock? = null
+) {
+
+    data class Stock(
+            val warehouse: BigDecimal? = null,
+            val retail: BigDecimal? = null
+    )
+
+}
+"""
+
+    }
 
 }

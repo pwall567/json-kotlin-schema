@@ -15,5 +15,6 @@
       "minimum": 0,
       "maximum": 120
     }
-  }
+  },
+  "required": [ "name", "age" ]
 }

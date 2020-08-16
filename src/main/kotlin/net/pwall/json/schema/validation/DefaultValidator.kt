@@ -1,5 +1,5 @@
 /*
- * @(#) RequiredValidator.kt
+ * @(#) DefaultValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -25,34 +25,23 @@
 
 package net.pwall.json.schema.validation
 
-import net.pwall.json.JSONObject
+import java.net.URI
+
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.Output
-import java.net.URI
+import net.pwall.json.schema.output.BasicErrorEntry
 
-class RequiredValidator(uri: URI?, location: JSONPointer, val properties: List<String>) :
-        JSONSchema.Validator(uri, location) {
+class DefaultValidator(uri: URI?, location: JSONPointer, val value: JSONValue?) : JSONSchema.Validator(uri, location) {
 
-    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("required")
+    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) = true
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONObject)
-            return trueOutput
-        val errors = mutableListOf<Output>()
-        properties.forEachIndexed { i, propertyName ->
-            if (!instance.containsKey(propertyName))
-                errors.add(createErrorForChild(i, relativeLocation.child(i), instanceLocation,
-                        "Required property \"$propertyName\" was missing"))
-        }
-        return validationResult(relativeLocation, instanceLocation, errors)
-    }
+    override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+            BasicErrorEntry? = null
 
-    override fun equals(other: Any?): Boolean =
-            this === other || other is RequiredValidator && super.equals(other) && properties == other.properties
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is DefaultValidator && super.equals(other) && value == other.value
 
-    override fun hashCode(): Int = super.hashCode() xor properties.hashCode()
+    override fun hashCode(): Int = super.hashCode() xor value.hashCode()
 
 }

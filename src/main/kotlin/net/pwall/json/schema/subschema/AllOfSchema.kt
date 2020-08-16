@@ -1,5 +1,5 @@
 /*
- * @(#) ItemValidator.kt
+ * @(#) AllOfSchema.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -23,36 +23,25 @@
  * SOFTWARE.
  */
 
-package net.pwall.json.schema.validation
+package net.pwall.json.schema.subschema
 
-import net.pwall.json.JSONArray
+import java.net.URI
+
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.Output
-import java.net.URI
 
-class ItemValidator(uri: URI?, location: JSONPointer, val itemSchema: JSONSchema) :
-        JSONSchema.Validator(uri, location) {
+class AllOfSchema(uri: URI?, location: JSONPointer, array: List<JSONSchema>) :
+        CombinationSchema(uri, location, "allOf", array) {
 
-    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("items")
+    override fun resultValid(trueCount: Int): Boolean = trueCount == array.size
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Output {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
-            return trueOutput
-        val errors = mutableListOf<Output>()
-        for (i in instance.indices) {
-            val itemResult = itemSchema.validate(relativeLocation, json, instanceLocation.child(i))
-            if (!itemResult.valid)
-                errors.add(itemResult)
+    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+        array.forEachIndexed { i, schema ->
+            if (!schema.validate(relativeLocation.child(i), json, instanceLocation))
+                return false
         }
-        return validationResult(relativeLocation, instanceLocation, errors)
+        return true
     }
-
-    override fun equals(other: Any?): Boolean =
-            this === other || other is ItemValidator && super.equals(other) && itemSchema == other.itemSchema
-
-    override fun hashCode(): Int = super.hashCode() xor itemSchema.hashCode()
 
 }

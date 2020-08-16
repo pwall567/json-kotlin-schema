@@ -1,5 +1,5 @@
 /*
- * @(#) OutputResolver.kt
+ * @(#) BasicOutput.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -23,8 +23,22 @@
  * SOFTWARE.
  */
 
-package net.pwall.json.schema.codegen
+package net.pwall.json.schema.output
 
-import java.io.Writer
+class BasicOutput(
+        valid: Boolean,
+        val errors: List<BasicErrorEntry>? = null
+) : Output(valid) {
 
-typealias OutputResolver = (String, List<String>, String, String) -> Writer
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is BasicOutput && super.equals(other) && errors == other.errors
+
+    override fun hashCode(): Int = super.hashCode() xor errors.hashCode()
+
+    companion object {
+
+        val trueOutput = BasicOutput(true)
+
+    }
+
+}

@@ -1,12 +1,38 @@
+/*
+ * @(#) Constraints.kt
+ *
+ * json-kotlin-schema Kotlin implementation of JSON Schema
+ * Copyright (c) 2020 Peter Wall
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package net.pwall.json.schema.codegen
+
+import java.math.BigDecimal
+import java.net.URI
 
 import net.pwall.json.JSONArray
 import net.pwall.json.JSONValue
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.validation.FormatValidator
 import net.pwall.util.Strings
-import java.math.BigDecimal
-import java.net.URI
 
 open class Constraints(val schema: JSONSchema) {
 
@@ -20,6 +46,7 @@ open class Constraints(val schema: JSONSchema) {
 
     var localTypeName: String? = null
 
+    @Suppress("unused")
     val isLocalType: Boolean
         get() = localTypeName != null
 
@@ -29,7 +56,12 @@ open class Constraints(val schema: JSONSchema) {
 
     var nullable: Boolean? = null
 
+    var isRequired = false
+
+    var defaultValue: DefaultValue? = null
+
     val properties = mutableListOf<NamedConstraints>()
+
     val required = mutableListOf<String>()
 
     var arrayItems: Constraints? = null
@@ -88,6 +120,7 @@ open class Constraints(val schema: JSONSchema) {
     @Suppress("unused")
     val nameFromURI: String? by lazy {
         uri?.let {
+            // TODO change to allow name ending with "/schema"
             val uriName = it.toString().substringBefore('#').substringAfterLast('/')
             val uriNameWithoutSuffix = when {
                 uriName.endsWith(".schema.json", ignoreCase = true) -> uriName.dropLast(12)
@@ -194,7 +227,23 @@ open class Constraints(val schema: JSONSchema) {
         return true
     }
 
-    enum class SystemClass { LIST, DECIMAL, DATE, DATE_TIME, TIME, DURATION, UUID, VALIDATION }
+    data class DefaultValue(val defaultValue: Any?, val type: JSONSchema.Type)
+
+    enum class SystemClass(val order: Int) {
+        // collections etc.
+        LIST(0),
+        // math etc.
+        DECIMAL(20),
+        // date, time etc.
+        DATE(40),
+        DATE_TIME(41),
+        TIME(42),
+        DURATION(45),
+        // utility
+        UUID(60),
+        // local
+        VALIDATION(90)
+    }
 
     companion object {
 

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-default",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "integer",
+      "default": 8
+    },
+    "bbb": {
+      "type": [ "string", "null" ],
+      "default": null
+    },
+    "ccc": {
+      "type": "string",
+      "default": "CCC"
+    },
+    "ddd": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "default": [ 123, 456 ]
+    }
+  }
+}

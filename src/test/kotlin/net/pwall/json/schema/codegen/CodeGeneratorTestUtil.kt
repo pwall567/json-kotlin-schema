@@ -1,5 +1,5 @@
 /*
- * @(#) OutputResolver.kt
+ * @(#) CodeGeneratorTestUtil.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -25,6 +25,20 @@
 
 package net.pwall.json.schema.codegen
 
-import java.io.Writer
+import kotlin.test.fail
 
-typealias OutputResolver = (String, List<String>, String, String) -> Writer
+import java.io.StringWriter
+
+object CodeGeneratorTestUtil {
+
+    fun outputCapture(expectedBaseDirectory: String, expectedSubdirectories: List<String>, expectedClassName: String,
+            expectedSuffix: String, stringWriter: StringWriter): OutputResolver =
+            { baseDirectory, subDirectories, className, suffix ->
+        if (baseDirectory == expectedBaseDirectory && subDirectories == expectedSubdirectories &&
+                className == expectedClassName && suffix == expectedSuffix)
+            stringWriter
+        else
+            fail("Output resolver fail - $baseDirectory $subDirectories $className $suffix")
+    }
+
+}

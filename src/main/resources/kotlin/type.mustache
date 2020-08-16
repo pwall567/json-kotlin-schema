@@ -5,12 +5,13 @@
 }}{{#DATE}}LocalDate{{/DATE}}{{! is it a TIME?
 }}{{#TIME}}OffsetTime{{/TIME}}{{! is it a DURATION?
 }}{{#DURATION}}Duration{{/DURATION}}{{! is it a UUID?
-}}{{#UUID}}UUID{{/UUID}}{{/systemClass}}{{/isSystemClass}}{{^isSystemClass}}{{! is it a string?
+}}{{#UUID}}UUID{{/UUID}}{{/systemClass}}{{/isSystemClass}}{{^isSystemClass}}{{! is it a local type
+}}{{#isLocalType}}{{&localTypeName}}{{/isLocalType}}{{^isLocalType}}{{! is it a string?
 }}{{#isString}}String{{/isString}}{{^isString}}{{! is it an int?
 }}{{#isInt}}Int{{/isInt}}{{^isInt}}{{! is it a long?
 }}{{#isLong}}Long{{/isLong}}{{^isLong}}{{! is it a decimal?
 }}{{#isDecimal}}BigDecimal{{/isDecimal}}{{^isDecimal}}{{! is it a boolean?
 }}{{#isBoolean}}Boolean{{/isBoolean}}{{^isBoolean}}{{! is it an array?
-}}{{#isArray}}List<{{#arrayItems}}{{>type}}{{/arrayItems}}>{{/isArray}}{{^isArray}}{{! is it a local type
-}}{{#isLocalType}}{{&localTypeName}}{{/isLocalType}}{{^isLocalType}}{{! default Any
-}}Any{{/isLocalType}}{{/isArray}}{{/isBoolean}}{{/isDecimal}}{{/isLong}}{{/isInt}}{{/isString}}{{/isSystemClass}}
+}}{{#isArray}}List<{{#arrayItems}}{{>type}}{{/arrayItems}}>{{/isArray}}{{^isArray}}{{! default Any
+}}Any{{/isArray}}{{/isBoolean}}{{/isDecimal}}{{/isLong}}{{/isInt}}{{/isString}}{{/isLocalType}}{{/isSystemClass}}{{!
+}}{{#nullable}}?{{/nullable}}

@@ -1,19 +1,52 @@
+/*
+ * @(#) CodeGenerator.kt
+ *
+ * json-kotlin-schema Kotlin implementation of JSON Schema
+ * Copyright (c) 2020 Peter Wall
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package net.pwall.json.schema.codegen
 
 import java.io.File
 
+import net.pwall.json.JSONArray
+import net.pwall.json.JSONBoolean
+import net.pwall.json.JSONInteger
+import net.pwall.json.JSONObject
+import net.pwall.json.JSONString
+import net.pwall.json.JSONValue
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.parser.Parser
+import net.pwall.json.schema.subschema.CombinationSchema
+import net.pwall.json.schema.subschema.ItemSchema
+import net.pwall.json.schema.subschema.PropertySchema
+import net.pwall.json.schema.subschema.RefSchema
+import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ConstValidator
+import net.pwall.json.schema.validation.DefaultValidator
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.FormatValidator
-import net.pwall.json.schema.validation.ItemValidator
 import net.pwall.json.schema.validation.NumberValidator
 import net.pwall.json.schema.validation.PatternValidator
-import net.pwall.json.schema.validation.PropertyValidator
-import net.pwall.json.schema.validation.RefValidator
-import net.pwall.json.schema.validation.RequiredValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 import net.pwall.mustache.Template
@@ -25,6 +58,8 @@ class CodeGenerator(
         var baseDirectoryName: String = ".",
         var derivePackageFromStructure: Boolean = true
 ) {
+
+    var generatedClassNumber = 0
 
     var schemaParser: Parser? = null
 
@@ -112,7 +147,7 @@ class CodeGenerator(
                 subDirectories.forEach { packageName = if (packageName.isNullOrEmpty()) it else "$packageName.$it" }
             constraints.packageName = packageName
             constraints.description = schema.description
-            val className = constraints.nameFromURI ?: "GeneratedClass"
+            val className = constraints.nameFromURI ?: "GeneratedClass${++generatedClassNumber}"
             actualOutputResolver(baseDirectoryName, subDirectories, className, suffix).use {
                 actualTemplate.processTo(it, constraints)
             }
@@ -125,6 +160,8 @@ class CodeGenerator(
         if (!constraints.isObject)
             return null
         analyseConstraints(constraints, constraints)
+        constraints.systemClasses.sortBy { it.order }
+        constraints.imports.sort()
         return constraints
     }
 
@@ -146,13 +183,12 @@ class CodeGenerator(
                 }
                 parentConstraints.nestedClasses.add(property)
                 analyseConstraints(parentConstraints, property)
-                property.localTypeName = property.capitalisedName
-                if (property.name !in constraints.required)
-                    property.nullable = true
+                property.localTypeName = property.className
             }
             if (property.isArray) {
                 parentConstraints.systemClasses.addOnce(Constraints.SystemClass.LIST)
                 property.arrayItems?.let { analyseConstraints(parentConstraints, it) }
+                // TODO - minItems, maxItems etc.
             }
             if (property.isInt) {
                 if (property.maximum != null || property.exclusiveMaximum != null || property.minimum != null ||
@@ -188,12 +224,24 @@ class CodeGenerator(
                     }
                     else -> {}
                 }
+                if (property.enumValues != null || property.constValue != null) {
+                    // TODO ...
+                    // should enums (and const) cause an enum class to be created? or a string with a value check?
+                }
+                if (property.regex != null) {
+                    // TODO ...
+                }
             }
             if (property.isDecimal) {
                 parentConstraints.systemClasses.addOnce(Constraints.SystemClass.DECIMAL)
                 property.systemClass = Constraints.SystemClass.DECIMAL
             }
-            // TODO - more validation types (enum, const, pattern); nested structures
+            // TODO - more validation types (enum, const, pattern)
+            when {
+                property.name in constraints.required -> property.isRequired = true
+                property.nullable == true || property.defaultValue != null -> {}
+                else -> property.nullable = true // should be error, but that would be unhelpful
+            }
         }
     }
 
@@ -207,31 +255,49 @@ class CodeGenerator(
             is JSONSchema.True -> throw JSONSchemaException("Can't generate code for \"true\" schema")
             is JSONSchema.False -> throw JSONSchemaException("Can't generate code for \"false\" schema")
             is JSONSchema.Not -> throw JSONSchemaException("Can't generate code for \"not\" schema")
-            is JSONSchema.ArrayValidator -> processArrayValidator(schema, constraints)
+            is JSONSchema.SubSchema -> processSubSchema(schema, constraints)
             is JSONSchema.Validator -> processValidator(schema, constraints)
             is JSONSchema.General -> processGeneral(schema, constraints)
         }
     }
 
-    private fun processArrayValidator(arrayValidator: JSONSchema.ArrayValidator, constraints: Constraints) {
-        if (arrayValidator.name != "allOf") // can only handle allOf currently
-            throw JSONSchemaException("Can't generate code for \"${arrayValidator.name}\" schema")
-        arrayValidator.array.forEach { processSchema(it, constraints) }
+    private fun processDefaultValue(value: JSONValue?): Constraints.DefaultValue =
+            when (value) {
+                null -> Constraints.DefaultValue(null, JSONSchema.Type.NULL)
+                is JSONInteger -> Constraints.DefaultValue(value.get(), JSONSchema.Type.INTEGER)
+                is JSONString -> Constraints.DefaultValue(value.toJSON(), JSONSchema.Type.STRING)
+                is JSONBoolean -> Constraints.DefaultValue(value.get(), JSONSchema.Type.BOOLEAN)
+                is JSONArray -> Constraints.DefaultValue(value.map { processDefaultValue(it) }, JSONSchema.Type.ARRAY)
+                is JSONObject -> throw JSONSchemaException("Can't handle object as default value")
+                else -> throw JSONSchemaException("Unexpected default value")
+            }
+
+    private fun processSubSchema(subSchema: JSONSchema.SubSchema, constraints: Constraints) {
+        when (subSchema) {
+            is CombinationSchema -> processCombinationSchema(subSchema, constraints)
+            is ItemSchema -> processSchema (subSchema.itemSchema,
+                    constraints.arrayItems ?: Constraints(subSchema.itemSchema).also { constraints.arrayItems = it })
+            is PropertySchema -> processPropertySchema(subSchema, constraints)
+            is RefSchema -> processSchema(subSchema.target, constraints)
+            is RequiredSchema -> subSchema.properties.forEach {
+                    if (it !in constraints.required) constraints.required.add(it) }
+        }
+    }
+
+    private fun processCombinationSchema(combinationSchema: CombinationSchema, constraints: Constraints) {
+        if (combinationSchema.name != "allOf") // can only handle allOf currently
+            throw JSONSchemaException("Can't generate code for \"${combinationSchema.name}\" schema")
+        combinationSchema.array.forEach { processSchema(it, constraints) }
     }
 
     private fun processValidator(validator: JSONSchema.Validator, constraints: Constraints) {
         when (validator) {
+            is DefaultValidator -> constraints.defaultValue = processDefaultValue(validator.value)
             is ConstValidator -> processConstValidator(validator, constraints)
             is EnumValidator -> processEnumValidator(validator, constraints)
             is FormatValidator -> processFormatValidator(validator, constraints)
-            is ItemValidator -> processSchema (validator.itemSchema,
-                    constraints.arrayItems ?: Constraints(validator.itemSchema).also { constraints.arrayItems = it })
             is NumberValidator -> processNumberValidator(validator, constraints)
             is PatternValidator -> processPatternValidator(validator, constraints)
-            is PropertyValidator -> processPropertyValidator(validator, constraints)
-            is RefValidator -> processSchema(validator.target, constraints)
-            is RequiredValidator -> validator.properties.forEach {
-                    if (it !in constraints.required) constraints.required.add(it) }
             is StringValidator -> processStringValidator(validator, constraints)
             is TypeValidator -> processTypeValidator(validator, constraints)
         }
@@ -285,8 +351,8 @@ class CodeGenerator(
         }
     }
 
-    private fun processPropertyValidator(propertyValidator: PropertyValidator, constraints: Constraints) {
-        propertyValidator.properties.forEach { (name, schema) ->
+    private fun processPropertySchema(propertySchema: PropertySchema, constraints: Constraints) {
+        propertySchema.properties.forEach { (name, schema) ->
             val propertyConstraints = constraints.properties.find { it.name == name } ?:
                     NamedConstraints(schema, name).also { constraints.properties.add(it) }
             processSchema(schema, propertyConstraints)

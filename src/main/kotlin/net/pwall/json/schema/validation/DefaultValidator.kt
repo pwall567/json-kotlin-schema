@@ -34,7 +34,7 @@ import net.pwall.json.schema.output.BasicErrorEntry
 
 class DefaultValidator(uri: URI?, location: JSONPointer, val value: JSONValue?) : JSONSchema.Validator(uri, location) {
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) = true
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer) = true
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? = null

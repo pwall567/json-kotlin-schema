@@ -37,7 +37,7 @@ class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONArray) : JS
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("enum")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         array.forEach { if (instance == it) return true }
         return false

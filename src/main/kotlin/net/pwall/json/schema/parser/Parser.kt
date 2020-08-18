@@ -47,6 +47,7 @@ import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.subschema.IfThenElseSchema
 import net.pwall.json.schema.subschema.ItemSchema
 import net.pwall.json.schema.subschema.PropertySchema
 import net.pwall.json.schema.subschema.RefSchema
@@ -137,7 +138,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         for (entry in schemaJSON.entries) {
             when (entry.key) {
                 "\$ref" -> children.add(parseRef(json, pointer.child("type"), uri, entry.value))
-                "\$defs", "\$schema", "\$id", "\$comment", "title", "description" -> {}
+                "\$defs", "\$schema", "\$id", "\$comment", "title", "description", "then", "else" -> {}
                 "default" -> children.add(DefaultValidator(uri, pointer.child("default"), entry.value))
                 "allOf" -> children.add(parseCombinationSchema(json, pointer.child("allOf"), uri, entry.value,
                         JSONSchema.Companion::allOf))
@@ -147,6 +148,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                         JSONSchema.Companion::oneOf))
                 "not" -> children.add(JSONSchema.Not(uri, pointer.child("not"),
                         parseSchema(json, pointer.child("not"), uri)))
+                "if" -> children.add(parseIf(json, pointer, uri))
                 "type" -> children.add(parseType(pointer.child("type"), uri, entry.value))
                 "enum" -> children.add(parseEnum(pointer.child("enum"), uri, entry.value))
                 "const" -> children.add(parseConst(pointer.child("const"), uri, entry.value))
@@ -176,6 +178,13 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         val result = JSONSchema.General(schemaVersion201909[0], title, description, uri, pointer, children)
         uri?.let { schemaCache[uri.resolve(pointer.toURIFragment())] = result }
         return result
+    }
+
+    private fun parseIf(json: JSONValue, pointer: JSONPointer, uri: URI?): JSONSchema {
+        val ifSchema = parseSchema(json, pointer.child("if"), uri)
+        val thenSchema = pointer.child("then").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
+        val elseSchema = pointer.child("else").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
+        return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
     private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,

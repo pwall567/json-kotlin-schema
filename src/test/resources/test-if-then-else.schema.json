@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-if-then-else",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "string"
+    }
+  },
+  "if": {
+    "properties": {
+      "aaa": {
+        "const": "U"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "bbb": {
+        "format": "uuid"
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "bbb": {
+        "format": "date-time"
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ class RequiredSchema(uri: URI?, location: JSONPointer, val properties: List<Stri
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("required")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         if (instance !is JSONObject)
             return true

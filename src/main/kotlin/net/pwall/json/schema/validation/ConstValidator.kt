@@ -36,7 +36,7 @@ class ConstValidator(uri: URI?, location: JSONPointer, val value: JSONValue?) : 
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("const")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean =
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean =
         instanceLocation.eval(json) == value
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):

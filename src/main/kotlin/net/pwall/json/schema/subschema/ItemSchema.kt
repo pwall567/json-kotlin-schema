@@ -39,12 +39,12 @@ class ItemSchema(uri: URI?, location: JSONPointer, val itemSchema: JSONSchema) :
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("items")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         if (instance !is JSONArray)
             return true
         for (i in instance.indices)
-            if (!itemSchema.validate(relativeLocation, json, instanceLocation.child(i)))
+            if (!itemSchema.validate(json, instanceLocation.child(i)))
                 return false
         return true
     }

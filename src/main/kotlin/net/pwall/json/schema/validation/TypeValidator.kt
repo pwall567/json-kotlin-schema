@@ -44,7 +44,7 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("type")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         for (type in types) {
             when (type) {
@@ -62,7 +62,7 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
-            BasicErrorEntry? = if (validate(relativeLocation, json, instanceLocation)) null else
+            BasicErrorEntry? = if (validate(json, instanceLocation)) null else
                     createBasicErrorEntry(relativeLocation, instanceLocation,
                             "Incorrect type, expected ${types.joinToString(separator = " or ") { it.value }}")
 

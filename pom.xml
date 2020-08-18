@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.4</version>
+  <version>0.5-SNAPSHOT</version>
   <name>Kotlin implementation of JSON Schema</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
@@ -71,11 +71,6 @@
       <groupId>net.pwall.json</groupId>
       <artifactId>jsonutil</artifactId>
       <version>3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>net.pwall.mustache</groupId>
-      <artifactId>kotlin-mustache</artifactId>
-      <version>0.5</version>
     </dependency>
     <dependency>
       <groupId>net.pwall.util</groupId>

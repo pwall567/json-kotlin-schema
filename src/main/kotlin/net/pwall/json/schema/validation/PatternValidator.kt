@@ -37,7 +37,7 @@ class PatternValidator(uri: URI?, location: JSONPointer, val regex: Regex) : JSO
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("pattern")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         return instance !is JSONString || instance.get() matches regex
     }

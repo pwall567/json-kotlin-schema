@@ -2,6 +2,14 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.5] - 2020-08-18
+### Added
+- `if` / `then` / `else` schema constructs
+### Changed
+- simplified interface to `validate()`
+### Removed
+- code generation classes - moved to separate project `json-kotlin-schema-codegen`
+
 ## [0.4] - 2020-08-16
 ### Changed
 - Multiple changes, including separation of `validate`, `validateBasic`, `validateDetailed` and their respective

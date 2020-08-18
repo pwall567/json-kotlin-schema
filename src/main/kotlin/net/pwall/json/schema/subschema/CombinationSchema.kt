@@ -33,7 +33,6 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
-import net.pwall.json.schema.output.Output
 
 abstract class CombinationSchema(uri: URI?, location: JSONPointer, val name: String, val array: List<JSONSchema>) :
         JSONSchema.SubSchema(uri, location) {
@@ -41,15 +40,6 @@ abstract class CombinationSchema(uri: URI?, location: JSONPointer, val name: Str
     abstract fun resultValid(trueCount: Int): Boolean
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(name)
-
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        var trueCount = 0
-        array.forEachIndexed { i, schema ->
-            if (schema.validate(relativeLocation.child(i), json, instanceLocation))
-                trueCount++
-        }
-        return resultValid(trueCount)
-    }
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
@@ -71,8 +61,8 @@ abstract class CombinationSchema(uri: URI?, location: JSONPointer, val name: Str
 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
-        val errors = mutableListOf<Output>()
-        val annotations = mutableListOf<Output>()
+        val errors = mutableListOf<DetailedOutput>()
+        val annotations = mutableListOf<DetailedOutput>()
         var trueCount = 0
         array.forEachIndexed { i, schema ->
             schema.validateDetailed(relativeLocation.child(i), json, instanceLocation).let {

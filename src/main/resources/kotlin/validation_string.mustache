@@ -1,8 +1,0 @@
-{{#format}}{{#DATE_TIME}}        require(JSONValidation.isDateTime({{&propertyName}})) { "{{&propertyName}} does not match format date-time - ${{&propertyName}}" }
-{{/DATE_TIME}}{{#DATE}}        require(JSONValidation.isDate({{&propertyName}})) { "{{&propertyName}} does not match format date - ${{&propertyName}}" }
-{{/DATE}}{{#TIME}}        require(JSONValidation.isTime({{&propertyName}})) { "{{&propertyName}} does not match format time - ${{&propertyName}}" }
-{{/TIME}}{{#DURATION}}        require(JSONValidation.isDuration({{&propertyName}})) { "{{&propertyName}} does not match format duration - ${{&propertyName}}" }
-{{/DURATION}}{{#EMAIL}}        require(JSONValidation.isEmail({{&propertyName}})) { "{{&propertyName}} does not match format email - ${{&propertyName}}" }
-{{/EMAIL}}{{#HOSTNAME}}        require(JSONValidation.isHostname({{&propertyName}})) { "{{&propertyName}} does not match format hostname - ${{&propertyName}}" }
-{{/HOSTNAME}}{{#UUID}}        require(JSONValidation.isUUID({{&propertyName}})) { "{{&propertyName}} does not match format uuid - ${{&propertyName}}" }
-{{/UUID}}{{/format}}

@@ -37,8 +37,8 @@ class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema) : JSON
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("\$ref")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean =
-            target.validate(relativeLocation, json, instanceLocation)
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean =
+            target.validate(json, instanceLocation)
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput = target.validateBasic(relativeLocation, json, instanceLocation)

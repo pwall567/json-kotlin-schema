@@ -60,7 +60,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : 
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("format")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         if (instance !is JSONString)
             return true
@@ -74,7 +74,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : 
             return null
         val str = instance.get()
         return if (validFormat(str)) null else createBasicErrorEntry(relativeLocation, instanceLocation,
-                "String fails format check: ${type.keyword}, was $str")
+                "String fails format check \"${type.keyword}\", was \"$str\"")
     }
 
     private fun validFormat(str: String): Boolean {

@@ -36,10 +36,10 @@ class OneOfSchema(uri: URI?, location: JSONPointer, array: List<JSONSchema>) :
 
     override fun resultValid(trueCount: Int): Boolean = trueCount == 1
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         var oneTrue = false
-        array.forEachIndexed { i, schema ->
-            if (schema.validate(relativeLocation.child(i), json, instanceLocation)) {
+        for (schema in array) {
+            if (schema.validate(json, instanceLocation)) {
                 if (oneTrue)
                     return false
                 oneTrue = true

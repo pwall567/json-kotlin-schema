@@ -51,7 +51,7 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(condition.keyword)
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         return instance !is JSONNumberValue || validNumber(instance)
     }

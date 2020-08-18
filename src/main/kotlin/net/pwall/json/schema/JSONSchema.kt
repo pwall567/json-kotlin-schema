@@ -76,16 +76,13 @@ sealed class JSONSchema(
 
     open fun childLocation(pointer: JSONPointer): JSONPointer = pointer
 
-    abstract fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean
+    abstract fun validate(json: JSONValue?, instanceLocation: JSONPointer = JSONPointer.root): Boolean
 
     abstract fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput
 
     abstract fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput
-
-    fun validate(json: JSONValue?, instanceLocation: JSONPointer = JSONPointer.root) =
-            validate(JSONPointer.root, json, instanceLocation)
 
     fun validateBasic(json: JSONValue?, instanceLocation: JSONPointer = JSONPointer.root) =
             validateBasic(JSONPointer.root, json, instanceLocation)
@@ -94,7 +91,7 @@ sealed class JSONSchema(
             validateDetailed(JSONPointer.root, json, instanceLocation)
 
     fun validate(json: String, instanceLocation: JSONPointer = JSONPointer.root) =
-            validate(JSONPointer.root, JSON.parse(json), instanceLocation)
+            validate(JSON.parse(json), instanceLocation)
 
     fun validateBasic(json: String, instanceLocation: JSONPointer = JSONPointer.root) =
             validateBasic(JSONPointer.root, JSON.parse(json), instanceLocation)
@@ -130,7 +127,7 @@ sealed class JSONSchema(
     @Suppress("EqualsOrHashCode")
     class True(uri: URI?, location: JSONPointer) : JSONSchema(uri, location) {
 
-        override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) = true
+        override fun validate(json: JSONValue?, instanceLocation: JSONPointer) = true
 
         override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) =
                 BasicOutput.trueOutput
@@ -145,7 +142,7 @@ sealed class JSONSchema(
     @Suppress("EqualsOrHashCode")
     class False(uri: URI?, location: JSONPointer) : JSONSchema(uri, location) {
 
-        override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) = false
+        override fun validate(json: JSONValue?, instanceLocation: JSONPointer) = false
 
         override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) =
                 createBasicError(relativeLocation, instanceLocation, "Constant schema \"false\"")
@@ -161,8 +158,8 @@ sealed class JSONSchema(
 
         override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("not")
 
-        override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer) =
-                !nested.validate(relativeLocation, json, instanceLocation)
+        override fun validate(json: JSONValue?, instanceLocation: JSONPointer) =
+                !nested.validate(json, instanceLocation)
 
         override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
                 BasicOutput {
@@ -198,9 +195,6 @@ sealed class JSONSchema(
         abstract fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
                 BasicErrorEntry?
 
-        override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
-                Boolean = getErrorEntry(relativeLocation, json, instanceLocation) == null
-
         override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
                 BasicOutput {
             val result = getErrorEntry(relativeLocation, json, instanceLocation)
@@ -224,9 +218,9 @@ sealed class JSONSchema(
     class General(val schemaVersion: String, override val title: String?, override val description: String?, uri: URI?,
             location: JSONPointer, val children: List<JSONSchema>) : JSONSchema(uri, location) {
 
-        override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+        override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
             for (child in children)
-                if (!child.validate(child.childLocation(relativeLocation), json, instanceLocation))
+                if (!child.validate(json, instanceLocation))
                     return false
             return true
         }
@@ -271,9 +265,9 @@ sealed class JSONSchema(
 
         val parser by lazy { Parser() }
 
-        fun parse(filename: String): JSONSchema = parser.parseFile(filename)
+        fun parseFile(filename: String): JSONSchema = parser.parseFile(filename)
 
-//        fun parse(file: File): JSONSchema = parser.parse(file)
+        fun parse(file: File): JSONSchema = parser.parse(file)
 
         fun allOf(uri: URI?, location: JSONPointer, array: List<JSONSchema>) = AllOfSchema(uri, location, array)
 

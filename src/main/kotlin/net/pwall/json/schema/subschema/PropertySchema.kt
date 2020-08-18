@@ -40,14 +40,13 @@ class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("properties")
 
-    override fun validate(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer): Boolean {
+    override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
         if (instance !is JSONObject)
             return true
         properties.forEach { (propertyName, propertySchema) ->
             if (instance.containsKey(propertyName)) {
-                if (!propertySchema.validate(relativeLocation.child(propertyName), json,
-                                instanceLocation.child(propertyName)))
+                if (!propertySchema.validate(json, instanceLocation.child(propertyName)))
                     return false
             }
         }

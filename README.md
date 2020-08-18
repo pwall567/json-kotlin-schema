@@ -68,29 +68,71 @@ the following code will validate that the JSON matches the scheam:
     require(schema.validate(json))
 ```
 
+## Implemented Subset
+
+This implementation does not implement the full JSON Schema specification.
+The currently implemented subset includes:
+
+### Core
+
+- $schema
+- $id
+- $defs
+- $comment
+- title
+- description
+
+### Structure
+
+- properties
+- items
+- allOf
+- anyOf
+- oneOf
+- if
+- then
+- else
+- default
+
+### Validation
+
+- type (null, boolean, object, array, number, string, integer)
+- format (date-time, date, time, duration, email, hostname, uuid)
+- enum
+- const
+- multipleOf
+- maximum
+- exclusiveMaximum
+- minimum
+- exclusiveMinimum
+- maxLength
+- minLength
+- pattern
+- required
+
 More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.4, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.5, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.4</version>
+      <version>0.5</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.4'
+    implementation 'net.pwall.json:json-kotlin-schema:0.5'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.4")
+    implementation("net.pwall.json:json-kotlin-schema:0.5")
 ```
 
 Peter Wall
 
-2020-08-16
+2020-08-18

@@ -75,40 +75,69 @@ The currently implemented subset includes:
 
 ### Core
 
-- $schema
-- $id
-- $defs
-- $comment
-- title
-- description
+- `$schema`
+- `$id`
+- `$defs`
+- `$comment`
+- `title`
+- `description`
 
 ### Structure
 
-- properties
-- items
-- allOf
-- anyOf
-- oneOf
-- if
-- then
-- else
-- default
+- `properties`
+- `items`
+- `allOf`
+- `anyOf`
+- `oneOf`
+- `if`
+- `then`
+- `else`
+- `default`
 
 ### Validation
 
-- type (null, boolean, object, array, number, string, integer)
-- format (date-time, date, time, duration, email, hostname, uuid)
-- enum
-- const
-- multipleOf
-- maximum
-- exclusiveMaximum
-- minimum
-- exclusiveMinimum
-- maxLength
-- minLength
-- pattern
-- required
+- `type` (`null`, `boolean`, `object`, `array`, `number`, `string`, `integer`)
+- `format` (`date-time`, `date`, `time`, `duration`, `email`, `hostname`, `uuid`)
+- `enum`
+- `const`
+- `multipleOf`
+- `maximum`
+- `exclusiveMaximum`
+- `minimum`
+- `exclusiveMinimum`
+- `minItems`
+- `maxItems`
+- `maxLength`
+- `minLength`
+- `pattern`
+- `required`
+
+## Not Currently Implemented
+
+- `$recursiveRef`
+- `$recursiveAnchor`
+- `$anchor`
+- `$vocabulary`
+- `patternProperties`
+- `additionalProperties`
+- `unevaluatedProperties`
+- `additionalItems`
+- `unevaluatedItems`
+- `dependentSchemas`
+- `dependentRequired`
+- `contains`
+- `uniqueItems`
+- `maxContains`
+- `minContains`
+- `contentEncoding`
+- `contentMediaType`
+- `contentSchema`
+- `deprecated`
+- `readonly`
+- `writeOnly`
+- `examples`
+- `format` (`idn-email`, `idn-hostname`, `ipv4`, `ipv6`, `url`, `url-reference`, `iri`, `iri-reference`, `url-template`,
+`json-pointer`, `relative-json-pointer`)
 
 More documentation to follow.
 

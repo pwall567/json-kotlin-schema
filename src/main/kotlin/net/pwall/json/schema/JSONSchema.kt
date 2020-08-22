@@ -215,6 +215,17 @@ sealed class JSONSchema(
 
     }
 
+    class EmptySchema(uri: URI?, location: JSONPointer) : JSONSchema(uri, location) {
+
+        override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean = true
+
+        override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+                BasicOutput = BasicOutput.trueOutput
+
+        override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
+                DetailedOutput = createAnnotation(relativeLocation, instanceLocation, "Empty")
+    }
+
     class General(val schemaVersion: String, override val title: String?, override val description: String?, uri: URI?,
             location: JSONPointer, val children: List<JSONSchema>) : JSONSchema(uri, location) {
 

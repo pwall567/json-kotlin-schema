@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Unreleased]
+### Added
+- `minItems`, `maxItems`
+
 ## [0.5] - 2020-08-18
 ### Added
 - `if` / `then` / `else` schema constructs

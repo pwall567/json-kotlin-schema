@@ -52,6 +52,7 @@ import net.pwall.json.schema.subschema.ItemSchema
 import net.pwall.json.schema.subschema.PropertySchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
+import net.pwall.json.schema.validation.ArrayValidator
 import net.pwall.json.schema.validation.ConstValidator
 import net.pwall.json.schema.validation.DefaultValidator
 import net.pwall.json.schema.validation.EnumValidator
@@ -157,6 +158,10 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                 "items" -> children.add(parseItems(json, pointer.child("items"), uri))
                 in NumberValidator.typeKeywords -> children.add(parseNumberLimit(pointer.child(entry.key), uri,
                         NumberValidator.findType(entry.key), entry.value))
+                "maxItems" -> children.add(parseArrayNumberOfItems(pointer.child("maxItems"), uri,
+                        ArrayValidator.ValidationType.MAX_ITEMS, entry.value))
+                "minItems" -> children.add(parseArrayNumberOfItems(pointer.child("minItems"), uri,
+                        ArrayValidator.ValidationType.MIN_ITEMS, entry.value))
                 "maxLength" -> children.add(parseStringLength(pointer.child("maxLength"), uri,
                         StringValidator.ValidationType.MAX_LENGTH, entry.value))
                 "minLength" -> children.add(parseStringLength(pointer.child("minLength"), uri,
@@ -284,10 +289,17 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     }
 
     private fun parseStringLength(pointer: JSONPointer, uri: URI?, condition: StringValidator.ValidationType,
-                                  value: JSONValue?): StringValidator {
+            value: JSONValue?): StringValidator {
         if (value !is JSONInteger)
             throw JSONSchemaException("Must be integer - ${pointer.pointerOrRoot()}")
         return StringValidator(uri, pointer, condition, value.get())
+    }
+
+    private fun parseArrayNumberOfItems(pointer: JSONPointer, uri: URI?, condition: ArrayValidator.ValidationType,
+            value: JSONValue?): ArrayValidator {
+        if (value !is JSONInteger)
+            throw JSONSchemaException("Must be integer - ${pointer.pointerOrRoot()}")
+        return ArrayValidator(uri, pointer, condition, value.get())
     }
 
     private fun parsePattern(pointer: JSONPointer, uri: URI?, value: JSONValue?): PatternValidator {

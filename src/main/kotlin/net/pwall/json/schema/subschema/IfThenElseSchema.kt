@@ -38,15 +38,16 @@ class IfThenElseSchema(uri: URI?, location: JSONPointer, private val ifSchema: J
                 JSONSchema.SubSchema(uri, location) {
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        return if (ifSchema.validate(json, instanceLocation)) thenSchema.validate( json, instanceLocation)
-                else elseSchema.validate(json, instanceLocation)
+        return if (ifSchema.validate(json, instanceLocation)) thenSchema?.validate(json, instanceLocation) ?: true
+                else elseSchema?.validate(json, instanceLocation) ?: true
     }
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
         return if (ifSchema.validate(json, instanceLocation))
-                thenSchema.validateBasic(relativeLocation.child("then"), json, instanceLocation)
-                        else elseSchema.validateBasic(relativeLocation.child("else"), json, instanceLocation)
+            thenSchema?.validateBasic(relativeLocation.child("then"), json, instanceLocation) ?: BasicOutput.trueOutput
+        else
+            elseSchema?.validateBasic(relativeLocation.child("else"), json, instanceLocation) ?: BasicOutput.trueOutput
     }
 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
@@ -78,21 +79,11 @@ class IfThenElseSchema(uri: URI?, location: JSONPointer, private val ifSchema: J
         }
     }
 
-    companion object {
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is IfThenElseSchema && super.equals(other) && ifSchema == other.ifSchema &&
+                    thenSchema == other.thenSchema && elseSchema == other.elseSchema
 
-        fun JSONSchema?.validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-            if (this == null)
-                return true
-            return validate(json, instanceLocation)
-        }
-
-        fun JSONSchema?.validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
-                BasicOutput {
-            if (this == null)
-                return BasicOutput.trueOutput
-            return validateBasic(relativeLocation, json, instanceLocation)
-        }
-
-    }
+    override fun hashCode(): Int = super.hashCode() xor ifSchema.hashCode() xor thenSchema.hashCode() xor
+            elseSchema.hashCode()
 
 }

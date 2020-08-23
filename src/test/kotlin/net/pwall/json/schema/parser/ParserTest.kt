@@ -28,6 +28,7 @@ package net.pwall.json.schema.parser
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.expect
+import kotlin.test.fail
 
 import java.io.File
 import java.net.URI
@@ -36,6 +37,8 @@ import net.pwall.json.JSON
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.subschema.PropertySchema
+import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.validation.TypeValidator
 
 class ParserTest {
@@ -91,10 +94,18 @@ class ParserTest {
         val parser = Parser()
         parser.preLoad(dirName)
         val schema = parser.parseFile("$dirName/person/person.schema.json")
+        if (schema !is JSONSchema.General)
+            fail("Unexpected schema type")
+        val propertySchema = (schema.children.find { it is PropertySchema }) as PropertySchema?
+        val idSchema = propertySchema?.properties?.find { it.first == "id" }?.second
+        if (idSchema !is JSONSchema.General)
+            fail("id unexpected schema type")
+        val refSchema = (idSchema.children.find { it is RefSchema }) as RefSchema?
+        expect("/\$defs/personId") { refSchema?.fragment }
         val person = JSON.parse(File("src/test/resources/person.json"))
-        expect (true) { schema.validate(person) }
+        expect(true) { schema.validate(person) }
         val wrongPerson = JSON.parse(File("src/test/resources/person-invalid-uuid.json"))
-        expect (false) { schema.validate(wrongPerson) }
+        expect(false) { schema.validate(wrongPerson) }
     }
 
 }

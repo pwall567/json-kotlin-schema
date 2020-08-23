@@ -87,10 +87,10 @@ class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : 
             FormatType.IDN_EMAIL -> true
             FormatType.HOSTNAME -> JSONValidation.isHostname(str)
             FormatType.IDN_HOSTNAME -> true
-            FormatType.IPV4 -> true
-            FormatType.IPV6 -> true
-            FormatType.URI -> true
-            FormatType.URI_REFERENCE -> true
+            FormatType.IPV4 -> JSONValidation.isIPV4(str)
+            FormatType.IPV6 -> JSONValidation.isIPV6(str)
+            FormatType.URI -> JSONValidation.isURI(str)
+            FormatType.URI_REFERENCE -> JSONValidation.isURIReference(str)
             FormatType.IRI -> true
             FormatType.IRI_REFERENCE -> true
             FormatType.UUID -> JSONValidation.isUUID(str)

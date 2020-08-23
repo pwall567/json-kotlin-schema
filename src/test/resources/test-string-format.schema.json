@@ -19,6 +19,18 @@
     "uuidTest": {
       "format": "uuid"
     },
+    "uriTest": {
+      "format": "uri"
+    },
+    "uriReferenceTest": {
+      "format": "uri-reference"
+    },
+    "ipv4Test": {
+      "format": "ipv4"
+    },
+    "ipv6Test": {
+      "format": "ipv6"
+    },
     "jsonPointerTest": {
       "format": "json-pointer"
     }

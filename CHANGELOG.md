@@ -2,9 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.6] - 2020-08-23
 ### Added
 - `minItems`, `maxItems`
+- `format` types: `uri`, `uri-reference`, `ipv4`, `ipv6`
 
 ## [0.5] - 2020-08-18
 ### Added

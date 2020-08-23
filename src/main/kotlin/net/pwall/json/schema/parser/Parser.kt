@@ -206,14 +206,14 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         val (refURIPath, refURIFragment) = if (refURIString.contains('#'))
             refURIString.substringBefore('#') to refURIString.substringAfter('#')
         else
-            refURIString to ""
+            refURIString to null
         val refJSON = if (refURIPath == uri.toString()) json else
                 jsonReader.readJSON(URI(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath))
-        val refPointer = JSONPointer.fromURIFragment("#$refURIFragment")
+        val refPointer = refURIFragment?.let { JSONPointer.fromURIFragment("#$it") }  ?: JSONPointer.root
         if (!refPointer.exists(refJSON))
             throw JSONSchemaException("\$ref not found $value - $pointer")
         val target = parseSchema(refJSON, refPointer, URI(refURIPath))
-        return RefSchema(uri, pointer, target)
+        return RefSchema(uri, pointer, target, refURIFragment)
     }
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?): ItemSchema {

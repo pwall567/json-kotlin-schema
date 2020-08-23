@@ -97,7 +97,8 @@ The currently implemented subset includes:
 ### Validation
 
 - `type` (`null`, `boolean`, `object`, `array`, `number`, `string`, `integer`)
-- `format` (`date-time`, `date`, `time`, `duration`, `email`, `hostname`, `uuid`)
+- `format` (`date-time`, `date`, `time`, `duration`, `email`, `hostname`, `uri`, `uri-reference`, `uuid`, `ipv4`,
+`ipv6`)
 - `enum`
 - `const`
 - `multipleOf`
@@ -143,25 +144,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.5, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.6, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.5</version>
+      <version>0.6</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.5'
+    implementation 'net.pwall.json:json-kotlin-schema:0.6'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.5")
+    implementation("net.pwall.json:json-kotlin-schema:0.6")
 ```
 
 Peter Wall
 
-2020-08-18
+2020-08-23

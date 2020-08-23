@@ -33,7 +33,8 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
 
-class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema) : JSONSchema.SubSchema(uri, location) {
+class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema, val fragment: String?) :
+        JSONSchema.SubSchema(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("\$ref")
 

@@ -1,5 +1,5 @@
 /*
- * @(#) ItemSchema.kt
+ * @(#) PatternPropertiesSchema.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -27,7 +27,7 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONArray
+import net.pwall.json.JSONObject
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
@@ -35,30 +35,41 @@ import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
 
-class ItemSchema(uri: URI?, location: JSONPointer, val itemSchema: JSONSchema) : JSONSchema.SubSchema(uri, location) {
+class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: List<Pair<Regex, JSONSchema>>) :
+        JSONSchema.SubSchema(uri, location) {
 
-    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("items")
+    override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("patternProperties")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
+        if (instance !is JSONObject)
             return true
-        for (i in instance.indices)
-            if (!itemSchema.validate(json, instanceLocation.child(i)))
-                return false
+        for ((propertyPattern, propertySchema) in properties) {
+            for (name in instance.keys) {
+                if (propertyPattern matches name) {
+                    if (!propertySchema.validate(json, instanceLocation.child(name)))
+                        return false
+                }
+            }
+        }
         return true
     }
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
+        if (instance !is JSONObject)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
-        for (i in instance.indices) {
-            itemSchema.validateBasic(relativeLocation, json, instanceLocation.child(i)).let { itemResult ->
-                if (!itemResult.valid)
-                    errors.addAllFromNullable(itemResult.errors)
+        for ((propertyPattern, propertySchema) in properties) {
+            for (name in instance.keys) {
+                if (propertyPattern matches name) {
+                    propertySchema.validateBasic(relativeLocation.child(propertyPattern.toString()), json,
+                            instanceLocation.child(name)).let { propertyResult ->
+                        if (!propertyResult.valid)
+                            errors.addAllFromNullable(propertyResult.errors)
+                    }
+                }
             }
         }
         if (errors.isEmpty())
@@ -69,24 +80,29 @@ class ItemSchema(uri: URI?, location: JSONPointer, val itemSchema: JSONSchema) :
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
-            return createAnnotation(relativeLocation, instanceLocation, "Value is not an array")
+        if (instance !is JSONObject)
+            return createAnnotation(relativeLocation, instanceLocation, "Value is not an object")
         val errors = mutableListOf<DetailedOutput>()
-        for (i in instance.indices) {
-            val itemResult = itemSchema.validateDetailed(relativeLocation, json, instanceLocation.child(i))
-            if (!itemResult.valid)
-                errors.add(itemResult)
+        for ((propertyPattern, propertySchema) in properties) {
+            for (name in instance.keys) {
+                if (propertyPattern matches name) {
+                    val propertyResult = propertySchema.validateDetailed(
+                            relativeLocation.child(propertyPattern.toString()), json, instanceLocation.child(name))
+                    if (!propertyResult.valid)
+                        errors.add(propertyResult)
+                }
+            }
         }
         return when (errors.size) {
-            0 -> createAnnotation(relativeLocation, instanceLocation, "All items are valid")
+            0 -> createAnnotation(relativeLocation, instanceLocation, "patternProperties are valid")
             1 -> errors[0]
-            else -> createError(relativeLocation, instanceLocation, "Errors in array items", errors = errors)
+            else -> createError(relativeLocation, instanceLocation, "Errors in patternProperties", errors = errors)
         }
     }
 
     override fun equals(other: Any?): Boolean = this === other ||
-            other is ItemSchema && super.equals(other) && itemSchema == other.itemSchema
+            other is PatternPropertiesSchema && super.equals(other) && properties == other.properties
 
-    override fun hashCode(): Int = super.hashCode() xor itemSchema.hashCode()
+    override fun hashCode(): Int = super.hashCode() xor properties.hashCode()
 
 }

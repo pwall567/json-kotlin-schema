@@ -37,7 +37,7 @@ import net.pwall.json.JSON
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
-import net.pwall.json.schema.subschema.PropertySchema
+import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.validation.TypeValidator
 
@@ -89,6 +89,16 @@ class ParserTest {
         expect(true) { parser.parse(uri).uri == uri }
     }
 
+    @Test fun `should pre-load individual file`() {
+        val fileName = "src/test/resources/example.schema.json"
+        val parser = JSONSchema.parser
+        parser.preLoad(File(fileName))
+        val uriString = "http://pwall.net/test"
+        expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
+        val uri = URI(uriString)
+        expect(true) { parser.parse(uri).uri == uri }
+    }
+
     @Test fun `should parse reference following pre-load`() {
         val dirName = "src/test/resources/test1"
         val parser = Parser()
@@ -96,7 +106,7 @@ class ParserTest {
         val schema = parser.parseFile("$dirName/person/person.schema.json")
         if (schema !is JSONSchema.General)
             fail("Unexpected schema type")
-        val propertySchema = (schema.children.find { it is PropertySchema }) as PropertySchema?
+        val propertySchema = (schema.children.find { it is PropertiesSchema }) as PropertiesSchema?
         val idSchema = propertySchema?.properties?.find { it.first == "id" }?.second
         if (idSchema !is JSONSchema.General)
             fail("id unexpected schema type")

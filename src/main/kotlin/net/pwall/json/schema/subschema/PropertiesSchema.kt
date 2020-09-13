@@ -1,5 +1,5 @@
 /*
- * @(#) PropertySchema.kt
+ * @(#) PropertiesSchema.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
  * Copyright (c) 2020 Peter Wall
@@ -35,7 +35,7 @@ import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
 
-class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair<String, JSONSchema>>) :
+class PropertiesSchema(uri: URI?, location: JSONPointer, val properties: List<Pair<String, JSONSchema>>) :
         JSONSchema.SubSchema(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("properties")
@@ -44,7 +44,7 @@ class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair
         val instance = instanceLocation.eval(json)
         if (instance !is JSONObject)
             return true
-        properties.forEach { (propertyName, propertySchema) ->
+        for ((propertyName, propertySchema) in properties) {
             if (instance.containsKey(propertyName)) {
                 if (!propertySchema.validate(json, instanceLocation.child(propertyName)))
                     return false
@@ -59,7 +59,7 @@ class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair
         if (instance !is JSONObject)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
-        properties.forEach { (propertyName, propertySchema) ->
+        for ((propertyName, propertySchema) in properties) {
             if (instance.containsKey(propertyName)) {
                 propertySchema.validateBasic(relativeLocation.child(propertyName), json,
                         instanceLocation.child(propertyName)).let { propertyResult ->
@@ -79,7 +79,7 @@ class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair
         if (instance !is JSONObject)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an object")
         val errors = mutableListOf<DetailedOutput>()
-        properties.forEach { (propertyName, propertySchema) ->
+        for ((propertyName, propertySchema) in properties) {
             if (instance.containsKey(propertyName)) {
                 val propertyResult = propertySchema.validateDetailed(relativeLocation.child(propertyName), json,
                         instanceLocation.child(propertyName))
@@ -95,7 +95,7 @@ class PropertySchema(uri: URI?, location: JSONPointer, val properties: List<Pair
     }
 
     override fun equals(other: Any?): Boolean = this === other ||
-            other is PropertySchema && super.equals(other) && properties == other.properties
+            other is PropertiesSchema && super.equals(other) && properties == other.properties
 
     override fun hashCode(): Int = super.hashCode() xor properties.hashCode()
 

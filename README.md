@@ -61,11 +61,21 @@ and this JSON (from the same article):
   }
 }
 ```
-the following code will validate that the JSON matches the scheam:
+the following code will validate that the JSON matches the schema:
 ```kotlin
     val schema = JSONSchema.parse("/path/to/example.schema.json")
     val json = File("/path/to/example.json").readText()
     require(schema.validate(json))
+```
+
+To see the detail of any errors found during validation:
+```kotlin
+    val schema = JSONSchema.parse("/path/to/example.schema.json")
+    val json = File("/path/to/example.json").readText()
+    val output = schema.validateBasic(json)
+    output?.errors.forEach {
+        println("${it.error} - ${it.instanceLocation}")
+    }
 ```
 
 ## Implemented Subset
@@ -81,11 +91,15 @@ The currently implemented subset includes:
 - `$comment`
 - `title`
 - `description`
+- `examples`
 
 ### Structure
 
 - `properties`
+- `patternProperties`
+- `additionalProperties`
 - `items`
+- `additionalItems`
 - `allOf`
 - `anyOf`
 - `oneOf`
@@ -119,10 +133,7 @@ The currently implemented subset includes:
 - `$recursiveAnchor`
 - `$anchor`
 - `$vocabulary`
-- `patternProperties`
-- `additionalProperties`
 - `unevaluatedProperties`
-- `additionalItems`
 - `unevaluatedItems`
 - `dependentSchemas`
 - `dependentRequired`
@@ -134,35 +145,34 @@ The currently implemented subset includes:
 - `contentMediaType`
 - `contentSchema`
 - `deprecated`
-- `readonly`
+- `readOnly`
 - `writeOnly`
-- `examples`
-- `format` (`idn-email`, `idn-hostname`, `ipv4`, `ipv6`, `url`, `url-reference`, `iri`, `iri-reference`, `url-template`,
-`json-pointer`, `relative-json-pointer`)
+- `format` (`idn-email`, `idn-hostname`, `iri`, `iri-reference`, `url-template`, `json-pointer`,
+`relative-json-pointer`)
 
 More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.6, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.7, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.6</version>
+      <version>0.7</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.6'
+    implementation 'net.pwall.json:json-kotlin-schema:0.7'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.6")
+    implementation("net.pwall.json:json-kotlin-schema:0.7")
 ```
 
 Peter Wall
 
-2020-08-23
+2020-09-13

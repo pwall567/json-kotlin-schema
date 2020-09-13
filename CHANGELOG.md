@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.7] - 2020-09-13
+### Added
+- `items`: extended form with array of schema
+- `additionalItems`, `additionalProperties`, `patternProperties`
+
 ## [0.6] - 2020-08-23
 ### Added
 - `minItems`, `maxItems`

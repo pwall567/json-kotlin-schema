@@ -221,6 +221,80 @@ class JSONSchemaTest {
         expect(false) { schema.validateDetailed(json).valid }
     }
 
+    @Test fun `should validate additional properties`() {
+        val filename = "src/test/resources/test-additional.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""{"aaa":"AAA","bbb":1,"ccc":99}""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""{"aaa":"AAA","bbb":1,"ccc":"99"}""")
+        expect(false) { schema.validate(json2) }
+        val validateResult = schema.validateBasic(json2)
+        expect(false) { validateResult.valid }
+        val errors = validateResult.errors ?: fail()
+        expect(4) { errors.size }
+        errors[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-additional#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[1].let {
+            expect("#/additionalProperties") { it.keywordLocation }
+            expect("http://pwall.net/test-additional#/additionalProperties") { it.absoluteKeywordLocation }
+            expect("#/ccc") { it.instanceLocation }
+            expect("Additional property 'ccc' found but was invalid") { it.error }
+        }
+        errors[2].let {
+            expect("#/additionalProperties") { it.keywordLocation }
+            expect("http://pwall.net/test-additional#/additionalProperties") { it.absoluteKeywordLocation }
+            expect("#/ccc") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[3].let {
+            expect("#/additionalProperties/type") { it.keywordLocation }
+            expect("http://pwall.net/test-additional#/additionalProperties/type") { it.absoluteKeywordLocation }
+            expect("#/ccc") { it.instanceLocation }
+            expect("Incorrect type, expected integer") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+    }
+
+    @Test fun `should validate additional properties not allowed`() {
+        val filename = "src/test/resources/test-additional-false.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""{"aaa":"AAA"}""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""{"aaa":"AAA","bbb":1}""")
+        expect(false) { schema.validate(json2) }
+        val validateResult = schema.validateBasic(json2)
+        expect(false) { validateResult.valid }
+        val errors = validateResult.errors ?: fail()
+        expect(3) { errors.size }
+        errors[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-additional-false#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[1].let {
+            expect("#/additionalProperties") { it.keywordLocation }
+            expect("http://pwall.net/test-additional-false#/additionalProperties") { it.absoluteKeywordLocation }
+            expect("#/bbb") { it.instanceLocation }
+            expect("Additional property 'bbb' found but was invalid") { it.error }
+        }
+        errors[2].let {
+            expect("#/additionalProperties") { it.keywordLocation }
+            expect("http://pwall.net/test-additional-false#/additionalProperties") { it.absoluteKeywordLocation }
+            expect("#/bbb") { it.instanceLocation }
+            expect("Constant schema \"false\"") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+    }
+
     @Test fun `should validate enum`() {
         val filename = "src/test/resources/test-enum.schema.json"
         val schema = JSONSchema.parseFile(filename)

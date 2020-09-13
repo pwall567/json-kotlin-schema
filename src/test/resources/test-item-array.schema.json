@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-item-array",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "array",
+      "items": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        {
+          "type": "integer",
+          "minimum": 10
+        }
+      ],
+      "additionalItems": {
+        "type": "integer",
+        "exclusiveMaximum": 0
+      }
+    }
+  }
+}

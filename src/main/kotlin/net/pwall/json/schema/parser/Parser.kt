@@ -47,9 +47,13 @@ import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.subschema.AdditionalItemsSchema
+import net.pwall.json.schema.subschema.AdditionalPropertiesSchema
 import net.pwall.json.schema.subschema.IfThenElseSchema
-import net.pwall.json.schema.subschema.ItemSchema
-import net.pwall.json.schema.subschema.PropertySchema
+import net.pwall.json.schema.subschema.ItemsArraySchema
+import net.pwall.json.schema.subschema.ItemsSchema
+import net.pwall.json.schema.subschema.PatternPropertiesSchema
+import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ArrayValidator
@@ -112,7 +116,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
      * @param   pointer     the JSON Pointer to the current location in the schema JSON
      * @param   parentUri   the parent URI for the schema
      */
-    fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
+    private fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         val schemaJSON = pointer.eval(json)
         if (schemaJSON is JSONBoolean)
             return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else
@@ -136,51 +140,54 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         val description = schemaJSON.getStringOrNull("description")
 
         val children = mutableListOf<JSONSchema>()
-        for (entry in schemaJSON.entries) {
-            when (entry.key) {
-                "\$ref" -> children.add(parseRef(json, pointer.child("type"), uri, entry.value))
-                "\$defs", "\$schema", "\$id", "\$comment", "title", "description", "then", "else" -> {}
-                "default" -> children.add(DefaultValidator(uri, pointer.child("default"), entry.value))
-                "allOf" -> children.add(parseCombinationSchema(json, pointer.child("allOf"), uri, entry.value,
-                        JSONSchema.Companion::allOf))
-                "anyOf" -> children.add(parseCombinationSchema(json, pointer.child("anyOf"), uri, entry.value,
-                        JSONSchema.Companion::anyOf))
-                "oneOf" -> children.add(parseCombinationSchema(json, pointer.child("oneOf"), uri, entry.value,
-                        JSONSchema.Companion::oneOf))
-                "not" -> children.add(JSONSchema.Not(uri, pointer.child("not"),
-                        parseSchema(json, pointer.child("not"), uri)))
-                "if" -> children.add(parseIf(json, pointer, uri))
-                "type" -> children.add(parseType(pointer.child("type"), uri, entry.value))
-                "enum" -> children.add(parseEnum(pointer.child("enum"), uri, entry.value))
-                "const" -> children.add(parseConst(pointer.child("const"), uri, entry.value))
-                "properties" -> children.add(parseProperties(json, pointer.child("properties"), uri, entry.value))
-                "required" -> children.add(parseRequired(pointer.child("required"), uri, entry.value))
-                "items" -> children.add(parseItems(json, pointer.child("items"), uri))
-                in NumberValidator.typeKeywords -> children.add(parseNumberLimit(pointer.child(entry.key), uri,
-                        NumberValidator.findType(entry.key), entry.value))
-                "maxItems" -> children.add(parseArrayNumberOfItems(pointer.child("maxItems"), uri,
-                        ArrayValidator.ValidationType.MAX_ITEMS, entry.value))
-                "minItems" -> children.add(parseArrayNumberOfItems(pointer.child("minItems"), uri,
-                        ArrayValidator.ValidationType.MIN_ITEMS, entry.value))
-                "maxLength" -> children.add(parseStringLength(pointer.child("maxLength"), uri,
-                        StringValidator.ValidationType.MAX_LENGTH, entry.value))
-                "minLength" -> children.add(parseStringLength(pointer.child("minLength"), uri,
-                        StringValidator.ValidationType.MIN_LENGTH, entry.value))
-                "pattern" -> children.add(parsePattern(pointer.child("pattern"), uri, entry.value))
-                "format" -> {
-                    entry.value.let { value ->
-                        if (value !is JSONString)
-                            throw JSONSchemaException("Must be string - ${pointer.child("format")}")
-                        value.get().let {
-                            if (it in FormatValidator.typeKeywords)
-                                children.add(FormatValidator(uri, pointer.child("format"),
-                                        FormatValidator.findType(it)))
-                        }
-                    }
+        val result = JSONSchema.General(schemaVersion201909[0], title, description, uri, pointer, children)
+        for ((key, value) in schemaJSON.entries) {
+            val childPointer = pointer.child(key)
+            when (key) {
+                "\$defs", "then", "else" -> {}
+                "\$schema", "\$id", "\$comment", "title", "description" -> {
+                    if (value !is JSONString)
+                        throw JSONSchemaException("String expected - $childPointer")
                 }
+                "examples" -> {
+                    if (value !is JSONArray)
+                        throw JSONSchemaException("Must be array - $childPointer")
+                }
+                "\$ref" -> children.add(parseRef(json, childPointer, uri, value))
+                "default" -> children.add(DefaultValidator(uri, childPointer, value))
+                "allOf" -> children.add(parseCombinationSchema(json, childPointer, uri, value,
+                        JSONSchema.Companion::allOf))
+                "anyOf" -> children.add(parseCombinationSchema(json, childPointer, uri, value,
+                        JSONSchema.Companion::anyOf))
+                "oneOf" -> children.add(parseCombinationSchema(json, childPointer, uri, value,
+                        JSONSchema.Companion::oneOf))
+                "not" -> children.add(JSONSchema.Not(uri, childPointer, parseSchema(json, pointer.child("not"), uri)))
+                "if" -> children.add(parseIf(json, pointer, uri))
+                "type" -> children.add(parseType(childPointer, uri, value))
+                "enum" -> children.add(parseEnum(childPointer, uri, value))
+                "const" -> children.add(ConstValidator(uri, childPointer, value))
+                "properties" -> children.add(parseProperties(json, childPointer, uri, value))
+                "patternProperties" -> children.add(parsePatternProperties(json, childPointer, uri, value))
+                "required" -> children.add(parseRequired(childPointer, uri, value))
+                "items" -> children.add(parseItems(json, childPointer, uri, value))
+                in NumberValidator.typeKeywords -> children.add(parseNumberLimit(childPointer, uri,
+                        NumberValidator.findType(key), value))
+                "maxItems" -> children.add(parseArrayNumberOfItems(childPointer, uri,
+                        ArrayValidator.ValidationType.MAX_ITEMS, value))
+                "minItems" -> children.add(parseArrayNumberOfItems(childPointer, uri,
+                        ArrayValidator.ValidationType.MIN_ITEMS, value))
+                "maxLength" -> children.add(parseStringLength(childPointer, uri,
+                        StringValidator.ValidationType.MAX_LENGTH, value))
+                "minLength" -> children.add(parseStringLength(childPointer, uri,
+                        StringValidator.ValidationType.MIN_LENGTH, value))
+                "pattern" -> children.add(parsePattern(childPointer, uri, value))
+                "format" -> children.add(parseFormat(childPointer, uri, value))
+                "additionalProperties" -> children.add(AdditionalPropertiesSchema(result, uri, childPointer,
+                        parseSchema(json, childPointer, uri)))
+                "additionalItems" -> children.add(AdditionalItemsSchema(result, uri, childPointer,
+                        parseSchema(json, childPointer, uri)))
             }
         }
-        val result = JSONSchema.General(schemaVersion201909[0], title, description, uri, pointer, children)
         uri?.let { schemaCache[uri.resolve(pointer.toURIFragment())] = result }
         return result
     }
@@ -190,6 +197,16 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         val thenSchema = pointer.child("then").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
         val elseSchema = pointer.child("else").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
+    }
+
+    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): FormatValidator {
+        if (value !is JSONString)
+            throw JSONSchemaException("String expected - $pointer")
+        value.get().let {
+            if (it !in FormatValidator.typeKeywords)
+                throw JSONSchemaException("Format not recognised - $it - $pointer")
+            return FormatValidator(uri, pointer, FormatValidator.findType(it))
+        }
     }
 
     private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
@@ -216,52 +233,58 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         return RefSchema(uri, pointer, target, refURIFragment)
     }
 
-    private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?): ItemSchema {
-        return ItemSchema(uri, pointer, parseSchema(json, pointer, uri))
+    private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {
+        return if (value is JSONArray)
+            ItemsArraySchema(uri, pointer, value.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
+        else
+            ItemsSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
 
-    private fun parseProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?):
-            PropertySchema {
+    private fun parseProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): PropertiesSchema {
         if (value !is JSONObject)
             throw JSONSchemaException("properties must be object - $pointer")
-        val properties = mutableListOf<Pair<String, JSONSchema>>()
-        for (key in value.keys)
-            properties.add(key to parseSchema(json, pointer.child(key), uri))
-        return PropertySchema(uri, pointer, properties)
+        return PropertiesSchema(uri, pointer, value.keys.map { it to parseSchema(json, pointer.child(it), uri) })
+    }
+
+    private fun parsePatternProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?):
+            PatternPropertiesSchema {
+        if (value !is JSONObject)
+            throw JSONSchemaException("patternProperties must be object - $pointer")
+        return PatternPropertiesSchema(uri, pointer, value.keys.map { key ->
+            val childPointer = pointer.child(key)
+            val regex = try { Regex(key) } catch (e: Exception) {
+                    throw JSONSchemaException("Invalid regex in patternProperties - $childPointer") }
+            regex to parseSchema(json, childPointer, uri)
+        })
     }
 
     private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredSchema {
         if (value !is JSONArray)
             throw JSONSchemaException("required must be array - ${pointer.pointerOrRoot()}")
-        val properties = mutableListOf<String>()
-        value.forEachIndexed { i, entry ->
+        return RequiredSchema(uri, pointer, value.mapIndexed { i, entry ->
             if (entry !is JSONString)
                 throw JSONSchemaException("required items must be string - ${pointer.child(i)}")
-            properties.add(entry.get())
-        }
-        return RequiredSchema(uri, pointer, properties)
+            entry.get()
+        })
     }
 
     private fun parseType(pointer: JSONPointer, uri: URI?, value: JSONValue?): TypeValidator {
         val types: List<JSONSchema.Type> = when (value) {
-            is JSONString -> listOf(checkType(value.get()))
-            is JSONArray -> value.mapIndexed { index, item ->
-                if (item is JSONString)
-                    checkType(item.get())
-                else
-                    throw JSONSchemaException("Invalid type ${pointer.child(index)}")
-            }
+            is JSONString -> listOf(checkType(value, pointer))
+            is JSONArray -> value.mapIndexed { index, item -> checkType(item, pointer.child(index)) }
             else -> throw JSONSchemaException("Invalid type $pointer")
         }
         return TypeValidator(uri, pointer, types)
     }
 
-    private fun checkType(str: String): JSONSchema.Type {
-        for (type in JSONSchema.Type.values()) {
-            if (str == type.value)
-                return type
+    private fun checkType(item: JSONValue?, pointer: JSONPointer): JSONSchema.Type {
+        if (item is JSONString) {
+            for (type in JSONSchema.Type.values()) {
+                if (item.get() == type.value)
+                    return type
+            }
         }
-        throw JSONSchemaException("TODO")
+        throw JSONSchemaException("Invalid type $pointer")
     }
 
     private fun parseEnum(pointer: JSONPointer, uri: URI?, value: JSONValue?): EnumValidator {
@@ -269,8 +292,6 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
             throw JSONSchemaException("enum must be array - ${pointer.pointerOrRoot()}")
         return EnumValidator(uri, pointer, value)
     }
-
-    private fun parseConst(pointer: JSONPointer, uri: URI?, value: JSONValue?) = ConstValidator(uri, pointer, value)
 
     private fun parseNumberLimit(pointer: JSONPointer, uri: URI?, condition: NumberValidator.ValidationType,
             value: JSONValue?): NumberValidator {
@@ -309,7 +330,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
             Regex(value.get())
         }
         catch (e: Exception) {
-            throw JSONSchemaException("pattern invalid (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
+            throw JSONSchemaException("Pattern invalid (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
         }
         return PatternValidator(uri, pointer, regex)
     }

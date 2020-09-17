@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.8] - 2020-09-17
+### Changed
+- `pom.xml`: update to Kotlin 1.4.0
+
 ## [0.7] - 2020-09-13
 ### Added
 - `items`: extended form with array of schema

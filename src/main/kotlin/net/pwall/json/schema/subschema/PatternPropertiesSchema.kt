@@ -27,7 +27,7 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONObject
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
@@ -42,7 +42,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONObject)
+        if (instance !is JSONMapping<*>)
             return true
         for ((propertyPattern, propertySchema) in properties) {
             for (name in instance.keys) {
@@ -58,7 +58,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONObject)
+        if (instance !is JSONMapping<*>)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
         for ((propertyPattern, propertySchema) in properties) {
@@ -80,7 +80,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONObject)
+        if (instance !is JSONMapping<*>)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an object")
         val errors = mutableListOf<DetailedOutput>()
         for ((propertyPattern, propertySchema) in properties) {

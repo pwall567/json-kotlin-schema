@@ -27,7 +27,7 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONArray
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
@@ -50,7 +50,7 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
+        if (instance !is JSONSequence<*>)
             return true
         if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {
             for (i in itemsArraySchemaSize until instance.size) {
@@ -64,7 +64,7 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
+        if (instance !is JSONSequence<*>)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
         if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {
@@ -86,7 +86,7 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONArray)
+        if (instance !is JSONSequence<*>)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an array")
         val errors = mutableListOf<DetailedOutput>()
         if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {

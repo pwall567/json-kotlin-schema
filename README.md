@@ -78,6 +78,54 @@ To see the detail of any errors found during validation:
     }
 ```
 
+## YAML
+
+While it may seem counter-intuitive to use a language other than JSON to express JSON Schema, YAML is a lot easier to
+work with, particularly when multi-line descriptions are required.
+This library functions equally well with schema representations in JSON or YAML.
+
+For example, the above schema looks like this in YAML:
+```yaml
+$schema: http://json-schema.org/draft/2019-09/schema
+$id: http://pwall.net/test
+title: Product
+type: object
+required:
+- id
+- name
+- price
+properties:
+  id:
+    type: number
+    description: Product identifier
+  name:
+    type: string
+    description: Name of the product
+  price:
+    type: number
+    minimum: 0
+  tags:
+    type: array
+    items:
+      type: string
+  stock:
+    type: object
+    properties:
+      warehouse:
+        type: number
+      retail:
+        type: number
+```
+
+To use this schema, simply specify a schema file with an extension of `.yaml` to the schema parser:
+```kotlin
+    val schema = JSONSchema.parse("/path/to/example.schema.yaml")
+```
+
+The YAML library used is [this one](https://github.com/pwall567/yaml-simple).
+It is not a complete implementation of the YAML specification, but it should be more than adequate for the purpose of
+specifying JSON Schema.
+
 ## Implemented Subset
 
 This implementation does not implement the full JSON Schema specification.
@@ -154,25 +202,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.8, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.9, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.8</version>
+      <version>0.9</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.8'
+    implementation 'net.pwall.json:json-kotlin-schema:0.9'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.8")
+    implementation("net.pwall.json:json-kotlin-schema:0.9")
 ```
 
 Peter Wall
 
-2020-09-17
+2020-10-07

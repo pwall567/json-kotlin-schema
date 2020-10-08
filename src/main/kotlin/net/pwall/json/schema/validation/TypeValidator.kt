@@ -27,12 +27,12 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONArray
 import net.pwall.json.JSONBoolean
 import net.pwall.json.JSONInteger
 import net.pwall.json.JSONLong
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONObject
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.JSONZero
@@ -50,8 +50,8 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
             when (type) {
                 Type.NULL -> if (instance == null) return true
                 Type.BOOLEAN -> if (instance is JSONBoolean) return true
-                Type.OBJECT -> if (instance is JSONObject) return true
-                Type.ARRAY -> if (instance is JSONArray) return true
+                Type.OBJECT -> if (instance is JSONMapping<*>) return true
+                Type.ARRAY -> if (instance is JSONSequence<*>) return true
                 Type.NUMBER -> if (instance is JSONNumberValue) return true
                 Type.STRING -> if (instance is JSONString) return true
                 Type.INTEGER -> if (instance is JSONInteger || instance is JSONLong || instance is JSONZero)

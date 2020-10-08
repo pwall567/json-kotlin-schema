@@ -29,10 +29,10 @@ import java.io.File
 import java.net.URI
 
 import net.pwall.json.JSON
-import net.pwall.json.JSONArray
 import net.pwall.json.JSONBoolean
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONObject
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
@@ -285,8 +285,8 @@ sealed class JSONSchema(
 
         fun JSONValue?.toErrorDisplay(): String = when (this) {
             null -> "null"
-            is JSONObject -> "object"
-            is JSONArray -> "array"
+            is JSONMapping<*> -> "object"
+            is JSONSequence<*> -> "array"
             is JSONBoolean,
             is JSONNumberValue -> toString()
             is JSONString -> {

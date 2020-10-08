@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.9] - 2020-10-07
+### Added
+- tests against meta-schema
+- allow the use of YAML to define schema
+### Changed
+- `pom.xml`: switched to `json-pointer`
+
 ## [0.8] - 2020-09-17
 ### Changed
 - `pom.xml`: update to Kotlin 1.4.0

@@ -27,13 +27,14 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONArray
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
-class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONArray) : JSONSchema.Validator(uri, location) {
+class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONSequence<*>) :
+        JSONSchema.Validator(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("enum")
 

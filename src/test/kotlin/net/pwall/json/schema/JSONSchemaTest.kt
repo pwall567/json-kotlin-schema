@@ -65,6 +65,15 @@ class JSONSchemaTest {
         expect(true) { schema.validateDetailed(jsonString).valid }
     }
 
+    @Test fun `should validate example schema in YAML form`() {
+        val filename = "src/test/resources/example.schema.yaml"
+        val schema = JSONSchema.parseFile(filename)
+        val json = JSON.parse(File("src/test/resources/example.json"))
+        expect(true) { schema.validate(json) }
+        expect(true) { schema.validateBasic(json).valid }
+        expect(true) { schema.validateDetailed(json).valid }
+    }
+
     @Test fun `should validate example schema with missing property`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)

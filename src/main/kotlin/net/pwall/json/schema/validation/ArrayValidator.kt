@@ -1,11 +1,12 @@
 package net.pwall.json.schema.validation
 
-import net.pwall.json.JSONArray
+import java.net.URI
+
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
-import java.net.URI
 
 class ArrayValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {
@@ -19,18 +20,18 @@ class ArrayValidator(uri: URI?, location: JSONPointer, val condition: Validation
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        return instance !is JSONArray || validNumberOfItems(instance)
+        return instance !is JSONSequence<*> || validNumberOfItems(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        return if (instance !is JSONArray || validNumberOfItems(instance)) null else
+        return if (instance !is JSONSequence<*> || validNumberOfItems(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
                         "Array fails number of items check: ${condition.keyword} $value, was ${instance.size}")
     }
 
-    private fun validNumberOfItems(instance: JSONArray): Boolean = when (condition) {
+    private fun validNumberOfItems(instance: JSONSequence<*>): Boolean = when (condition) {
         ValidationType.MAX_ITEMS -> instance.size <= value
         ValidationType.MIN_ITEMS -> instance.size >= value
     }

@@ -31,15 +31,15 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
 
-import net.pwall.json.JSONArray
 import net.pwall.json.JSONBoolean
 import net.pwall.json.JSONDecimal
 import net.pwall.json.JSONDouble
 import net.pwall.json.JSONFloat
 import net.pwall.json.JSONInteger
 import net.pwall.json.JSONLong
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONObject
+import net.pwall.json.JSONSequence
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
@@ -100,7 +100,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     }
 
     private fun parse(json: JSONValue, uri: URI): JSONSchema {
-        val schemaVersion = (json as? JSONObject)?.getStringOrNull(JSONPointer.root.child("\$schema"))
+        val schemaVersion = (json as? JSONMapping<*>)?.getStringOrNull(JSONPointer.root.child("\$schema"))
         val pointer = JSONPointer.root
         return when (schemaVersion) {
             in schemaVersion201909 -> parseSchema(json, pointer, uri)
@@ -121,7 +121,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         if (schemaJSON is JSONBoolean)
             return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else
                     JSONSchema.False(parentUri, pointer)
-        if (schemaJSON !is JSONObject)
+        if (schemaJSON !is JSONMapping<*>)
             throw JSONSchemaException("Schema is not boolean or object - ${pointer.pointerOrRoot()}")
         val id = schemaJSON.getStringOrNull("\$id")
         val uri = when {
@@ -150,7 +150,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                         throw JSONSchemaException("String expected - $childPointer")
                 }
                 "examples" -> {
-                    if (value !is JSONArray)
+                    if (value !is JSONSequence<*>)
                         throw JSONSchemaException("Must be array - $childPointer")
                 }
                 "\$ref" -> children.add(parseRef(json, childPointer, uri, value))
@@ -211,7 +211,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
     private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
             creator: (URI?, JSONPointer, List<JSONSchema>) -> JSONSchema): JSONSchema {
-        if (array !is JSONArray)
+        if (array !is JSONSequence<*>)
             throw JSONPointerException("Compound must take array - $pointer")
         return creator(uri, pointer, array.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
     }
@@ -234,21 +234,21 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     }
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {
-        return if (value is JSONArray)
+        return if (value is JSONSequence<*>)
             ItemsArraySchema(uri, pointer, value.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
         else
             ItemsSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
 
     private fun parseProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): PropertiesSchema {
-        if (value !is JSONObject)
+        if (value !is JSONMapping<*>)
             throw JSONSchemaException("properties must be object - $pointer")
         return PropertiesSchema(uri, pointer, value.keys.map { it to parseSchema(json, pointer.child(it), uri) })
     }
 
     private fun parsePatternProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?):
             PatternPropertiesSchema {
-        if (value !is JSONObject)
+        if (value !is JSONMapping<*>)
             throw JSONSchemaException("patternProperties must be object - $pointer")
         return PatternPropertiesSchema(uri, pointer, value.keys.map { key ->
             val childPointer = pointer.child(key)
@@ -259,7 +259,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     }
 
     private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredSchema {
-        if (value !is JSONArray)
+        if (value !is JSONSequence<*>)
             throw JSONSchemaException("required must be array - ${pointer.pointerOrRoot()}")
         return RequiredSchema(uri, pointer, value.mapIndexed { i, entry ->
             if (entry !is JSONString)
@@ -271,7 +271,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     private fun parseType(pointer: JSONPointer, uri: URI?, value: JSONValue?): TypeValidator {
         val types: List<JSONSchema.Type> = when (value) {
             is JSONString -> listOf(checkType(value, pointer))
-            is JSONArray -> value.mapIndexed { index, item -> checkType(item, pointer.child(index)) }
+            is JSONSequence<*> -> value.mapIndexed { index, item -> checkType(item, pointer.child(index)) }
             else -> throw JSONSchemaException("Invalid type $pointer")
         }
         return TypeValidator(uri, pointer, types)
@@ -288,7 +288,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     }
 
     private fun parseEnum(pointer: JSONPointer, uri: URI?, value: JSONValue?): EnumValidator {
-        if (value !is JSONArray)
+        if (value !is JSONSequence<*>)
             throw JSONSchemaException("enum must be array - ${pointer.pointerOrRoot()}")
         return EnumValidator(uri, pointer, value)
     }
@@ -350,16 +350,15 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
                 "https://json-schema.org/draft-07/schema")
 
-        val defaultURIResolver: (URI) -> InputStream? = { uri ->
-                if (uri.scheme == "file") uri.toURL().openStream() else null }
+        val defaultURIResolver: (URI) -> InputStream? = { uri -> uri.toURL().openStream() }
 
         fun URI.dropFragment(): URI =
                 toString().let { if (it.contains('#')) URI(it.substringBefore('#')) else this }
 
-        fun JSONObject.getStringOrNull(key: String): String? =
+        fun JSONMapping<*>.getStringOrNull(key: String): String? =
                 get(key)?.let { if (it is JSONString) it.get() else throw JSONSchemaException("Incorrect $key") }
 
-        fun JSONObject.getStringOrNull(pointer: JSONPointer): String? {
+        fun JSONMapping<*>.getStringOrNull(pointer: JSONPointer): String? {
             if (!pointer.exists(this))
                 return null
             val value = pointer.eval(this)
@@ -369,7 +368,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         }
 
         @Suppress("unused")
-        fun JSONObject.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
+        fun JSONMapping<*>.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
             if (!pointer.exists(this))
                 return default
             val value = pointer.eval(this)

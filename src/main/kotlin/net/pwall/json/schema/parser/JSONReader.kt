@@ -30,12 +30,13 @@ import java.io.InputStream
 import java.net.URI
 
 import net.pwall.json.JSON
-import net.pwall.json.JSONObject
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.parser.Parser.Companion.dropFragment
 import net.pwall.json.schema.parser.Parser.Companion.getStringOrNull
+import net.pwall.yaml.YAMLSimple
 
 class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
@@ -49,11 +50,20 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         when {
             file.isDirectory -> file.listFiles()?.forEach { if (!it.name.startsWith('.')) preLoad(it) }
             file.isFile -> {
-                if (file.name.endsWith(".json", ignoreCase = true))
-                    JSON.parse(file)?.let {
-                        jsonCache[file.toURI()] = it
-                        it.cacheByURI()
+                when {
+                    file.name.endsWith(".json", ignoreCase = true) -> {
+                        JSON.parse(file)?.let {
+                            jsonCache[file.toURI()] = it
+                            it.cacheByURI()
+                        }
                     }
+                    file.name.endsWith(".yaml", ignoreCase = true) -> {
+                        YAMLSimple.process(file).rootNode?.let {
+                            jsonCache[file.toURI()] = it
+                            it.cacheByURI()
+                        }
+                    }
+                }
             }
         }
     }
@@ -62,7 +72,11 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         val uri = file.toURI()
         jsonCache[uri]?.let { return it }
         try {
-            val json = JSON.parse(file.inputStream()) ?: throw JSONSchemaException("Schema file is null - $file")
+            val json = when {
+                file.name.endsWith(".yaml", ignoreCase = true) ->
+                    YAMLSimple.process(file).rootNode ?: throw JSONSchemaException("Schema file is null - $file")
+                else -> JSON.parse(file) ?: throw JSONSchemaException("Schema file is null - $file")
+            }
             jsonCache[uri] = json
             json.cacheByURI()
             return json
@@ -75,8 +89,12 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
     fun readJSON(uri: URI): JSONValue {
         jsonCache[uri]?.let { return it }
         try {
-            val json = JSON.parse(uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")) ?:
-                    throw JSONSchemaException("Schema file is null - $uri")
+            val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
+            val json = when {
+                uri.path.endsWith(".yaml", ignoreCase = true) ->
+                    YAMLSimple.process(inputStream).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
+                else -> JSON.parse(inputStream) ?: throw JSONSchemaException("Schema file is null - $uri")
+            }
             jsonCache[uri] = json
             json.cacheByURI()
             return json
@@ -87,7 +105,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
     }
 
     private fun JSONValue.cacheByURI() {
-        if (this is JSONObject) {
+        if (this is JSONMapping<*>) {
             getStringOrNull(JSONPointer.root.child("\$id"))?.let {
                 jsonCache[URI(it).dropFragment()] = this
             }

@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.9.1] - 2020-10-12
+### Changed
+- `pom.xml`: updated version of `yaml-simple`
+- `Parser`: make `parseSchema()` public
+
 ## [0.9] - 2020-10-07
 ### Added
 - tests against meta-schema

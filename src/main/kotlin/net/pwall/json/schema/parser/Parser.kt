@@ -116,7 +116,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
      * @param   pointer     the JSON Pointer to the current location in the schema JSON
      * @param   parentUri   the parent URI for the schema
      */
-    private fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
+    fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         val schemaJSON = pointer.eval(json)
         if (schemaJSON is JSONBoolean)
             return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else

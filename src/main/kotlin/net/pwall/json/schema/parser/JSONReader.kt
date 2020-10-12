@@ -70,37 +70,35 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
     fun readJSON(file: File): JSONValue {
         val uri = file.toURI()
-        jsonCache[uri]?.let { return it }
-        try {
-            val json = when {
+        return jsonCache[uri] ?: try {
+            when {
                 file.name.endsWith(".yaml", ignoreCase = true) ->
                     YAMLSimple.process(file).rootNode ?: throw JSONSchemaException("Schema file is null - $file")
                 else -> JSON.parse(file) ?: throw JSONSchemaException("Schema file is null - $file")
             }
-            jsonCache[uri] = json
-            json.cacheByURI()
-            return json
         }
         catch (e: Exception) {
             throw JSONSchemaException("Error reading schema file - $file", e)
+        }.also {
+            jsonCache[uri] = it
+            it.cacheByURI()
         }
     }
 
     fun readJSON(uri: URI): JSONValue {
-        jsonCache[uri]?.let { return it }
-        try {
+        return jsonCache[uri] ?: try {
             val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
-            val json = when {
+            when {
                 uri.path.endsWith(".yaml", ignoreCase = true) ->
                     YAMLSimple.process(inputStream).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
                 else -> JSON.parse(inputStream) ?: throw JSONSchemaException("Schema file is null - $uri")
             }
-            jsonCache[uri] = json
-            json.cacheByURI()
-            return json
         }
         catch (e: Exception) {
             throw JSONSchemaException("Error reading schema file - $uri", e)
+        }.also {
+            jsonCache[uri] = it
+            it.cacheByURI()
         }
     }
 

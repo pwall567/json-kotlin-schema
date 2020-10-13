@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.10] - 2020-10-13
+### Changed
+- `Parser`: added ability to add custom validations
+### Added
+- `DelegatingValidator`: new
+
 ## [0.9.1] - 2020-10-12
 ### Changed
 - `pom.xml`: updated version of `yaml-simple`

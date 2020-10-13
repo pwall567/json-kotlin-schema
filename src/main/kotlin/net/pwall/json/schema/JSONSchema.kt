@@ -100,13 +100,13 @@ sealed class JSONSchema(
             validateDetailed(JSONPointer.root, JSON.parse(json), instanceLocation)
 
     fun createAnnotation(relativeLocation: JSONPointer, instanceLocation: JSONPointer, annotation: String,
-                         errors: List<Output>? = null, annotations: List<Output>? = null): DetailedOutput {
+            errors: List<Output>? = null, annotations: List<Output>? = null): DetailedOutput {
         return DetailedOutput.createAnnotation(relativeLocation.schemaURIFragment(), absoluteLocation,
                 instanceLocation.schemaURIFragment(), annotation, errors, annotations)
     }
 
     fun createError(relativeLocation: JSONPointer, instanceLocation: JSONPointer, error: String,
-                    errors: List<Output>? = null, annotations: List<Output>? = null): DetailedOutput {
+            errors: List<Output>? = null, annotations: List<Output>? = null): DetailedOutput {
         return DetailedOutput.createError(relativeLocation.schemaURIFragment(), absoluteLocation,
                 instanceLocation.schemaURIFragment(), error, errors, annotations)
     }

@@ -59,6 +59,7 @@ import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ArrayValidator
 import net.pwall.json.schema.validation.ConstValidator
 import net.pwall.json.schema.validation.DefaultValidator
+import net.pwall.json.schema.validation.DelegatingValidator
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.FormatValidator
 import net.pwall.json.schema.validation.NumberValidator
@@ -67,6 +68,9 @@ import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 
 class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
+
+    var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
+            { _, _, _, _ -> null }
 
     private val jsonReader = JSONReader(uriResolver)
 
@@ -186,6 +190,9 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                         parseSchema(json, childPointer, uri)))
                 "additionalItems" -> children.add(AdditionalItemsSchema(result, uri, childPointer,
                         parseSchema(json, childPointer, uri)))
+                else -> customValidationHandler(key, uri, childPointer, value)?.let {
+                    children.add(DelegatingValidator(it.uri, it.location, key, it))
+                }
             }
         }
         uri?.let { schemaCache[uri.resolve(pointer.toURIFragment())] = result }

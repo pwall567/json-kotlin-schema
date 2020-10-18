@@ -1,1 +1,3 @@
 language: java # actually Kotlin, but Java is the nearest option available
+install: skip
+script: mvn clean package

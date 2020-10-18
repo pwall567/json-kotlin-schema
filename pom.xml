@@ -113,6 +113,7 @@
       <plugin>
         <groupId>org.jetbrains.dokka</groupId>
         <artifactId>dokka-maven-plugin</artifactId>
+        <version>1.4.0</version>
         <configuration>
           <sourceDirectories>
             <dir>src/main/kotlin</dir>

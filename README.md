@@ -1,5 +1,7 @@
 # json-kotlin-schema
 
+[![Build Status](https://travis-ci.org/pwall567/json-kotlin-schema.svg?branch=main)](https://travis-ci.org/pwall567/json-kotlin-schema)
+
 Kotlin implementation of JSON Schema
 
 ## Quick Start

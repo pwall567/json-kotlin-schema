@@ -1,6 +1,7 @@
 # json-kotlin-schema
 
 [![Build Status](https://travis-ci.org/pwall567/json-kotlin-schema.svg?branch=main)](https://travis-ci.org/pwall567/json-kotlin-schema)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Kotlin implementation of JSON Schema
 
@@ -79,6 +80,9 @@ To see the detail of any errors found during validation:
         println("${it.error} - ${it.instanceLocation}")
     }
 ```
+
+The format of the error object produced by the `validateBasic()` function closely follows the
+[Basic output](https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.10.4.2) specification.
 
 ## YAML
 
@@ -204,25 +208,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.10, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.10.1, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.10</version>
+      <version>0.10.1</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.10'
+    implementation 'net.pwall.json:json-kotlin-schema:0.10.1'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.10")
+    implementation("net.pwall.json:json-kotlin-schema:0.10.1")
 ```
 
 Peter Wall
 
-2020-10-13
+2020-10-19

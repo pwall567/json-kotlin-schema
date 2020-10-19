@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.10.1] - 2020-10-19
+### Changed
+- `pom.xml`: bumped dependency version
+- `README.md`: minor additions
+
 ## [0.10] - 2020-10-13
 ### Changed
 - `Parser`: added ability to add custom validations

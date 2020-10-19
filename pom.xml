@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.10</version>
+  <version>0.10.1</version>
   <name>Kotlin implementation of JSON Schema</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
@@ -13,7 +13,7 @@
   <parent>
     <groupId>net.pwall.maven</groupId>
     <artifactId>maven-kotlin</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
   </parent>
 
   <properties>
@@ -113,7 +113,6 @@
       <plugin>
         <groupId>org.jetbrains.dokka</groupId>
         <artifactId>dokka-maven-plugin</artifactId>
-        <version>1.4.0</version>
         <configuration>
           <sourceDirectories>
             <dir>src/main/kotlin</dir>

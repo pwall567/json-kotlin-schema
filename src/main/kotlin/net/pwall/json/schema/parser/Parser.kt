@@ -49,6 +49,7 @@ import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.subschema.AdditionalItemsSchema
 import net.pwall.json.schema.subschema.AdditionalPropertiesSchema
+import net.pwall.json.schema.subschema.ExtensionSchema
 import net.pwall.json.schema.subschema.IfThenElseSchema
 import net.pwall.json.schema.subschema.ItemsArraySchema
 import net.pwall.json.schema.subschema.ItemsSchema
@@ -194,6 +195,8 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                     children.add(DelegatingValidator(it.uri, it.location, key, it))
                 }
             }
+            if (key.startsWith("x-"))
+                children.add(ExtensionSchema(uri, childPointer, key, value))
         }
         uri?.let { schemaCache[uri.resolve(pointer.toURIFragment())] = result }
         return result

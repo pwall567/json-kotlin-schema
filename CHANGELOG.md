@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.11] - 2020-10-25
+### Added
+- `ExtensionSchema`: allows "x-something" extension data to be stored in schema
+
 ## [0.10.1] - 2020-10-19
 ### Changed
 - `pom.xml`: bumped dependency version

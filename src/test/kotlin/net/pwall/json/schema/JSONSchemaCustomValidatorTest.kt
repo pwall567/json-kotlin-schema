@@ -18,7 +18,7 @@ class JSONSchemaCustomValidatorTest {
                     if (value is JSONString && value.get() == "not-empty")
                         StringValidator(uri, location, StringValidator.ValidationType.MIN_LENGTH, 1)
                     else
-                        throw RuntimeException("Unknown type")
+                        fail("Unknown type")
                 }
                 else -> null
             }

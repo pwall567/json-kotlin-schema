@@ -196,7 +196,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                 }
             }
             if (key.startsWith("x-"))
-                children.add(ExtensionSchema(uri, childPointer, key, value))
+                children.add(ExtensionSchema(uri, childPointer, key, value?.toSimpleValue()))
         }
         uri?.let { schemaCache[uri.resolve(pointer.toURIFragment())] = result }
         return result

@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.12] - 2020-10-27
+### Added
+- `Parser`: minor change to handling of extension mapping
+
 ## [0.11] - 2020-10-25
 ### Added
 - `ExtensionSchema`: allows "x-something" extension data to be stored in schema

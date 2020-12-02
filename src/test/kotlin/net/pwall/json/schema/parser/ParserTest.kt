@@ -32,6 +32,7 @@ import kotlin.test.fail
 
 import java.io.File
 import java.net.URI
+import java.nio.file.FileSystems
 
 import net.pwall.json.JSON
 import net.pwall.json.pointer.JSONPointer
@@ -83,6 +84,17 @@ class ParserTest {
         val dirName = "src/test/resources/test1"
         val parser = Parser()
         parser.preLoad(dirName)
+        val uriString = "http://pwall.net/test/schema/person"
+        expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
+        val uri = URI(uriString)
+        expect(true) { parser.parse(uri).uri == uri }
+    }
+
+    @Test fun `should pre-load directory using Path`() {
+        val dirName = "src/test/resources/test1"
+        val path = FileSystems.getDefault().getPath(dirName)
+        val parser = Parser()
+        parser.preLoad(path)
         val uriString = "http://pwall.net/test/schema/person"
         expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
         val uri = URI(uriString)

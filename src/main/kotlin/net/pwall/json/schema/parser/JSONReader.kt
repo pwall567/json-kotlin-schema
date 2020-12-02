@@ -28,6 +28,8 @@ package net.pwall.json.schema.parser
 import java.io.File
 import java.io.InputStream
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 
 import net.pwall.json.JSON
 import net.pwall.json.JSONMapping
@@ -68,6 +70,36 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         }
     }
 
+    fun preLoad(path: Path) {
+        when {
+            Files.isDirectory(path) -> {
+                Files.newDirectoryStream(path).use { dir ->
+                    dir.forEach {
+                        if (!it.fileName.toString().startsWith('.'))
+                            preLoad(it)
+                    }
+                }
+            }
+            Files.isRegularFile(path) -> {
+                val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
+                when {
+                    fileName.extension(".json") -> {
+                        JSON.parse(Files.newBufferedReader(path))?.let {
+                            jsonCache[path.toUri()] = it
+                            it.cacheByURI()
+                        }
+                    }
+                    fileName.extension(".yaml") || fileName.extension(".yml") -> {
+                        YAMLSimple.process(Files.newBufferedReader(path)).rootNode?.let {
+                            jsonCache[path.toUri()] = it
+                            it.cacheByURI()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun readJSON(file: File): JSONValue {
         val uri = file.toURI()
         return jsonCache[uri] ?: try {
@@ -96,6 +128,26 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         }
         catch (e: Exception) {
             throw JSONSchemaException("Error reading schema file - $uri", e)
+        }.also {
+            jsonCache[uri] = it
+            it.cacheByURI()
+        }
+    }
+
+    fun readJSON(path: Path): JSONValue {
+        val uri = path.toUri()
+        return jsonCache[uri] ?: try {
+            val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
+            when {
+                fileName.extension(".yaml") || fileName.extension(".yml") ->
+                    YAMLSimple.process(Files.newBufferedReader(path)).rootNode ?:
+                            throw JSONSchemaException("Schema file is null - $path")
+                else -> JSON.parse(Files.newBufferedReader(path)) ?:
+                        throw JSONSchemaException("Schema file is null - $path")
+            }
+        }
+        catch (e: Exception) {
+            throw JSONSchemaException("Error reading schema file - $path", e)
         }.also {
             jsonCache[uri] = it
             it.cacheByURI()

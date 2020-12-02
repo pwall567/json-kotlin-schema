@@ -2,10 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.13] - 2020-12-02
 ### Changed
 - `JSONReader`: allow ".yml" as alternative to ".yaml" file extension
+- `JSONReader`: added ability to specify files using `Path`
 - `README.md`: added badges, expanded documentation
+- `pom.xml`: updated dependency versions
 
 ## [0.12] - 2020-10-27
 ### Added

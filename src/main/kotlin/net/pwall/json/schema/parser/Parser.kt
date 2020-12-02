@@ -30,6 +30,8 @@ import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 
 import net.pwall.json.JSONBoolean
 import net.pwall.json.JSONDecimal
@@ -85,6 +87,10 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         jsonReader.preLoad(file)
     }
 
+    fun preLoad(path: Path) {
+        jsonReader.preLoad(path)
+    }
+
     fun parseFile(filename: String): JSONSchema = parse(File(filename))
 
     fun parseURI(uriString: String): JSONSchema = parse(URI(uriString))
@@ -101,6 +107,15 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     fun parse(uri: URI): JSONSchema {
         schemaCache[uri]?.let { return it }
         val json = jsonReader.readJSON(uri)
+        return parse(json, uri)
+    }
+
+    fun parse(path: Path): JSONSchema {
+        if (!Files.isRegularFile(path))
+            throw JSONSchemaException("Invalid file - $path")
+        val uri = path.toUri()
+        schemaCache[uri]?.let { return it }
+        val json = jsonReader.readJSON(path)
         return parse(json, uri)
     }
 

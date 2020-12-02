@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/pwall567/json-kotlin-schema.svg?branch=main)](https://travis-ci.org/pwall567/json-kotlin-schema)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v1.4.0&color=blue&logo=kotlin)](https://github.com/JetBrains/kotlin/releases/tag/v1.4.0)
+[![Maven Central](https://img.shields.io/maven-central/v/net.pwall.json/json-kotlin-schema?label=Maven%20Central)](https://search.maven.org/search?q=g:%22net.pwall.json%22%20AND%20a:%22json-kotlin-schema%22)
 
 Kotlin implementation of JSON Schema
 
@@ -123,7 +125,7 @@ properties:
         type: number
 ```
 
-To use this schema, simply specify a schema file with an extension of `.yaml` to the schema parser:
+To use this schema, simply specify a schema file with an extension of `.yaml` or `.yml` to the schema parser:
 ```kotlin
     val schema = JSONSchema.parse("/path/to/example.schema.yaml")
 ```
@@ -131,6 +133,33 @@ To use this schema, simply specify a schema file with an extension of `.yaml` to
 The YAML library used is [this one](https://github.com/pwall567/yaml-simple).
 It is not a complete implementation of the YAML specification, but it should be more than adequate for the purpose of
 specifying JSON Schema.
+
+## References
+
+At many points in a JSON Schema, the `$ref` construct allows a reference to schema information defined elsewhere.
+The reference takes the form of a URL, which may be internal to the current schema document (reference starts with
+a `#` character) or external - the reference points to a different document.
+
+Internal references are resolved relative to the root of the schema document in which they appear, for example:
+```json
+{
+  "$ref": "#/$defs/Account"
+}
+```
+This points to a schema named `Account` in the `$defs` section of the current schema document.
+
+An external reference may be relative (in which case the URL will be resolved relative to the location of the document
+in which the reference appears) or absolute.
+The external reference may include a fragment (a JSON Pointer starting with `#`); if it does not the reference is taken
+as pointing to the root of the document.
+For example:
+```json
+{
+  "$ref": "common.schema.json#/$defs/Address"
+}
+```
+This will look for a sibling (URL or file) to the current document and attempt to locate the `Address` schema in the
+`$defs` section of that document.
 
 ## Implemented Subset
 

@@ -51,13 +51,13 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             file.isDirectory -> file.listFiles()?.forEach { if (!it.name.startsWith('.')) preLoad(it) }
             file.isFile -> {
                 when {
-                    file.name.endsWith(".json", ignoreCase = true) -> {
+                    file.name.extension(".json") -> {
                         JSON.parse(file)?.let {
                             jsonCache[file.toURI()] = it
                             it.cacheByURI()
                         }
                     }
-                    file.name.endsWith(".yaml", ignoreCase = true) -> {
+                    file.name.extension(".yaml") || file.name.extension(".yml") -> {
                         YAMLSimple.process(file).rootNode?.let {
                             jsonCache[file.toURI()] = it
                             it.cacheByURI()
@@ -72,7 +72,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         val uri = file.toURI()
         return jsonCache[uri] ?: try {
             when {
-                file.name.endsWith(".yaml", ignoreCase = true) ->
+                file.name.extension(".yaml") || file.name.extension(".yml") ->
                     YAMLSimple.process(file).rootNode ?: throw JSONSchemaException("Schema file is null - $file")
                 else -> JSON.parse(file) ?: throw JSONSchemaException("Schema file is null - $file")
             }
@@ -89,7 +89,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         return jsonCache[uri] ?: try {
             val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
             when {
-                uri.path.endsWith(".yaml", ignoreCase = true) ->
+                uri.path.extension(".yaml") || uri.path.extension(".yml") ->
                     YAMLSimple.process(inputStream).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
                 else -> JSON.parse(inputStream) ?: throw JSONSchemaException("Schema file is null - $uri")
             }
@@ -108,6 +108,14 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
                 jsonCache[URI(it).dropFragment()] = this
             }
         }
+    }
+
+    companion object {
+
+        private fun String.extension(ext: String): Boolean {
+            return endsWith(ext, ignoreCase = true)
+        }
+
     }
 
 }

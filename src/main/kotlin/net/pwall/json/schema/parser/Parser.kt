@@ -75,6 +75,9 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
     var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
             { _, _, _, _ -> null }
 
+    var nonstandardFormatHandler: (String, URI?, JSONPointer) -> JSONSchema.Validator? =
+            { _, _, _ -> null }
+
     private val jsonReader = JSONReader(uriResolver)
 
     private val schemaCache = mutableMapOf<URI, JSONSchema>()
@@ -164,8 +167,14 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         for ((key, value) in schemaJSON.entries) {
             val childPointer = pointer.child(key)
             when (key) {
+                "\$schema" -> {
+                    if (pointer != JSONPointer.root)
+                        throw JSONSchemaException("May only appear in the root of the document - $childPointer")
+                    if (value !is JSONString)
+                        throw JSONSchemaException("String expected - $childPointer")
+                }
                 "\$defs", "then", "else" -> {}
-                "\$schema", "\$id", "\$comment", "title", "description" -> {
+                "\$id", "\$comment", "title", "description" -> {
                     if (value !is JSONString)
                         throw JSONSchemaException("String expected - $childPointer")
                 }
@@ -224,13 +233,17 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
-    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): FormatValidator {
+    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator {
         if (value !is JSONString)
             throw JSONSchemaException("String expected - $pointer")
-        value.get().let {
-            if (it !in FormatValidator.typeKeywords)
-                throw JSONSchemaException("Format not recognised - $it - $pointer")
-            return FormatValidator(uri, pointer, FormatValidator.findType(it))
+        value.get().let { keyword ->
+            if (keyword !in FormatValidator.typeKeywords) {
+                nonstandardFormatHandler(keyword, uri, pointer)?.let {
+                    return DelegatingValidator(uri, pointer, "format", it)
+                }
+                throw JSONSchemaException("Format not recognised - $keyword - $pointer")
+            }
+            return FormatValidator(uri, pointer, FormatValidator.findType(keyword))
         }
     }
 

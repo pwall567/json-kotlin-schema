@@ -130,4 +130,10 @@ class ParserTest {
         expect(false) { schema.validate(wrongPerson) }
     }
 
+    @Test fun `should parse individual subschema from larger file`() {
+        val json = JSON.parse(File("src/test/resources/example.schema.json"))
+        val schema = Parser().parseSchema(json, JSONPointer("/properties/stock"), URI("http://pwall.net/test"))
+        expect(true) { schema.validate(JSON.parse("""{"warehouse":1,"retail":2}""")) }
+    }
+
 }

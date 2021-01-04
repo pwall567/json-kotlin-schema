@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.14] - 2021-01-04
+### Changed
+- `JSONReader`: minor improvements to usage of `Path`
+- `Parser`: added handling of nonstandard formats
+
 ## [0.13] - 2020-12-02
 ### Changed
 - `JSONReader`: allow ".yml" as alternative to ".yaml" file extension

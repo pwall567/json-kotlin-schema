@@ -84,15 +84,19 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
                 val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
                 when {
                     fileName.extension(".json") -> {
-                        JSON.parse(Files.newBufferedReader(path))?.let {
-                            jsonCache[path.toUri()] = it
-                            it.cacheByURI()
+                        Files.newBufferedReader(path).use { reader ->
+                            JSON.parse(reader)?.let {
+                                jsonCache[path.toUri()] = it
+                                it.cacheByURI()
+                            }
                         }
                     }
                     fileName.extension(".yaml") || fileName.extension(".yml") -> {
-                        YAMLSimple.process(Files.newBufferedReader(path)).rootNode?.let {
-                            jsonCache[path.toUri()] = it
-                            it.cacheByURI()
+                        Files.newBufferedReader(path).use { reader ->
+                            YAMLSimple.process(reader).rootNode?.let {
+                                jsonCache[path.toUri()] = it
+                                it.cacheByURI()
+                            }
                         }
                     }
                 }
@@ -138,12 +142,12 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         val uri = path.toUri()
         return jsonCache[uri] ?: try {
             val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
-            when {
-                fileName.extension(".yaml") || fileName.extension(".yml") ->
-                    YAMLSimple.process(Files.newBufferedReader(path)).rootNode ?:
-                            throw JSONSchemaException("Schema file is null - $path")
-                else -> JSON.parse(Files.newBufferedReader(path)) ?:
-                        throw JSONSchemaException("Schema file is null - $path")
+            Files.newBufferedReader(path).use { reader ->
+                when {
+                    fileName.extension(".yaml") || fileName.extension(".yml") ->
+                        YAMLSimple.process(reader).rootNode ?: throw JSONSchemaException("Schema file is null - $path")
+                    else -> JSON.parse(reader) ?: throw JSONSchemaException("Schema file is null - $path")
+                }
             }
         }
         catch (e: Exception) {

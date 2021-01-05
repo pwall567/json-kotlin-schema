@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Unreleased]
+### Changed
+- `Parser`: changed handling of nonstandard formats to better reflect spec.
+- `Parser`: added handling of $ref in description (controlled by option)
+
 ## [0.14] - 2021-01-04
 ### Changed
 - `JSONReader`: minor improvements to usage of `Path`

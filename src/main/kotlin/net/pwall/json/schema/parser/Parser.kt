@@ -70,7 +70,9 @@ import net.pwall.json.schema.validation.PatternValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 
-class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
+class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream? = defaultURIResolver) {
+
+    data class Options(var allowDescriptionRef: Boolean = false)
 
     var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
             { _, _, _, _ -> null }
@@ -160,7 +162,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
             schemaCache[fragmentURI] = JSONSchema.False(uri, pointer)
         }
         val title = schemaJSON.getStringOrNull("title")
-        val description = schemaJSON.getStringOrNull("description")
+        val description = getDescription(schemaJSON, uri, pointer)
 
         val children = mutableListOf<JSONSchema>()
         val result = JSONSchema.General(schemaVersion201909[0], title, description, uri, pointer, children)
@@ -173,8 +175,8 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                     if (value !is JSONString)
                         throw JSONSchemaException("String expected - $childPointer")
                 }
-                "\$defs", "then", "else" -> {}
-                "\$id", "\$comment", "title", "description" -> {
+                "\$id", "\$defs", "title", "description", "then", "else" -> {}
+                "\$comment" -> {
                     if (value !is JSONString)
                         throw JSONSchemaException("String expected - $childPointer")
                 }
@@ -210,7 +212,7 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
                 "minLength" -> children.add(parseStringLength(childPointer, uri,
                         StringValidator.ValidationType.MIN_LENGTH, value))
                 "pattern" -> children.add(parsePattern(childPointer, uri, value))
-                "format" -> children.add(parseFormat(childPointer, uri, value))
+                "format" -> parseFormat(childPointer, uri, value)?.let { children.add(it) }
                 "additionalProperties" -> children.add(AdditionalPropertiesSchema(result, uri, childPointer,
                         parseSchema(json, childPointer, uri)))
                 "additionalItems" -> children.add(AdditionalItemsSchema(result, uri, childPointer,
@@ -226,6 +228,30 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         return result
     }
 
+    private fun getDescription(schemaJSON: JSONMapping<*>, uri: URI?, pointer: JSONPointer): String? {
+        val value = schemaJSON["description"] ?: return null
+        if (value is JSONString)
+            return value.get()
+        // add controlling flag?
+        if (options.allowDescriptionRef && value is JSONMapping<*> && value.size == 1) {
+            val ref = value["\$ref"]
+            if (ref is JSONString) {
+                try {
+                    return (if (uri == null) URI(ref.get()) else uri.resolve(ref.get())).toURL().readText()
+                }
+                catch (e: Exception) {
+                    throw JSONSchemaException("Error reading external description - ${errorPointer(uri, pointer)}")
+                }
+            }
+        }
+        throw JSONSchemaException("Invalid description - ${errorPointer(uri, pointer)}")
+    }
+
+    private fun errorPointer(uri: URI?, pointer: JSONPointer): String {
+        val fragment = pointer.toURIFragment()
+        return uri?.dropFragment()?.resolve(fragment)?.toString() ?: fragment
+    }
+
     private fun parseIf(json: JSONValue, pointer: JSONPointer, uri: URI?): JSONSchema {
         val ifSchema = parseSchema(json, pointer.child("if"), uri)
         val thenSchema = pointer.child("then").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
@@ -233,15 +259,14 @@ class Parser(uriResolver: (URI) -> InputStream? = defaultURIResolver) {
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
-    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator {
+    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator? {
         if (value !is JSONString)
             throw JSONSchemaException("String expected - $pointer")
         value.get().let { keyword ->
             if (keyword !in FormatValidator.typeKeywords) {
-                nonstandardFormatHandler(keyword, uri, pointer)?.let {
-                    return DelegatingValidator(uri, pointer, "format", it)
+                return nonstandardFormatHandler(keyword, uri, pointer)?.let {
+                    DelegatingValidator(uri, pointer, "format", it)
                 }
-                throw JSONSchemaException("Format not recognised - $keyword - $pointer")
             }
             return FormatValidator(uri, pointer, FormatValidator.findType(keyword))
         }

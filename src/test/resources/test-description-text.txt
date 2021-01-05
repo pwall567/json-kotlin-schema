@@ -1,0 +1,2 @@
+This is an example of external text.
+It has two lines.

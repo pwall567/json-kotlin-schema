@@ -136,4 +136,14 @@ class ParserTest {
         expect(true) { schema.validate(JSON.parse("""{"warehouse":1,"retail":2}""")) }
     }
 
+    @Test fun `should parse schema with description in external file`() {
+        val parser = Parser()
+        parser.options.allowDescriptionRef = true
+        val schema = parser.parseFile("src/test/resources/test-description-ref.schema.yaml")
+        if (schema !is JSONSchema.General)
+            fail("Unexpected schema type")
+        val description = schema.description ?: fail("Description is null")
+        expect(true) { description.startsWith("This is an example ") }
+    }
+
 }

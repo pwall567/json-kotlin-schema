@@ -2,7 +2,7 @@
  * @(#) Parser.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,8 +77,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
             { _, _, _, _ -> null }
 
-    var nonstandardFormatHandler: (String, URI?, JSONPointer) -> JSONSchema.Validator? =
-            { _, _, _ -> null }
+    var nonstandardFormatHandler: (String) -> FormatValidator.FormatChecker? = { _ -> null }
 
     private val jsonReader = JSONReader(uriResolver)
 
@@ -212,7 +211,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                 "minLength" -> children.add(parseStringLength(childPointer, uri,
                         StringValidator.ValidationType.MIN_LENGTH, value))
                 "pattern" -> children.add(parsePattern(childPointer, uri, value))
-                "format" -> parseFormat(childPointer, uri, value)?.let { children.add(it) }
+                "format" -> children.add(parseFormat(childPointer, uri, value))
                 "additionalProperties" -> children.add(AdditionalPropertiesSchema(result, uri, childPointer,
                         parseSchema(json, childPointer, uri)))
                 "additionalItems" -> children.add(AdditionalItemsSchema(result, uri, childPointer,
@@ -259,16 +258,13 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
-    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator? {
+    private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator {
         if (value !is JSONString)
             throw JSONSchemaException("String expected - $pointer")
         value.get().let { keyword ->
-            if (keyword !in FormatValidator.typeKeywords) {
-                return nonstandardFormatHandler(keyword, uri, pointer)?.let {
-                    DelegatingValidator(uri, pointer, "format", it)
-                }
-            }
-            return FormatValidator(uri, pointer, FormatValidator.findType(keyword))
+            val checker = nonstandardFormatHandler(keyword) ?: FormatValidator.findChecker(keyword) ?:
+                    FormatValidator.NullFormatChecker(keyword)
+            return FormatValidator(uri, pointer, checker)
         }
     }
 

@@ -30,18 +30,21 @@ import kotlin.test.expect
 import kotlin.test.fail
 
 import net.pwall.json.JSON
+import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.parser.Parser
+import net.pwall.json.schema.validation.FormatValidator
 import net.pwall.json.schema.validation.StringValidator
 
 class JSONSchemaNonstandardFormatTest {
 
     @Test fun `should make use of nonstandard format replacement validation`() {
         val parser = Parser()
-        parser.nonstandardFormatHandler = { keyword, uri, location ->
-            when (keyword) {
-                "not-empty" -> StringValidator(uri, location, StringValidator.ValidationType.MIN_LENGTH, 1)
-                else -> null
-            }
+        parser.nonstandardFormatHandler = { keyword ->
+            if (keyword == "not-empty")
+                FormatValidator.DelegatingFormatChecker(keyword,
+                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MIN_LENGTH, 1))
+            else
+                null
         }
         val filename = "src/test/resources/test-nonstandard-format.schema.json"
         val schema = parser.parseFile(filename)
@@ -70,7 +73,7 @@ class JSONSchemaNonstandardFormatTest {
             expect("#/properties/aaa/format") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("String fails length check: minLength 1, was 0") { it.error }
+            expect("""Value fails format check "not-empty", was """"") { it.error }
         }
     }
 

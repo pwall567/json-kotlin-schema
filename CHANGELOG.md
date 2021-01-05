@@ -2,7 +2,7 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.15] - 2021-01-05
 ### Changed
 - `Parser`: changed handling of nonstandard formats to better reflect spec.
 - `Parser`: added handling of $ref in description (controlled by option)

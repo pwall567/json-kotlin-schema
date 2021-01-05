@@ -2,7 +2,7 @@
  * @(#) JSONSchemaTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -469,7 +469,7 @@ class JSONSchemaTest {
             expect("#/properties/dateTimeTest/format") { it.keywordLocation }
             expect("http://pwall.net/test-string-format#/properties/dateTimeTest/format") { it.absoluteKeywordLocation }
             expect("#/dateTimeTest") { it.instanceLocation }
-            expect("String fails format check \"date-time\", was \"wrong\"") { it.error }
+            expect("Value fails format check \"date-time\", was \"wrong\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json2).valid }
         val json3 = JSON.parse("""{"dateTest":"2020-07-22"}""")
@@ -498,7 +498,7 @@ class JSONSchemaTest {
             expect("#/properties/dateTest/format") { it.keywordLocation }
             expect("http://pwall.net/test-string-format#/properties/dateTest/format") { it.absoluteKeywordLocation }
             expect("#/dateTest") { it.instanceLocation }
-            expect("String fails format check \"date\", was \"wrong\"") { it.error }
+            expect("Value fails format check \"date\", was \"wrong\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json4).valid }
     }
@@ -560,7 +560,7 @@ class JSONSchemaTest {
             expect("#/properties/aaa/anyOf/1/format") { it.keywordLocation }
             expect("http://pwall.net/test-anyof#/properties/aaa/anyOf/1/format") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("String fails format check \"date\", was \"wrong\"") { it.error }
+            expect("Value fails format check \"date\", was \"wrong\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json3).valid }
     }
@@ -633,7 +633,7 @@ class JSONSchemaTest {
             expect("#/then/properties/bbb/format") { it.keywordLocation }
             expect("http://pwall.net/test-if-then-else#/then/properties/bbb/format") { it.absoluteKeywordLocation }
             expect("#/bbb") { it.instanceLocation }
-            expect("String fails format check \"uuid\", was \"2020-08-17T19:30:00+10:00\"") { it.error }
+            expect("Value fails format check \"uuid\", was \"2020-08-17T19:30:00+10:00\"") { it.error }
         }
         val json3 = JSON.parse("""{"aaa":"D","bbb":"2020-08-17T19:30:00+10:00"}""")
         expect(true) { schema.validate(json3) }
@@ -666,7 +666,7 @@ class JSONSchemaTest {
             expect("#/else/properties/bbb/format") { it.keywordLocation }
             expect("http://pwall.net/test-if-then-else#/else/properties/bbb/format") { it.absoluteKeywordLocation }
             expect("#/bbb") { it.instanceLocation }
-            expect("String fails format check \"date-time\", was \"ae102612-e023-11ea-a115-6b5393cb81fd\"") { it.error }
+            expect("Value fails format check \"date-time\", was \"ae102612-e023-11ea-a115-6b5393cb81fd\"") { it.error }
         }
     }
 

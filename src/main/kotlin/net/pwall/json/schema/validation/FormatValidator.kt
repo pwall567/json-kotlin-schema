@@ -2,7 +2,7 @@
  * @(#) FormatValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,86 +34,215 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.validation.JSONValidation
 
-class FormatValidator(uri: URI?, location: JSONPointer, val type: FormatType) : JSONSchema.Validator(uri, location) {
-
-    enum class FormatType(val keyword: String) {
-        DATE_TIME("date-time"),
-        DATE("date"),
-        TIME("time"),
-        DURATION("duration"),
-        EMAIL("email"),
-        IDN_EMAIL("idn-email"),
-        HOSTNAME("hostname"),
-        IDN_HOSTNAME("idn-hostname"),
-        IPV4("ipv4"),
-        IPV6("ipv6"),
-        URI("uri"),
-        URI_REFERENCE("uri-reference"),
-        IRI("iri"),
-        IRI_REFERENCE("iri-reference"),
-        UUID("uuid"),
-        URI_TEMPLATE("uri-template"),
-        JSON_POINTER("json-pointer"),
-        RELATIVE_JSON_POINTER("relative-json-pointer"),
-        REGEX("regex")
-    }
+class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatChecker) :
+        JSONSchema.Validator(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("format")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONString)
-            return true
-        return validFormat(instance.get())
+        return checker.check(instanceLocation.eval(json))
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        if (instance !is JSONString)
-            return null
-        val str = instance.get()
-        return if (validFormat(str)) null else createBasicErrorEntry(relativeLocation, instanceLocation,
-                "String fails format check \"${type.keyword}\", was \"$str\"")
-    }
-
-    private fun validFormat(str: String): Boolean {
-        return when (type) {
-            FormatType.DATE_TIME -> JSONValidation.isDateTime(str)
-            FormatType.DATE -> JSONValidation.isDate(str)
-            FormatType.TIME -> JSONValidation.isTime(str)
-            FormatType.DURATION -> JSONValidation.isDuration(str)
-            FormatType.EMAIL -> JSONValidation.isEmail(str)
-            FormatType.IDN_EMAIL -> true
-            FormatType.HOSTNAME -> JSONValidation.isHostname(str)
-            FormatType.IDN_HOSTNAME -> true
-            FormatType.IPV4 -> JSONValidation.isIPV4(str)
-            FormatType.IPV6 -> JSONValidation.isIPV6(str)
-            FormatType.URI -> JSONValidation.isURI(str)
-            FormatType.URI_REFERENCE -> JSONValidation.isURIReference(str)
-            FormatType.IRI -> true
-            FormatType.IRI_REFERENCE -> true
-            FormatType.UUID -> JSONValidation.isUUID(str)
-            FormatType.URI_TEMPLATE -> true
-            FormatType.JSON_POINTER -> true
-            FormatType.RELATIVE_JSON_POINTER -> true
-            FormatType.REGEX -> true
-        }
+        return if (checker.check(instance)) null else createBasicErrorEntry(relativeLocation, instanceLocation,
+                "Value fails format check \"${checker.name}\", was ${instance.toJSON()}")
     }
 
     override fun equals(other: Any?): Boolean = this === other ||
-            other is FormatValidator && super.equals(other) && type == other.type
+            other is FormatValidator && super.equals(other) && checker == other.checker
 
-    override fun hashCode(): Int = super.hashCode() xor type.hashCode()
+    override fun hashCode(): Int = super.hashCode() xor checker.hashCode()
+
+    interface FormatChecker {
+        val name: String
+        fun check(value: JSONValue?): Boolean
+    }
+
+    object DateTimeFormatChecker : FormatChecker {
+
+        override val name: String = "date-time"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isDateTime(value.get())
+        }
+
+    }
+
+    object DateFormatChecker : FormatChecker {
+
+        override val name: String = "date"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isDate(value.get())
+        }
+
+    }
+
+    object TimeFormatChecker : FormatChecker {
+
+        override val name: String = "time"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isTime(value.get())
+        }
+
+    }
+
+    object DurationFormatChecker : FormatChecker {
+
+        override val name: String = "duration"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isDuration(value.get())
+        }
+
+    }
+
+    object EmailFormatChecker : FormatChecker {
+
+        override val name: String = "email"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isEmail(value.get())
+        }
+
+    }
+
+    object HostnameFormatChecker : FormatChecker {
+
+        override val name: String = "hostname"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isHostname(value.get())
+        }
+
+    }
+
+    object IPV4FormatChecker : FormatChecker {
+
+        override val name: String = "ipv4"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isIPV4(value.get())
+        }
+
+    }
+
+    object IPV6FormatChecker : FormatChecker {
+
+        override val name: String = "ipv6"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isIPV6(value.get())
+        }
+
+    }
+
+    object URIFormatChecker : FormatChecker {
+
+        override val name: String = "uri"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isURI(value.get())
+        }
+
+    }
+
+    object URIReferenceFormatChecker : FormatChecker {
+
+        override val name: String = "uri-reference"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isURIReference(value.get())
+        }
+
+    }
+
+    object UUIDFormatChecker : FormatChecker {
+
+        override val name: String = "uuid"
+
+        override fun check(value: JSONValue?): Boolean {
+            if (value !is JSONString)
+                return true
+            return JSONValidation.isUUID(value.get())
+        }
+
+    }
+
+    // Not yet implemented:
+    //   idn-email
+    //   idn-hostname
+    //   iri
+    //   iri-reference
+    //   uri-template
+    //   json-pointer
+    //   relative-json-pointer
+    //   regex
+
+    class NullFormatChecker(override val name: String) : FormatChecker {
+
+        override fun check(value: JSONValue?): Boolean = true
+
+        override fun equals(other: Any?): Boolean = this === other ||
+                other is NullFormatChecker && name == other.name
+
+        override fun hashCode(): Int = name.hashCode()
+
+    }
+
+    class DelegatingFormatChecker(override val name: String, val validator: Validator) : FormatChecker {
+
+        override fun check(value: JSONValue?): Boolean {
+            return validator.validate(value)
+        }
+
+        override fun equals(other: Any?): Boolean = this === other ||
+                other is DelegatingFormatChecker && name == other.name && validator == other.validator
+
+        override fun hashCode(): Int = name.hashCode() xor validator.hashCode()
+
+    }
 
     companion object {
 
-        val typeKeywords: List<String> = FormatType.values().map { it.keyword }
+        private val checkers = listOf(
+                DateTimeFormatChecker,
+                DateFormatChecker,
+                TimeFormatChecker,
+                DurationFormatChecker,
+                EmailFormatChecker,
+                HostnameFormatChecker,
+                IPV4FormatChecker,
+                IPV6FormatChecker,
+                URIFormatChecker,
+                URIReferenceFormatChecker,
+                UUIDFormatChecker
+        )
 
-        fun findType(keyword: String): FormatType {
-            FormatType.values().forEach { if (it.keyword == keyword) return it }
-            throw RuntimeException("Can't find format type - should not happen")
-        }
+        fun findChecker(keyword: String): FormatChecker? = checkers.find { it.name == keyword }
 
     }
 

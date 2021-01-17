@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.16] - 2021-01-17
+### Changed
+- `FormatValidator`: changed handling of format duration, added json-pointer and relative-json-pointer
+
 ## [0.15] - 2021-01-05
 ### Changed
 - `Parser`: changed handling of nonstandard formats to better reflect spec.

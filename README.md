@@ -195,7 +195,7 @@ The currently implemented subset includes:
 
 - `type` (`null`, `boolean`, `object`, `array`, `number`, `string`, `integer`)
 - `format` (`date-time`, `date`, `time`, `duration`, `email`, `hostname`, `uri`, `uri-reference`, `uuid`, `ipv4`,
-`ipv6`)
+`ipv6`, `json-pointer`, `relative-json-pointer`)
 - `enum`
 - `const`
 - `multipleOf`
@@ -230,32 +230,31 @@ The currently implemented subset includes:
 - `deprecated`
 - `readOnly`
 - `writeOnly`
-- `format` (`idn-email`, `idn-hostname`, `iri`, `iri-reference`, `url-template`, `json-pointer`,
-`relative-json-pointer`)
+- `format` (`idn-email`, `idn-hostname`, `iri`, `iri-reference`, `url-template`)
 
 More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.15, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.16, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.15</version>
+      <version>0.16</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.15'
+    implementation 'net.pwall.json:json-kotlin-schema:0.16'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.15")
+    implementation("net.pwall.json:json-kotlin-schema:0.16")
 ```
 
 Peter Wall
 
-2021-01-05
+2021-01-17

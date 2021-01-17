@@ -33,6 +33,9 @@
     },
     "jsonPointerTest": {
       "format": "json-pointer"
+    },
+    "relativeJsonPointerTest": {
+      "format": "relative-json-pointer"
     }
   }
 }

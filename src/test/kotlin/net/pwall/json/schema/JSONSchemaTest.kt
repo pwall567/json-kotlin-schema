@@ -501,6 +501,35 @@ class JSONSchemaTest {
             expect("Value fails format check \"date\", was \"wrong\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json4).valid }
+        val json5 = JSON.parse("""{"durationTest":"P1M"}""")
+        expect(true) { schema.validate(json5) }
+        expect(true) { schema.validateBasic(json5).valid }
+        expect(true) { schema.validateDetailed(json5).valid }
+        val json6 = JSON.parse("""{"durationTest":"wrong"}""")
+        expect(false) { schema.validate(json6) }
+        val validateResult6 = schema.validateBasic(json6)
+        expect(false) { validateResult6.valid }
+        val errors6 = validateResult6.errors ?: fail()
+        expect(3) { errors6.size }
+        errors6[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-string-format#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors6[1].let {
+            expect("#/properties/durationTest") { it.keywordLocation }
+            expect("http://pwall.net/test-string-format#/properties/durationTest") { it.absoluteKeywordLocation }
+            expect("#/durationTest") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors6[2].let {
+            expect("#/properties/durationTest/format") { it.keywordLocation }
+            expect("http://pwall.net/test-string-format#/properties/durationTest/format") { it.absoluteKeywordLocation }
+            expect("#/durationTest") { it.instanceLocation }
+            expect("Value fails format check \"duration\", was \"wrong\"") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json6).valid }
     }
 
     @Test fun `should validate schema with anyOf`() {

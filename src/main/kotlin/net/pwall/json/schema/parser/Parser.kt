@@ -47,6 +47,7 @@ import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.subschema.AdditionalItemsSchema
@@ -143,8 +144,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         val schemaJSON = pointer.eval(json)
         if (schemaJSON is JSONBoolean)
-            return if (schemaJSON.booleanValue()) JSONSchema.True(parentUri, pointer) else
-                    JSONSchema.False(parentUri, pointer)
+            return booleanSchema(schemaJSON.booleanValue(), parentUri, pointer)
         if (schemaJSON !is JSONMapping<*>)
             throw JSONSchemaException("Schema is not boolean or object - ${pointer.pointerOrRoot()}")
         val id = schemaJSON.getStringOrNull("\$id")

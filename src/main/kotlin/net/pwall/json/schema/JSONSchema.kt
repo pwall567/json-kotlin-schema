@@ -265,6 +265,9 @@ sealed class JSONSchema(
 
         val parser by lazy { Parser() }
 
+        fun booleanSchema(value: Boolean, uri: URI?, location: JSONPointer): JSONSchema =
+                if (value) True(uri, location) else False(uri, location)
+
         fun parseFile(filename: String): JSONSchema = parser.parseFile(filename)
 
         fun parse(file: File): JSONSchema = parser.parse(file)

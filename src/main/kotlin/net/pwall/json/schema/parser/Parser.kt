@@ -279,10 +279,9 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         if (value !is JSONString)
             throw JSONPointerException("\$ref must be string - $pointer")
         val refURIString = (if (uri == null) URI(value.get()) else uri.resolve(value.get())).toString()
-        val (refURIPath, refURIFragment) = if (refURIString.contains('#'))
-            refURIString.substringBefore('#') to refURIString.substringAfter('#')
-        else
-            refURIString to null
+        val hashIndex = refURIString.indexOf('#')
+        val refURIPath = if (hashIndex < 0) refURIString else refURIString.substring(0, hashIndex)
+        val refURIFragment = if (hashIndex < 0) null else refURIString.substring(hashIndex + 1)
         val refJSON = if (refURIPath == uri.toString()) json else
                 jsonReader.readJSON(URI(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath))
         val refPointer = refURIFragment?.let { JSONPointer.fromURIFragment("#$it") }  ?: JSONPointer.root

@@ -6,7 +6,7 @@
   "properties": {
     "aaa": {
       "type": "string",
-      "format": "not-empty"
+      "format": "non-standard"
     }
   }
 }

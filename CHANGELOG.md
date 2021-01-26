@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.17] - 2021-01-26
+### Changed
+- `FormatValidator`: added `int32` and `int64`
+- `FormatValidator`: allow multiple delegating validators
+- `FormatValidator`: bug fix
+- `pom.xml`: updated dependency versions
+
 ## [0.16] - 2021-01-17
 ### Changed
 - `FormatValidator`: changed handling of format duration, added json-pointer and relative-json-pointer

@@ -40,7 +40,7 @@ class JSONSchemaNonstandardFormatTest {
     @Test fun `should make use of nonstandard format replacement validation`() {
         val parser = Parser()
         parser.nonstandardFormatHandler = { keyword ->
-            if (keyword == "not-empty")
+            if (keyword == "non-standard")
                 FormatValidator.DelegatingFormatChecker(keyword,
                         StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MIN_LENGTH, 1))
             else
@@ -73,7 +73,72 @@ class JSONSchemaNonstandardFormatTest {
             expect("#/properties/aaa/format") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("""Value fails format check "not-empty", was """"") { it.error }
+            expect("""Value fails format check "non-standard", was """"") { it.error }
+        }
+    }
+
+    @Test fun `should make use of nonstandard format replacement validation - multiple`() {
+        val parser = Parser()
+        parser.nonstandardFormatHandler = { keyword ->
+            when (keyword) {
+                "non-standard" -> FormatValidator.DelegatingFormatChecker(keyword,
+                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MIN_LENGTH, 1),
+                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MAX_LENGTH, 3))
+                else -> null
+            }
+        }
+        val filename = "src/test/resources/test-nonstandard-format.schema.json"
+        val schema = parser.parseFile(filename)
+        val json1 = JSON.parse("""{"aaa":"Q"}""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        val json2 = JSON.parse("""{"aaa":""}""")
+        expect(false) { schema.validate(json2) }
+        val validateResult2 = schema.validateBasic(json2)
+        expect(false) { validateResult2.valid }
+        val errors2 = validateResult2.errors ?: fail()
+        expect(3) { errors2.size }
+        errors2[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors2[1].let {
+            expect("#/properties/aaa") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors2[2].let {
+            expect("#/properties/aaa/format") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("""Value fails format check "non-standard", was """"") { it.error }
+        }
+        val json3 = JSON.parse("""{"aaa":"XXXX"}""")
+        expect(false) { schema.validate(json3) }
+        val validateResult3 = schema.validateBasic(json3)
+        expect(false) { validateResult3.valid }
+        val errors3 = validateResult3.errors ?: fail()
+        expect(3) { errors3.size }
+        errors3[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors3[1].let {
+            expect("#/properties/aaa") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors3[2].let {
+            expect("#/properties/aaa/format") { it.keywordLocation }
+            expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("""Value fails format check "non-standard", was "XXXX"""") { it.error }
         }
     }
 

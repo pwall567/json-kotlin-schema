@@ -25,8 +25,15 @@
 
 package net.pwall.json.schema.validation
 
+import kotlin.math.floor
+
+import java.math.BigDecimal
 import java.net.URI
 
+import net.pwall.json.JSONDecimal
+import net.pwall.json.JSONDouble
+import net.pwall.json.JSONFloat
+import net.pwall.json.JSONLong
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
@@ -34,8 +41,11 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.validation.JSONValidation
 
-class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatChecker) :
-        JSONSchema.Validator(uri, location) {
+class FormatValidator(
+    uri: URI?,
+    location: JSONPointer,
+    val checker: FormatChecker
+) : JSONSchema.Validator(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("format")
 
@@ -64,7 +74,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "date-time"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isDateTime(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDateTime(value.get())
 
     }
 
@@ -72,7 +82,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "date"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isDate(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDate(value.get())
 
     }
 
@@ -80,7 +90,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "time"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isTime(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isTime(value.get())
 
     }
 
@@ -88,7 +98,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "duration"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isDuration(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDuration(value.get())
 
     }
 
@@ -96,7 +106,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "email"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isEmail(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isEmail(value.get())
 
     }
 
@@ -104,7 +114,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "hostname"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isHostname(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isHostname(value.get())
 
     }
 
@@ -112,7 +122,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "ipv4"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isIPV4(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV4(value.get())
 
     }
 
@@ -120,7 +130,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "ipv6"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isIPV6(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV6(value.get())
 
     }
 
@@ -128,7 +138,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "uri"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isURI(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isURI(value.get())
 
     }
 
@@ -137,7 +147,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
         override val name: String = "uri-reference"
 
         override fun check(value: JSONValue?): Boolean =
-                value is JSONString && JSONValidation.isURIReference(value.get())
+                value !is JSONString || JSONValidation.isURIReference(value.get())
 
     }
 
@@ -145,7 +155,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
         override val name: String = "uuid"
 
-        override fun check(value: JSONValue?): Boolean = value is JSONString && JSONValidation.isUUID(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isUUID(value.get())
 
     }
 
@@ -154,7 +164,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
         override val name: String = "json-pointer"
 
         override fun check(value: JSONValue?): Boolean =
-                value is JSONString && JSONValidation.isJSONPointer(value.get())
+                value !is JSONString || JSONValidation.isJSONPointer(value.get())
 
     }
 
@@ -163,7 +173,7 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
         override val name: String = "relative-json-pointer"
 
         override fun check(value: JSONValue?): Boolean =
-                value is JSONString && JSONValidation.isRelativeJSONPointer(value.get())
+                value !is JSONString || JSONValidation.isRelativeJSONPointer(value.get())
 
     }
 
@@ -174,6 +184,61 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
     //   iri-reference
     //   uri-template
     //   regex
+
+    // Additional formats for OpenAPI: int32 and int64
+
+    object Int64FormatChecker : FormatChecker {
+
+        override val name: String = "int64"
+
+        override fun check(value: JSONValue?): Boolean = when (value) {
+            is JSONDecimal -> {
+                try {
+                    value.bigDecimalValue().setScale(0) in BigDecimal(Long.MIN_VALUE)..BigDecimal(Long.MAX_VALUE)
+                }
+                catch (e: ArithmeticException) {
+                    false
+                }
+            }
+            is JSONDouble -> {
+                val doubleValue = value.get()
+                doubleValue == floor(doubleValue) && doubleValue in Long.MIN_VALUE.toDouble()..Long.MAX_VALUE.toDouble()
+            }
+            is JSONFloat -> {
+                val floatValue = value.get()
+                floatValue == floor(floatValue) && floatValue in Long.MIN_VALUE.toFloat()..Long.MAX_VALUE.toFloat()
+            }
+            else -> true // includes JSONInteger, JSONLong, JSONZero
+        }
+
+    }
+
+    object Int32FormatChecker : FormatChecker {
+
+        override val name: String = "int32"
+
+        override fun check(value: JSONValue?): Boolean = when (value) {
+            is JSONLong -> value.get() in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()
+            is JSONDecimal -> {
+                try {
+                    value.bigDecimalValue().setScale(0) in BigDecimal(Int.MIN_VALUE)..BigDecimal(Int.MAX_VALUE)
+                }
+                catch (e: ArithmeticException) {
+                    false
+                }
+            }
+            is JSONDouble -> {
+                val doubleValue = value.get()
+                doubleValue == floor(doubleValue) && doubleValue in Int.MIN_VALUE.toDouble()..Int.MAX_VALUE.toDouble()
+            }
+            is JSONFloat -> {
+                val floatValue = value.get()
+                floatValue == floor(floatValue) && floatValue in Int.MIN_VALUE.toFloat()..Int.MAX_VALUE.toFloat()
+            }
+            else -> true // includes JSONInteger, JSONZero
+        }
+
+    }
 
     class NullFormatChecker(override val name: String) : FormatChecker {
 
@@ -186,33 +251,40 @@ class FormatValidator(uri: URI?, location: JSONPointer, val checker: FormatCheck
 
     }
 
-    class DelegatingFormatChecker(override val name: String, val validator: Validator) : FormatChecker {
+    class DelegatingFormatChecker(override val name: String, vararg val validators: Validator) : FormatChecker {
 
-        override fun check(value: JSONValue?): Boolean = validator.validate(value)
+        override fun check(value: JSONValue?): Boolean {
+            for (validator in validators)
+                if (!validator.validate(value))
+                    return false
+            return true
+        }
 
         override fun equals(other: Any?): Boolean = this === other ||
-                other is DelegatingFormatChecker && name == other.name && validator == other.validator
+                other is DelegatingFormatChecker && name == other.name && validators.contentEquals(other.validators)
 
-        override fun hashCode(): Int = name.hashCode() xor validator.hashCode()
+        override fun hashCode(): Int = name.hashCode() xor validators.hashCode()
 
     }
 
     companion object {
 
         private val checkers = listOf(
-                DateTimeFormatChecker,
-                DateFormatChecker,
-                TimeFormatChecker,
-                DurationFormatChecker,
-                EmailFormatChecker,
-                HostnameFormatChecker,
-                IPV4FormatChecker,
-                IPV6FormatChecker,
-                URIFormatChecker,
-                URIReferenceFormatChecker,
-                UUIDFormatChecker,
-                JSONPointerFormatChecker,
-                RelativeJSONPointerFormatChecker
+            DateTimeFormatChecker,
+            DateFormatChecker,
+            TimeFormatChecker,
+            DurationFormatChecker,
+            EmailFormatChecker,
+            HostnameFormatChecker,
+            IPV4FormatChecker,
+            IPV6FormatChecker,
+            URIFormatChecker,
+            URIReferenceFormatChecker,
+            UUIDFormatChecker,
+            JSONPointerFormatChecker,
+            RelativeJSONPointerFormatChecker,
+            Int32FormatChecker,
+            Int64FormatChecker
         )
 
         fun findChecker(keyword: String): FormatChecker? = checkers.find { it.name == keyword }

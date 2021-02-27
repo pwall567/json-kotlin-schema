@@ -70,6 +70,7 @@ import net.pwall.json.schema.validation.NumberValidator
 import net.pwall.json.schema.validation.PatternValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
+import net.pwall.json.schema.validation.UniqueItemsValidator
 
 class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
@@ -206,6 +207,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                         ArrayValidator.ValidationType.MAX_ITEMS, value))
                 "minItems" -> children.add(parseArrayNumberOfItems(childPointer, uri,
                         ArrayValidator.ValidationType.MIN_ITEMS, value))
+                "uniqueItems" -> parseArrayUniqueItems(childPointer, uri, value)?.let { children.add(it) }
                 "maxLength" -> children.add(parseStringLength(childPointer, uri,
                         StringValidator.ValidationType.MAX_LENGTH, value))
                 "minLength" -> children.add(parseStringLength(childPointer, uri,
@@ -379,6 +381,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         if (value !is JSONInteger)
             throw JSONSchemaException("Must be integer - ${pointer.pointerOrRoot()}")
         return ArrayValidator(uri, pointer, condition, value.get())
+    }
+
+    private fun parseArrayUniqueItems(pointer: JSONPointer, uri: URI?, value: JSONValue?): UniqueItemsValidator? {
+        if (value !is JSONBoolean)
+            throw JSONSchemaException("Must be boolean - ${pointer.pointerOrRoot()}")
+        return if (value.booleanValue()) UniqueItemsValidator(uri, pointer) else null
     }
 
     private fun parsePattern(pointer: JSONPointer, uri: URI?, value: JSONValue?): PatternValidator {

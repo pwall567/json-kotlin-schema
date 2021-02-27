@@ -205,6 +205,7 @@ The currently implemented subset includes:
 - `exclusiveMinimum`
 - `minItems`
 - `maxItems`
+- `uniqueItems`
 - `maxLength`
 - `minLength`
 - `pattern`
@@ -221,7 +222,6 @@ The currently implemented subset includes:
 - `dependentSchemas`
 - `dependentRequired`
 - `contains`
-- `uniqueItems`
 - `maxContains`
 - `minContains`
 - `contentEncoding`
@@ -236,25 +236,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.17, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.18, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.17</version>
+      <version>0.18</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.17'
+    implementation 'net.pwall.json:json-kotlin-schema:0.18'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.17")
+    implementation("net.pwall.json:json-kotlin-schema:0.18")
 ```
 
 Peter Wall
 
-2021-01-26
+2021-02-26

@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.18] - 2021-02-26
+### Changed
+- `Parser`: adding handling of `uniqueItems`
+### Added
+- `UniqueItemsValidator`: new
+- `pom.xml`: updated dependency version
+
 ## [0.17] - 2021-01-26
 ### Changed
 - `FormatValidator`: added `int32` and `int64`

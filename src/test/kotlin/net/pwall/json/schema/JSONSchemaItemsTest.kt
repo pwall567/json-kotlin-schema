@@ -120,4 +120,38 @@ class JSONSchemaItemsTest {
         expect(false) { schema.validateDetailed(json2).valid }
     }
 
+    @Test fun `should validate items of array with uniqueItems`() {
+        val filename = "src/test/resources/test-unique-item.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""{"aaa":[1,2,3]}""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""{"aaa":[1,2,1]}""")
+        expect(false) { schema.validate(json2) }
+        val validateResult = schema.validateBasic(json2)
+        expect(false) { validateResult.valid }
+        val errors = validateResult.errors ?: fail()
+        expect(3) { errors.size }
+        errors[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-unique-item#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[1].let {
+            expect("#/properties/aaa") { it.keywordLocation }
+            expect("http://pwall.net/test-unique-item#/properties/aaa") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[2].let {
+            expect("#/properties/aaa/uniqueItems") { it.keywordLocation }
+            expect("http://pwall.net/test-unique-item#/properties/aaa/uniqueItems") { it.absoluteKeywordLocation }
+            expect("#/aaa") { it.instanceLocation }
+            expect("Array items not unique") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+    }
+
 }

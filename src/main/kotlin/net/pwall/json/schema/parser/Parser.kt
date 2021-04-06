@@ -148,7 +148,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             return booleanSchema(schemaJSON.booleanValue(), parentUri, pointer)
         if (schemaJSON !is JSONMapping<*>)
             throw JSONSchemaException("Schema is not boolean or object - ${pointer.pointerOrRoot()}")
-        val id = schemaJSON.getStringOrNull("\$id")
+        val id = getIdOrNull(schemaJSON)
         val uri = when {
             id == null -> parentUri
             parentUri == null -> URI(id).dropFragment()
@@ -461,6 +461,9 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             is Long -> this > 0L
             else -> this.toInt() > 0
         }
+
+        fun getIdOrNull(jsonValue: JSONValue): String? =
+                ((jsonValue as? JSONMapping<*>)?.get("\$id") as? JSONString)?.get()
 
     }
 

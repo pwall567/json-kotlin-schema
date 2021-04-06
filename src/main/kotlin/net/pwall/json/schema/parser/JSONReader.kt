@@ -32,12 +32,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 import net.pwall.json.JSON
-import net.pwall.json.JSONMapping
 import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.parser.Parser.Companion.dropFragment
-import net.pwall.json.schema.parser.Parser.Companion.getStringOrNull
 import net.pwall.yaml.YAMLSimple
 
 class JSONReader(val uriResolver: (URI) -> InputStream?) {
@@ -159,10 +156,8 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
     }
 
     private fun JSONValue.cacheByURI() {
-        if (this is JSONMapping<*>) {
-            getStringOrNull(JSONPointer.root.child("\$id"))?.let {
-                jsonCache[URI(it).dropFragment()] = this
-            }
+        Parser.getIdOrNull(this)?.let {
+            jsonCache[URI(it).dropFragment()] = this
         }
     }
 

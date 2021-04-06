@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.18.1] - 2021-04-06
+### Changed
+- `PatternValidator`: bug fix - wrong function used
+- `Parser`, `JSONReader`: minor optimisation - use of $id
+
 ## [0.18] - 2021-02-26
 ### Changed
 - `Parser`: adding handling of `uniqueItems`

@@ -25,9 +25,13 @@
 
 package net.pwall.json.schema.validation
 
+import java.math.BigDecimal
 import java.net.URI
 
 import net.pwall.json.JSONBoolean
+import net.pwall.json.JSONDecimal
+import net.pwall.json.JSONDouble
+import net.pwall.json.JSONFloat
 import net.pwall.json.JSONInteger
 import net.pwall.json.JSONLong
 import net.pwall.json.JSONMapping
@@ -54,11 +58,31 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
                 Type.ARRAY -> if (instance is JSONSequence<*>) return true
                 Type.NUMBER -> if (instance is JSONNumberValue) return true
                 Type.STRING -> if (instance is JSONString) return true
-                Type.INTEGER -> if (instance is JSONInteger || instance is JSONLong || instance is JSONZero)
-                    return true
+                Type.INTEGER -> if (isInteger(instance)) return true
             }
         }
         return false
+    }
+
+    private fun isInteger(instance: JSONValue?): Boolean {
+        return when (instance) {
+            is JSONInteger -> true
+            is JSONLong -> true
+            is JSONZero -> true
+            is JSONDecimal -> {
+                val value: BigDecimal = instance.get()
+                value.scale() <= 0 || value.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0
+            }
+            is JSONDouble -> {
+                val value: Double = instance.get()
+                value.rem(1.0) == 0.0
+            }
+            is JSONFloat -> {
+                val value: Float = instance.get()
+                value.rem(1.0F) == 0.0F
+            }
+            else -> false
+        }
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):

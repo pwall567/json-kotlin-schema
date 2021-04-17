@@ -410,9 +410,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     companion object {
 
         @Suppress("unused")
+        val schemaVersion202012 = listOf("http://json-schema.org/draft/2020-12/schema",
+                "https://json-schema.org/draft/2020-12/schema")
         val schemaVersion201909 = listOf("http://json-schema.org/draft/2019-09/schema",
                 "https://json-schema.org/draft/2019-09/schema")
-        @Suppress("unused")
         val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
                 "https://json-schema.org/draft-07/schema")
 

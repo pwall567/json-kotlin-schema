@@ -446,7 +446,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         @Suppress("unused")
         fun Number.isZero(): Boolean = when (this) {
-            is BigDecimal -> this == BigDecimal.ZERO
+            is BigDecimal -> this.compareTo(BigDecimal.ZERO) == 0
             is BigInteger -> this == BigInteger.ZERO
             is Double -> this == 0.0
             is Float -> this == 0.0F

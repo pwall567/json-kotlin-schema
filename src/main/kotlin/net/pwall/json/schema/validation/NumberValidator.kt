@@ -73,37 +73,37 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
     }
 
     private fun multipleOf(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.toBigDecimal().rem(value.toBigDecimal()).compareTo(BigDecimal.ZERO) == 0
-        is JSONDouble -> instance.toDouble().rem(value.toDouble()) == 0.0
-        is JSONFloat -> instance.toFloat().rem(value.toFloat()) == 0.0F
+        is JSONDecimal -> instance.get().rem(value.toBigDecimal()).compareTo(BigDecimal.ZERO) == 0
+        is JSONDouble -> instance.get().rem(value.toDouble()) == 0.0
+        is JSONFloat -> instance.get().rem(value.toFloat()) == 0.0F
         else -> instance.toLong().rem(value.toLong()) == 0L
     }
 
     private fun maximum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.toBigDecimal() <= value.toBigDecimal()
-        is JSONDouble -> instance.toDouble() <= value.toDouble()
-        is JSONFloat -> instance.toFloat() <= value.toFloat()
+        is JSONDecimal -> instance.get() <= value.toBigDecimal()
+        is JSONDouble -> instance.get() <= value.toDouble()
+        is JSONFloat -> instance.get() <= value.toFloat()
         else -> instance.toLong() <= value.toLong()
     }
 
     private fun exclusiveMaximum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.toBigDecimal() < value.toBigDecimal()
-        is JSONDouble -> instance.toDouble() < value.toDouble()
-        is JSONFloat -> instance.toFloat() < value.toFloat()
+        is JSONDecimal -> instance.get() < value.toBigDecimal()
+        is JSONDouble -> instance.get() < value.toDouble()
+        is JSONFloat -> instance.get() < value.toFloat()
         else -> instance.toLong() < value.toLong()
     }
 
     private fun minimum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.toBigDecimal() >= value.toBigDecimal()
-        is JSONDouble -> instance.toDouble() >= value.toDouble()
-        is JSONFloat -> instance.toFloat() >= value.toFloat()
+        is JSONDecimal -> instance.get() >= value.toBigDecimal()
+        is JSONDouble -> instance.get() >= value.toDouble()
+        is JSONFloat -> instance.get() >= value.toFloat()
         else -> instance.toLong() >= value.toLong()
     }
 
     private fun exclusiveMinimum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.toBigDecimal() > value.toBigDecimal()
-        is JSONDouble -> instance.toDouble() > value.toDouble()
-        is JSONFloat -> instance.toFloat() > value.toFloat()
+        is JSONDecimal -> instance.get() > value.toBigDecimal()
+        is JSONDouble -> instance.get() > value.toDouble()
+        is JSONFloat -> instance.get() > value.toFloat()
         else -> instance.toLong() > value.toLong()
     }
 

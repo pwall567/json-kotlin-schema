@@ -46,7 +46,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
             return true
         for ((propertyPattern, propertySchema) in properties) {
             for (name in instance.keys) {
-                if (propertyPattern matches name) {
+                if (propertyPattern.containsMatchIn(name)) {
                     if (!propertySchema.validate(json, instanceLocation.child(name)))
                         return false
                 }
@@ -63,7 +63,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
         val errors = mutableListOf<BasicErrorEntry>()
         for ((propertyPattern, propertySchema) in properties) {
             for (name in instance.keys) {
-                if (propertyPattern matches name) {
+                if (propertyPattern.containsMatchIn(name)) {
                     propertySchema.validateBasic(relativeLocation.child(propertyPattern.toString()), json,
                             instanceLocation.child(name)).let { propertyResult ->
                         if (!propertyResult.valid)
@@ -85,7 +85,7 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
         val errors = mutableListOf<DetailedOutput>()
         for ((propertyPattern, propertySchema) in properties) {
             for (name in instance.keys) {
-                if (propertyPattern matches name) {
+                if (propertyPattern.containsMatchIn(name)) {
                     val propertyResult = propertySchema.validateDetailed(
                             relativeLocation.child(propertyPattern.toString()), json, instanceLocation.child(name))
                     if (!propertyResult.valid)

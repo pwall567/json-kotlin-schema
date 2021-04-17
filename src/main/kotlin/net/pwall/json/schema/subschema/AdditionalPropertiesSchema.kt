@@ -104,10 +104,11 @@ class AdditionalPropertiesSchema(private val parent: General, uri: URI?, locatio
     }
 
     private fun anyMatchingProperty(propertyName: String, propertiesSchema: PropertiesSchema?,
-                                    patternPropertiesSchema: PatternPropertiesSchema?): Boolean {
+            patternPropertiesSchema: PatternPropertiesSchema?): Boolean {
         if (propertiesSchema != null && propertiesSchema.properties.any { it.first == propertyName })
             return true
-        if (patternPropertiesSchema != null && patternPropertiesSchema.properties.any { it.first matches propertyName })
+        if (patternPropertiesSchema != null &&
+                patternPropertiesSchema.properties.any { it.first.containsMatchIn(propertyName) })
             return true
         return false
     }

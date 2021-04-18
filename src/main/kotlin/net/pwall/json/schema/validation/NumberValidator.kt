@@ -2,7 +2,7 @@
  * @(#) NumberValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,14 @@ import java.net.URI
 import net.pwall.json.JSONDecimal
 import net.pwall.json.JSONDouble
 import net.pwall.json.JSONFloat
+import net.pwall.json.JSONInteger
+import net.pwall.json.JSONLong
 import net.pwall.json.JSONNumberValue
 import net.pwall.json.JSONValue
+import net.pwall.json.JSONZero
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.output.BasicErrorEntry
 
 class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val condition: ValidationType) :
@@ -72,11 +76,29 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
         ValidationType.EXCLUSIVE_MINIMUM -> exclusiveMinimum(instance)
     }
 
-    private fun multipleOf(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.get().rem(value.toBigDecimal()).compareTo(BigDecimal.ZERO) == 0
-        is JSONDouble -> instance.get().rem(value.toDouble()) == 0.0
-        is JSONFloat -> instance.get().rem(value.toFloat()) == 0.0F
-        else -> instance.toLong().rem(value.toLong()) == 0L
+    private fun multipleOf(instance: JSONNumberValue): Boolean = when (value) {
+        is BigDecimal -> instance.toBigDecimal().rem(value).compareTo(BigDecimal.ZERO) == 0
+        is Double -> instance.toDouble().rem(value) == 0.0
+        is Float -> instance.toFloat().rem(value) == 0.0F
+        is Long -> when (instance) {
+            is JSONDecimal -> instance.get().rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
+            is JSONDouble -> instance.get().rem(value) == 0.0
+            is JSONFloat -> instance.get().rem(value) == 0.0F
+            is JSONLong -> instance.get().rem(value) == 0L
+            is JSONInteger -> instance.toLong().rem(value) == 0L
+            is JSONZero -> true
+            else -> throw JSONSchemaException("Impossible type")
+        }
+        is Int -> when (instance) {
+            is JSONDecimal -> instance.get().rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
+            is JSONDouble -> instance.get().rem(value) == 0.0
+            is JSONFloat -> instance.get().rem(value) == 0.0F
+            is JSONLong -> instance.get().rem(value) == 0L
+            is JSONInteger -> instance.toLong().rem(value) == 0L
+            is JSONZero -> true
+            else -> throw JSONSchemaException("Impossible type")
+        }
+        else -> throw JSONSchemaException("Impossible type")
     }
 
     private fun maximum(instance: JSONNumberValue): Boolean = when (instance) {
@@ -113,6 +135,16 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
         is Double -> BigDecimal(this)
         is Float -> BigDecimal(this.toDouble())
         else -> BigDecimal(this.toLong())
+    }
+
+    private fun JSONNumberValue.toBigDecimal(): BigDecimal = when (this) {
+        is JSONDecimal -> this.get()
+        is JSONDouble -> BigDecimal(this.get())
+        is JSONFloat -> BigDecimal(this.get().toDouble())
+        is JSONLong -> BigDecimal(this.get())
+        is JSONInteger -> BigDecimal(this.get())
+        is JSONZero -> BigDecimal.ZERO
+        else -> throw JSONSchemaException("Incorrect JSON value")
     }
 
     override fun equals(other: Any?): Boolean = this === other ||

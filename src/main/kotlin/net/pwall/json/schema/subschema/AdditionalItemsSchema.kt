@@ -2,7 +2,7 @@
  * @(#) AdditionalItemsSchema.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,12 +38,12 @@ import net.pwall.json.schema.output.DetailedOutput
 class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JSONPointer, val schema: JSONSchema) :
         JSONSchema.SubSchema(uri, location) {
 
-    private val itemsSchemaPresent: Boolean by lazy {
-        parent.children.filterIsInstance<ItemsSchema>().isNotEmpty()
+    private val itemsSchema: ItemsSchema? by lazy {
+        parent.children.filterIsInstance<ItemsSchema>().firstOrNull()
     }
 
-    private val itemsArraySchemaSize: Int by lazy {
-        parent.children.filterIsInstance<ItemsArraySchema>().firstOrNull()?.itemSchemaList?.size ?: 0
+    private val itemsArraySchema: ItemsArraySchema? by lazy {
+        parent.children.filterIsInstance<ItemsArraySchema>().firstOrNull()
     }
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("additionalItems")
@@ -52,10 +52,13 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
         val instance = instanceLocation.eval(json)
         if (instance !is JSONSequence<*>)
             return true
-        if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {
-            for (i in itemsArraySchemaSize until instance.size) {
-                if (!schema.validate(json, instanceLocation.child(i)))
-                    return false
+        if (itemsSchema == null) {
+            itemsArraySchema?.let {
+                if (instance.size > it.itemSchemaList.size) {
+                    for (i in it.itemSchemaList.size until instance.size)
+                        if (!schema.validate(json, instanceLocation.child(i)))
+                            return false
+                }
             }
         }
         return true
@@ -67,13 +70,17 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
         if (instance !is JSONSequence<*>)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
-        if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {
-            for (i in itemsArraySchemaSize until instance.size) {
-                schema.validateBasic(relativeLocation, json, instanceLocation.child(i)).let {
-                    if (!it.valid) {
-                        errors.add(createBasicErrorEntry(relativeLocation, instanceLocation.child(i),
-                                "Additional item $i found but was invalid"))
-                        errors.addAllFromNullable(it.errors)
+        if (itemsSchema == null) {
+            itemsArraySchema?.let {
+                if (instance.size > it.itemSchemaList.size) {
+                    for (i in it.itemSchemaList.size until instance.size) {
+                        schema.validateBasic(relativeLocation, json, instanceLocation.child(i)).let { output ->
+                            if (!output.valid) {
+                                errors.add(createBasicErrorEntry(relativeLocation, instanceLocation.child(i),
+                                        "Additional item $i found but was invalid"))
+                                errors.addAllFromNullable(output.errors)
+                            }
+                        }
                     }
                 }
             }
@@ -89,12 +96,16 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
         if (instance !is JSONSequence<*>)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an array")
         val errors = mutableListOf<DetailedOutput>()
-        if (!itemsSchemaPresent && instance.size > itemsArraySchemaSize) {
-            for (i in itemsArraySchemaSize until instance.size) {
-                schema.validateDetailed(relativeLocation, json, instanceLocation.child(i)).let {
-                    if (!it.valid) {
-                        errors.add(createError(relativeLocation, instanceLocation.child(i),
-                                "Additional item $i found but was invalid", errors = listOf(it)))
+        if (itemsSchema == null) {
+            itemsArraySchema?.let {
+                if (instance.size > it.itemSchemaList.size) {
+                    for (i in it.itemSchemaList.size until instance.size) {
+                        schema.validateDetailed(relativeLocation, json, instanceLocation.child(i)).let { output ->
+                            if (!output.valid) {
+                                errors.add(createError(relativeLocation, instanceLocation.child(i),
+                                        "Additional item $i found but was invalid", errors = listOf(output)))
+                            }
+                        }
                     }
                 }
             }

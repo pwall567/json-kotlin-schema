@@ -73,13 +73,21 @@ class ContainsValidator(uri: URI?, location: JSONPointer, private val containsSc
             return createBasicErrorEntry(relativeLocation, instanceLocation, "No matching entry")
         minContains?.let {
             if (count < it)
-                return createBasicErrorEntry(relativeLocation, instanceLocation,
-                        "Matching entry minimum $it, was $count")
+                return BasicErrorEntry(
+                        relativeLocation.parent().child("minContains").schemaURIFragment(),
+                        uri?.let { x -> "$x${location.parent().child("minContains").schemaURIFragment()}" },
+                        instanceLocation.schemaURIFragment(),
+                        "Matching entry minimum $it, was $count"
+                )
         }
         maxContains?.let {
             if (count > it)
-                return createBasicErrorEntry(relativeLocation, instanceLocation,
-                        "Matching entry maximum $it, was $count")
+                return BasicErrorEntry(
+                        relativeLocation.parent().child("maxContains").schemaURIFragment(),
+                        uri?.let { x -> "$x${location.parent().child("maxContains").schemaURIFragment()}" },
+                        instanceLocation.schemaURIFragment(),
+                        "Matching entry maximum $it, was $count"
+                )
         }
         return null
     }

@@ -202,8 +202,8 @@ class JSONSchemaItemsTest {
             expect("A subschema had errors") { it.error }
         }
         errors1[1].let {
-            expect("#/contains") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#/contains") { it.absoluteKeywordLocation }
+            expect("#/minContains") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#/minContains") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
             expect("Matching entry minimum 2, was 1") { it.error }
         }
@@ -221,8 +221,8 @@ class JSONSchemaItemsTest {
             expect("A subschema had errors") { it.error }
         }
         errors2[1].let {
-            expect("#/contains") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#/contains") { it.absoluteKeywordLocation }
+            expect("#/maxContains") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#/maxContains") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
             expect("Matching entry maximum 3, was 4") { it.error }
         }

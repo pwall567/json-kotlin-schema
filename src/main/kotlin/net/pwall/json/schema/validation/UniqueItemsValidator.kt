@@ -25,9 +25,20 @@
 
 package net.pwall.json.schema.validation
 
+import java.math.BigDecimal
 import java.net.URI
+
+import net.pwall.json.JSONBoolean
+import net.pwall.json.JSONDecimal
+import net.pwall.json.JSONDouble
+import net.pwall.json.JSONFloat
+import net.pwall.json.JSONInteger
+import net.pwall.json.JSONLong
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONSequence
+import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
+import net.pwall.json.JSONZero
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
@@ -39,16 +50,120 @@ class UniqueItemsValidator(uri: URI?, location: JSONPointer): JSONSchema.Validat
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        return instance !is JSONSequence<*> || instance.toHashSet().size == instance.size
+        return instance !is JSONSequence<*> || uniqueItems(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        return if (instance !is JSONSequence<*> || instance.toHashSet().size == instance.size) null else
+        return if (instance !is JSONSequence<*> || uniqueItems(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation, "Array items not unique")
     }
 
     override fun equals(other: Any?): Boolean = this === other || other is UniqueItemsValidator && super.equals(other)
+
+    companion object {
+
+        fun uniqueItems(array: JSONSequence<*>): Boolean {
+            for (i in 1 until array.size) {
+                val current = array[i]
+                for (j in 0 until i)
+                    if (itemsEqual(array[j], current))
+                        return false
+            }
+            return true
+        }
+
+        private fun itemsEqual(a: JSONValue?, b: JSONValue?): Boolean {
+            when (a) {
+                is JSONMapping<*> -> {
+                    if (b !is JSONMapping<*> || a.size != b.size)
+                        return false
+                    for (e in a.entries)
+                        if (!itemsEqual(e.value, b[e.key]))
+                            return false
+                    return true
+                }
+                is JSONSequence<*> -> {
+                    if (b !is JSONSequence<*> || a.size != b.size)
+                        return false
+                    for (i in a.indices)
+                        if (!itemsEqual(a[i], b[i]))
+                            return false
+                    return true
+                }
+                is JSONString -> return b is JSONString && a.get() == b.get()
+                is JSONBoolean -> return b is JSONBoolean && a.get() == b.get()
+                is JSONDecimal -> {
+                    return when (b) {
+                        is JSONDecimal -> a.get().compareTo(b.get()) == 0
+                        is JSONDouble -> a.get().compareTo(BigDecimal(b.get())) == 0
+                        is JSONFloat -> a.get().compareTo(BigDecimal(b.get().toDouble())) == 0
+                        is JSONLong -> a.get().compareTo(BigDecimal(b.get())) == 0
+                        is JSONInteger -> a.get().compareTo(BigDecimal(b.get())) == 0
+                        is JSONZero -> a.get().compareTo(BigDecimal.ZERO) == 0
+                        else -> false
+                    }
+                }
+                is JSONDouble -> {
+                    return when (b) {
+                        is JSONDecimal -> BigDecimal(a.get()).compareTo(b.get()) == 0
+                        is JSONDouble -> a.get() == b.get()
+                        is JSONFloat -> a.get() == b.get().toDouble()
+                        is JSONLong -> a.get() == b.get().toDouble()
+                        is JSONInteger -> a.get() == b.get().toDouble()
+                        is JSONZero -> a.get() == 0.0
+                        else -> false
+                    }
+                }
+                is JSONFloat -> {
+                    return when (b) {
+                        is JSONDecimal -> BigDecimal(a.get().toDouble()).compareTo(b.get()) == 0
+                        is JSONDouble -> a.get().toDouble() == b.get()
+                        is JSONFloat -> a.get() == b.get()
+                        is JSONLong -> a.get().toDouble() == b.get().toDouble()
+                        is JSONInteger -> a.get().toDouble() == b.get().toDouble()
+                        is JSONZero -> a.get() == 0.0F
+                        else -> false
+                    }
+                }
+                is JSONLong -> {
+                    return when (b) {
+                        is JSONDecimal -> BigDecimal(a.get()).compareTo(b.get()) == 0
+                        is JSONDouble -> a.get().toDouble() == b.get()
+                        is JSONFloat -> a.get().toDouble() == b.get().toDouble()
+                        is JSONLong -> a.get() == b.get()
+                        is JSONInteger -> a.get() == b.get().toLong()
+                        is JSONZero -> a.get() == 0L
+                        else -> false
+                    }
+                }
+                is JSONInteger -> {
+                    return when (b) {
+                        is JSONDecimal -> BigDecimal(a.get()).compareTo(b.get()) == 0
+                        is JSONDouble -> a.get().toDouble() == b.get()
+                        is JSONFloat -> a.get().toDouble() == b.get().toDouble()
+                        is JSONLong -> a.get().toLong() == b.get()
+                        is JSONInteger -> a.get() == b.get()
+                        is JSONZero -> a.get() == 0
+                        else -> false
+                    }
+                }
+                is JSONZero -> {
+                    return when (b) {
+                        is JSONDecimal -> BigDecimal.ZERO.compareTo(b.get()) == 0
+                        is JSONDouble -> b.get() == 0.0
+                        is JSONFloat -> b.get() == 0.0F
+                        is JSONLong -> b.get() == 0L
+                        is JSONInteger -> b.get() == 0
+                        is JSONZero -> true
+                        else -> false
+                    }
+                }
+                else -> return false
+            }
+        }
+
+    }
 
 }

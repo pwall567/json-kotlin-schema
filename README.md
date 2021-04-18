@@ -203,6 +203,8 @@ The currently implemented subset includes:
 - `exclusiveMaximum`
 - `minimum`
 - `exclusiveMinimum`
+- `minProperties`
+- `maxProperties`
 - `minItems`
 - `maxItems`
 - `uniqueItems`

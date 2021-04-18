@@ -46,7 +46,7 @@ class ContainsValidator(uri: URI?, location: JSONPointer, private val containsSc
             if (containsSchema.validate(json, instanceLocation.child(i)))
                 count++
         }
-        if (count == 0)
+        if (minContains == null && count == 0)
             return false
         minContains?.let {
             if (count < it)
@@ -69,7 +69,7 @@ class ContainsValidator(uri: URI?, location: JSONPointer, private val containsSc
             if (containsSchema.validate(json, instanceLocation.child(i)))
                 count++
         }
-        if (count == 0)
+        if (minContains == null && count == 0)
             return createBasicErrorEntry(relativeLocation, instanceLocation, "No matching entry")
         minContains?.let {
             if (count < it)

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-contains-minmax",
+  "type": "array",
+  "items": {
+    "type": "integer"
+  },
+  "contains": {
+    "const": 5
+  },
+  "minContains": 2,
+  "maxContains": 3
+}

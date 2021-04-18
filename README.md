@@ -210,6 +210,9 @@ The currently implemented subset includes:
 - `minLength`
 - `pattern`
 - `required`
+- `contains`
+- `maxContains`
+- `minContains`
 
 ## Not Currently Implemented
 
@@ -221,9 +224,6 @@ The currently implemented subset includes:
 - `unevaluatedItems`
 - `dependentSchemas`
 - `dependentRequired`
-- `contains`
-- `maxContains`
-- `minContains`
 - `contentEncoding`
 - `contentMediaType`
 - `contentSchema`

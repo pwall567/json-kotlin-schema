@@ -44,6 +44,7 @@ import net.pwall.json.JSONNumberValue
 import net.pwall.json.JSONSequence
 import net.pwall.json.JSONString
 import net.pwall.json.JSONValue
+import net.pwall.json.JSONZero
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.pointer.JSONPointerException
 import net.pwall.json.schema.JSONSchema
@@ -62,6 +63,7 @@ import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ArrayValidator
 import net.pwall.json.schema.validation.ConstValidator
+import net.pwall.json.schema.validation.ContainsValidator
 import net.pwall.json.schema.validation.DefaultValidator
 import net.pwall.json.schema.validation.DelegatingValidator
 import net.pwall.json.schema.validation.EnumValidator
@@ -175,7 +177,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                     if (value !is JSONString)
                         throw JSONSchemaException("String expected - $childPointer")
                 }
-                "\$id", "\$defs", "title", "description", "then", "else" -> {}
+                "\$id", "\$defs", "title", "description", "then", "else", "minContains", "maxContains" -> {}
                 "\$comment" -> {
                     if (value !is JSONString)
                         throw JSONSchemaException("String expected - $childPointer")
@@ -218,6 +220,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                         parseSchema(json, childPointer, uri)))
                 "additionalItems" -> children.add(AdditionalItemsSchema(result, uri, childPointer,
                         parseSchema(json, childPointer, uri)))
+                "contains" -> children.add(parseContains(json, pointer, uri))
                 else -> customValidationHandler(key, uri, childPointer, value)?.let {
                     children.add(DelegatingValidator(it.uri, it.location, key, it))
                 }
@@ -260,6 +263,17 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
+    private fun parseContains(json: JSONValue, pointer: JSONPointer, uri: URI?): ContainsValidator {
+        val containsSchema = parseSchema(json, pointer.child("contains"), uri)
+        val minContains = pointer.child("minContains").let {
+            if (it.exists(json)) getNonNegativeInteger(json, it) else null
+        }
+        val maxContains = pointer.child("maxContains").let {
+            if (it.exists(json)) getNonNegativeInteger(json, it) else null
+        }
+        return ContainsValidator(uri, pointer.child("contains"), containsSchema, minContains, maxContains)
+    }
+
     private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator {
         if (value !is JSONString)
             throw JSONSchemaException("String expected - $pointer")
@@ -273,13 +287,13 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
             creator: (URI?, JSONPointer, List<JSONSchema>) -> JSONSchema): JSONSchema {
         if (array !is JSONSequence<*>)
-            throw JSONPointerException("Compound must take array - $pointer")
+            throw JSONSchemaException("Compound must take array - $pointer")
         return creator(uri, pointer, array.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
     }
 
     private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefSchema {
         if (value !is JSONString)
-            throw JSONPointerException("\$ref must be string - $pointer")
+            throw JSONSchemaException("\$ref must be string - $pointer")
         val refURIString = (if (uri == null) URI(value.get()) else uri.resolve(value.get())).toString()
         val hashIndex = refURIString.indexOf('#')
         val refURIPath = if (hashIndex < 0) refURIString else refURIString.substring(0, hashIndex)
@@ -421,6 +435,15 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         fun URI.dropFragment(): URI =
                 toString().let { if (it.contains('#')) URI(it.substringBefore('#')) else this }
+
+        fun getNonNegativeInteger(json: JSONValue, pointer: JSONPointer): Int {
+            val value = pointer.find(json)
+            if (value is JSONZero)
+                return 0
+            if (value is JSONInteger && value.get() >= 0)
+                return value.get()
+            throw JSONSchemaException("Must be non-negative integer at $pointer, was $value")
+        }
 
         fun JSONMapping<*>.getStringOrNull(key: String): String? =
                 get(key)?.let { if (it is JSONString) it.get() else throw JSONSchemaException("Incorrect $key") }

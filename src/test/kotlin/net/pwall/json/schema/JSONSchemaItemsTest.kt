@@ -154,4 +154,79 @@ class JSONSchemaItemsTest {
         expect(false) { schema.validateDetailed(json2).valid }
     }
 
+    @Test fun `should validate array with contains`() {
+        val filename = "src/test/resources/test-contains.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""[1,2,5]""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""[1,2,3]""")
+        expect(false) { schema.validate(json2) }
+        val validateResult = schema.validateBasic(json2)
+        expect(false) { validateResult.valid }
+        val errors = validateResult.errors ?: fail()
+        expect(2) { errors.size }
+        errors[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-contains#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[1].let {
+            expect("#/contains") { it.keywordLocation }
+            expect("http://pwall.net/test-contains#/contains") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("No matching entry") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+    }
+
+    @Test fun `should validate array with contains and min and max`() {
+        val filename = "src/test/resources/test-contains-minmax.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""[1,2,5,5]""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""[1,2,5]""")
+        expect(false) { schema.validate(json2) }
+        val validateResult1 = schema.validateBasic(json2)
+        expect(false) { validateResult1.valid }
+        val errors1 = validateResult1.errors ?: fail()
+        expect(2) { errors1.size }
+        errors1[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors1[1].let {
+            expect("#/contains") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#/contains") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("Matching entry minimum 2, was 1") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+        val json3 = JSON.parse("""[1,2,5,5,5,5]""")
+        expect(false) { schema.validate(json3) }
+        val validateResult2 = schema.validateBasic(json3)
+        expect(false) { validateResult2.valid }
+        val errors2 = validateResult2.errors ?: fail()
+        expect(2) { errors2.size }
+        errors2[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors2[1].let {
+            expect("#/contains") { it.keywordLocation }
+            expect("http://pwall.net/test-contains-minmax#/contains") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("Matching entry maximum 3, was 4") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json3).valid }
+    }
+
 }

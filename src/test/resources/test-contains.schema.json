@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-contains",
+  "type": "array",
+  "items": {
+    "type": "integer"
+  },
+  "contains": {
+    "const": 5
+  }
+}

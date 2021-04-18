@@ -1,8 +1,8 @@
 /*
- * @(#) StringValidator.kt
+ * @(#) PropertiesValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,43 +27,42 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONString
+import net.pwall.json.JSONMapping
 import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
-class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
+class PropertiesValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {
 
     enum class ValidationType(val keyword: String) {
-        MAX_LENGTH("maxLength"),
-        MIN_LENGTH("minLength")
+        MAX_PROPERTIES("maxProperties"),
+        MIN_PROPERTIES("minProperties")
     }
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(condition.keyword)
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        return instance !is JSONString || validLength(instance)
+        return instance !is JSONMapping<*> || validSize(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        return if (instance !is JSONString || validLength(instance)) null else
-                createBasicErrorEntry(relativeLocation, instanceLocation,
-                        "String fails length check: ${condition.keyword} $value, was ${instance.length}")
+        return if (instance !is JSONMapping<*> || validSize(instance)) null else
+            createBasicErrorEntry(relativeLocation, instanceLocation,
+                    "Object fails properties count check: ${condition.keyword} $value, was ${instance.size}")
     }
 
-    private fun validLength(instance: JSONString): Boolean = when (condition) {
-        ValidationType.MAX_LENGTH -> instance.length <= value
-        ValidationType.MIN_LENGTH -> instance.length >= value
+    private fun validSize(instance: JSONMapping<*>): Boolean = when (condition) {
+        ValidationType.MAX_PROPERTIES -> instance.size <= value
+        ValidationType.MIN_PROPERTIES -> instance.size >= value
     }
 
-    override fun equals(other: Any?): Boolean =
-            this === other || other is StringValidator && super.equals(other) && condition == other.condition &&
-                    value == other.value
+    override fun equals(other: Any?): Boolean = this === other ||
+            other is PropertiesValidator && super.equals(other) && condition == other.condition && value == other.value
 
     override fun hashCode(): Int = super.hashCode() xor condition.hashCode() xor value
 

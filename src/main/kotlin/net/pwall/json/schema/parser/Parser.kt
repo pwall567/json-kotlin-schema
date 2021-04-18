@@ -70,6 +70,7 @@ import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.FormatValidator
 import net.pwall.json.schema.validation.NumberValidator
 import net.pwall.json.schema.validation.PatternValidator
+import net.pwall.json.schema.validation.PropertiesValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 import net.pwall.json.schema.validation.UniqueItemsValidator
@@ -201,6 +202,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                 "const" -> children.add(ConstValidator(uri, childPointer, value))
                 "properties" -> children.add(parseProperties(json, childPointer, uri, value))
                 "patternProperties" -> children.add(parsePatternProperties(json, childPointer, uri, value))
+                "minProperties" -> children.add(parsePropertiesSize(childPointer, uri,
+                        PropertiesValidator.ValidationType.MIN_PROPERTIES, value))
+                "maxProperties" -> children.add(parsePropertiesSize(childPointer, uri,
+                        PropertiesValidator.ValidationType.MAX_PROPERTIES, value))
                 "required" -> children.add(parseRequired(childPointer, uri, value))
                 "items" -> children.add(parseItems(json, childPointer, uri, value))
                 in NumberValidator.typeKeywords -> children.add(parseNumberLimit(childPointer, uri,
@@ -332,6 +337,11 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         })
     }
 
+    private fun parsePropertiesSize(pointer: JSONPointer, uri: URI?, condition: PropertiesValidator.ValidationType,
+            value: JSONValue?): PropertiesValidator {
+        return PropertiesValidator(uri, pointer, condition, getInteger(value, pointer))
+    }
+
     private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredSchema {
         if (value !is JSONSequence<*>)
             throw JSONSchemaException("required must be array - ${pointer.pointerOrRoot()}")
@@ -385,16 +395,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private fun parseStringLength(pointer: JSONPointer, uri: URI?, condition: StringValidator.ValidationType,
             value: JSONValue?): StringValidator {
-        if (value !is JSONInteger)
-            throw JSONSchemaException("Must be integer - ${pointer.pointerOrRoot()}")
-        return StringValidator(uri, pointer, condition, value.get())
+        return StringValidator(uri, pointer, condition, getInteger(value, pointer))
     }
 
     private fun parseArrayNumberOfItems(pointer: JSONPointer, uri: URI?, condition: ArrayValidator.ValidationType,
             value: JSONValue?): ArrayValidator {
-        if (value !is JSONInteger)
-            throw JSONSchemaException("Must be integer - ${pointer.pointerOrRoot()}")
-        return ArrayValidator(uri, pointer, condition, value.get())
+        return ArrayValidator(uri, pointer, condition, getInteger(value, pointer))
     }
 
     private fun parseArrayUniqueItems(pointer: JSONPointer, uri: URI?, value: JSONValue?): UniqueItemsValidator? {
@@ -415,8 +421,6 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return PatternValidator(uri, pointer, regex)
     }
 
-    private fun JSONPointer.pointerOrRoot() = if (this == JSONPointer.root) "root" else toString()
-
     private fun parseDraft07(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
         return parseSchema(json, pointer, parentUri) // temporary - treat as 201909
     }
@@ -435,6 +439,16 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         fun URI.dropFragment(): URI =
                 toString().let { if (it.contains('#')) URI(it.substringBefore('#')) else this }
+
+        fun JSONPointer.pointerOrRoot() = if (this == JSONPointer.root) "root" else toString()
+
+        fun getInteger(value: JSONValue?, refPointer: JSONPointer): Int {
+            if (value is JSONZero)
+                return 0
+            if (value is JSONInteger)
+                return value.get()
+            throw JSONSchemaException("Must be integer - ${refPointer.pointerOrRoot()}")
+        }
 
         fun getNonNegativeInteger(json: JSONValue, pointer: JSONPointer): Int {
             val value = pointer.find(json)

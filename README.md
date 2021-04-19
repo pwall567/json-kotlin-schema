@@ -181,6 +181,7 @@ The currently implemented subset includes:
 - `properties`
 - `patternProperties`
 - `additionalProperties`
+- `propertyNames`
 - `items`
 - `additionalItems`
 - `allOf`

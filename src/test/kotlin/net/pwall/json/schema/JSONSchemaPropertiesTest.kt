@@ -1,8 +1,8 @@
 /*
- * @(#) JSONSchemaPatternPropertiesTest.kt
+ * @(#) JSONSchemaPropertiesTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2021 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import kotlin.test.fail
 
 import net.pwall.json.JSON
 
-class JSONSchemaPatternPropertiesTest {
+class JSONSchemaPropertiesTest {
 
     @Test fun `should validate patternProperties`() {
         val filename = "src/test/resources/test-pattern-properties.schema.json"
@@ -106,6 +106,40 @@ class JSONSchemaPatternPropertiesTest {
             expect("http://pwall.net/test-pattern#/additionalProperties/minimum") { it.absoluteKeywordLocation }
             expect("#/extra") { it.instanceLocation }
             expect("Number fails check: minimum 20, was 2") { it.error }
+        }
+        expect(false) { schema.validateDetailed(json2).valid }
+    }
+
+    @Test fun `should validate propertyNames`() {
+        val filename = "src/test/resources/test-property-names.schema.json"
+        val schema = JSONSchema.parseFile(filename)
+        val json1 = JSON.parse("""{"aaa":"X","bbb":11}""")
+        expect(true) { schema.validate(json1) }
+        expect(true) { schema.validateBasic(json1).valid }
+        expect(true) { schema.validateDetailed(json1).valid }
+        val json2 = JSON.parse("""{"aaa":"X","bbbb":11}""")
+        expect(false) { schema.validate(json2) }
+        val validateResult = schema.validateBasic(json2)
+        expect(false) { validateResult.valid }
+        val errors = validateResult.errors ?: fail()
+        expect(3) { errors.size }
+        errors[0].let {
+            expect("#") { it.keywordLocation }
+            expect("http://pwall.net/test-property-names#") { it.absoluteKeywordLocation }
+            expect("#") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[1].let {
+            expect("#/propertyNames") { it.keywordLocation }
+            expect("http://pwall.net/test-property-names#/propertyNames") { it.absoluteKeywordLocation }
+            expect("#/bbbb") { it.instanceLocation }
+            expect("A subschema had errors") { it.error }
+        }
+        errors[2].let {
+            expect("#/propertyNames/maxLength") { it.keywordLocation }
+            expect("http://pwall.net/test-property-names#/propertyNames/maxLength") { it.absoluteKeywordLocation }
+            expect("#/bbbb") { it.instanceLocation }
+            expect("String fails length check: maxLength 3, was 4") { it.error }
         }
         expect(false) { schema.validateDetailed(json2).valid }
     }

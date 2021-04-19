@@ -59,6 +59,7 @@ import net.pwall.json.schema.subschema.ItemsArraySchema
 import net.pwall.json.schema.subschema.ItemsSchema
 import net.pwall.json.schema.subschema.PatternPropertiesSchema
 import net.pwall.json.schema.subschema.PropertiesSchema
+import net.pwall.json.schema.subschema.PropertyNamesSchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.ArrayValidator
@@ -202,6 +203,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                 "const" -> children.add(ConstValidator(uri, childPointer, value))
                 "properties" -> children.add(parseProperties(json, childPointer, uri, value))
                 "patternProperties" -> children.add(parsePatternProperties(json, childPointer, uri, value))
+                "propertyNames" -> children.add(parsePropertyNames(json, childPointer, uri))
                 "minProperties" -> children.add(parsePropertiesSize(childPointer, uri,
                         PropertiesValidator.ValidationType.MIN_PROPERTIES, value))
                 "maxProperties" -> children.add(parsePropertiesSize(childPointer, uri,
@@ -335,6 +337,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                     throw JSONSchemaException("Invalid regex in patternProperties - $childPointer") }
             regex to parseSchema(json, childPointer, uri)
         })
+    }
+
+    private fun parsePropertyNames(json: JSONValue, pointer: JSONPointer, uri: URI?): PropertyNamesSchema {
+        return PropertyNamesSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
 
     private fun parsePropertiesSize(pointer: JSONPointer, uri: URI?, condition: PropertiesValidator.ValidationType,

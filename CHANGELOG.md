@@ -2,6 +2,23 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Unreleased]
+### Changed
+- `Parser`: add identifier for draft 2020-12
+- `NumberValidator`, `Parser`: fixed bugs in floating point
+- `TypeValidator`: fixed interpretation of integer
+- `AdditionalPropertiesSchema`, `PatternPropertiesSchema`: fixed bug in Regex handling
+- `Parser`: added `contains`, `minContains` and `maxContains`
+- `Parser`: added `minProperties` and `maxProperties`
+- `AdditionalItemsSchema`: fixed bug
+- `NumberValidator`: fixed bug in `multipleOf`
+- `Parser`: added `propertyNames`
+- `pom.xml`: updated dependency (with consequent changes)
+### Added
+- `ContainsValidator`: new
+- `PropertiesValidator`: new
+- `PropertyNamesSchema`: new
+
 ## [0.18.1] - 2021-04-06
 ### Changed
 - `PatternValidator`: bug fix - wrong function used

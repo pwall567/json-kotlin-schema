@@ -70,15 +70,15 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
             is JSONLong -> true
             is JSONZero -> true
             is JSONDecimal -> {
-                val value: BigDecimal = instance.get()
+                val value: BigDecimal = instance.value
                 value.scale() <= 0 || value.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0
             }
             is JSONDouble -> {
-                val value: Double = instance.get()
+                val value: Double = instance.value
                 value.rem(1.0) == 0.0
             }
             is JSONFloat -> {
-                val value: Float = instance.get()
+                val value: Float = instance.value
                 value.rem(1.0F) == 0.0F
             }
             else -> false

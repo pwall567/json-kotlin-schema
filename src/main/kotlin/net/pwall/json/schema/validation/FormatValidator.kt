@@ -74,7 +74,7 @@ class FormatValidator(
 
         override val name: String = "date-time"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDateTime(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDateTime(value.value)
 
     }
 
@@ -82,7 +82,7 @@ class FormatValidator(
 
         override val name: String = "date"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDate(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDate(value.value)
 
     }
 
@@ -90,7 +90,7 @@ class FormatValidator(
 
         override val name: String = "time"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isTime(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isTime(value.value)
 
     }
 
@@ -98,7 +98,7 @@ class FormatValidator(
 
         override val name: String = "duration"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDuration(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isDuration(value.value)
 
     }
 
@@ -106,7 +106,7 @@ class FormatValidator(
 
         override val name: String = "email"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isEmail(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isEmail(value.value)
 
     }
 
@@ -114,7 +114,7 @@ class FormatValidator(
 
         override val name: String = "hostname"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isHostname(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isHostname(value.value)
 
     }
 
@@ -122,7 +122,7 @@ class FormatValidator(
 
         override val name: String = "ipv4"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV4(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV4(value.value)
 
     }
 
@@ -130,7 +130,7 @@ class FormatValidator(
 
         override val name: String = "ipv6"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV6(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isIPV6(value.value)
 
     }
 
@@ -138,7 +138,7 @@ class FormatValidator(
 
         override val name: String = "uri"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isURI(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isURI(value.value)
 
     }
 
@@ -147,7 +147,7 @@ class FormatValidator(
         override val name: String = "uri-reference"
 
         override fun check(value: JSONValue?): Boolean =
-                value !is JSONString || JSONValidation.isURIReference(value.get())
+                value !is JSONString || JSONValidation.isURIReference(value.value)
 
     }
 
@@ -155,7 +155,7 @@ class FormatValidator(
 
         override val name: String = "uuid"
 
-        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isUUID(value.get())
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isUUID(value.value)
 
     }
 
@@ -164,7 +164,7 @@ class FormatValidator(
         override val name: String = "json-pointer"
 
         override fun check(value: JSONValue?): Boolean =
-                value !is JSONString || JSONValidation.isJSONPointer(value.get())
+                value !is JSONString || JSONValidation.isJSONPointer(value.value)
 
     }
 
@@ -173,7 +173,7 @@ class FormatValidator(
         override val name: String = "relative-json-pointer"
 
         override fun check(value: JSONValue?): Boolean =
-                value !is JSONString || JSONValidation.isRelativeJSONPointer(value.get())
+                value !is JSONString || JSONValidation.isRelativeJSONPointer(value.value)
 
     }
 
@@ -201,11 +201,11 @@ class FormatValidator(
                 }
             }
             is JSONDouble -> {
-                val doubleValue = value.get()
+                val doubleValue = value.value
                 doubleValue == floor(doubleValue) && doubleValue in Long.MIN_VALUE.toDouble()..Long.MAX_VALUE.toDouble()
             }
             is JSONFloat -> {
-                val floatValue = value.get()
+                val floatValue = value.value
                 floatValue == floor(floatValue) && floatValue in Long.MIN_VALUE.toFloat()..Long.MAX_VALUE.toFloat()
             }
             else -> true // includes JSONInteger, JSONLong, JSONZero
@@ -218,7 +218,7 @@ class FormatValidator(
         override val name: String = "int32"
 
         override fun check(value: JSONValue?): Boolean = when (value) {
-            is JSONLong -> value.get() in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()
+            is JSONLong -> value.value in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()
             is JSONDecimal -> {
                 try {
                     value.bigDecimalValue().setScale(0) in BigDecimal(Int.MIN_VALUE)..BigDecimal(Int.MAX_VALUE)
@@ -228,11 +228,11 @@ class FormatValidator(
                 }
             }
             is JSONDouble -> {
-                val doubleValue = value.get()
+                val doubleValue = value.value
                 doubleValue == floor(doubleValue) && doubleValue in Int.MIN_VALUE.toDouble()..Int.MAX_VALUE.toDouble()
             }
             is JSONFloat -> {
-                val floatValue = value.get()
+                val floatValue = value.value
                 floatValue == floor(floatValue) && floatValue in Int.MIN_VALUE.toFloat()..Int.MAX_VALUE.toFloat()
             }
             else -> true // includes JSONInteger, JSONZero

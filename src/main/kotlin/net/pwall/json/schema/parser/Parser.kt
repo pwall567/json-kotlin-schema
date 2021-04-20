@@ -242,13 +242,13 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun getDescription(schemaJSON: JSONMapping<*>, uri: URI?, pointer: JSONPointer): String? {
         val value = schemaJSON["description"] ?: return null
         if (value is JSONString)
-            return value.get()
+            return value.value
         // add controlling flag?
         if (options.allowDescriptionRef && value is JSONMapping<*> && value.size == 1) {
             val ref = value["\$ref"]
             if (ref is JSONString) {
                 try {
-                    return (if (uri == null) URI(ref.get()) else uri.resolve(ref.get())).toURL().readText()
+                    return (if (uri == null) URI(ref.value) else uri.resolve(ref.value)).toURL().readText()
                 }
                 catch (e: Exception) {
                     throw JSONSchemaException("Error reading external description - ${errorPointer(uri, pointer)}")
@@ -284,7 +284,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseFormat(pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.Validator {
         if (value !is JSONString)
             throw JSONSchemaException("String expected - $pointer")
-        value.get().let { keyword ->
+        value.value.let { keyword ->
             val checker = nonstandardFormatHandler(keyword) ?: FormatValidator.findChecker(keyword) ?:
                     FormatValidator.NullFormatChecker(keyword)
             return FormatValidator(uri, pointer, checker)
@@ -301,7 +301,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefSchema {
         if (value !is JSONString)
             throw JSONSchemaException("\$ref must be string - $pointer")
-        val refURIString = (if (uri == null) URI(value.get()) else uri.resolve(value.get())).toString()
+        val refURIString = (if (uri == null) URI(value.value) else uri.resolve(value.value)).toString()
         val hashIndex = refURIString.indexOf('#')
         val refURIPath = if (hashIndex < 0) refURIString else refURIString.substring(0, hashIndex)
         val refURIFragment = if (hashIndex < 0) null else refURIString.substring(hashIndex + 1)
@@ -354,7 +354,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return RequiredSchema(uri, pointer, value.mapIndexed { i, entry ->
             if (entry !is JSONString)
                 throw JSONSchemaException("required items must be string - ${pointer.child(i)}")
-            entry.get()
+            entry.value
         })
     }
 
@@ -370,7 +370,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun checkType(item: JSONValue?, pointer: JSONPointer): JSONSchema.Type {
         if (item is JSONString) {
             for (type in JSONSchema.Type.values()) {
-                if (item.get() == type.value)
+                if (item.value == type.value)
                     return type
             }
         }
@@ -419,7 +419,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         if (value !is JSONString)
             throw JSONSchemaException("Must be string - ${pointer.pointerOrRoot()}")
         val regex = try {
-            Regex(value.get())
+            Regex(value.value)
         }
         catch (e: Exception) {
             throw JSONSchemaException("Pattern invalid (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
@@ -452,7 +452,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             if (value is JSONZero)
                 return 0
             if (value is JSONInteger)
-                return value.get()
+                return value.value
             throw JSONSchemaException("Must be integer - ${refPointer.pointerOrRoot()}")
         }
 
@@ -460,13 +460,13 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             val value = pointer.find(json)
             if (value is JSONZero)
                 return 0
-            if (value is JSONInteger && value.get() >= 0)
-                return value.get()
+            if (value is JSONInteger && value.value >= 0)
+                return value.value
             throw JSONSchemaException("Must be non-negative integer at $pointer, was $value")
         }
 
         fun JSONMapping<*>.getStringOrNull(key: String): String? =
-                get(key)?.let { if (it is JSONString) it.get() else throw JSONSchemaException("Incorrect $key") }
+                get(key)?.let { if (it is JSONString) it.value else throw JSONSchemaException("Incorrect $key") }
 
         fun JSONMapping<*>.getStringOrNull(pointer: JSONPointer): String? {
             if (!pointer.exists(this))
@@ -474,7 +474,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             val value = pointer.eval(this)
             if (value !is JSONString)
                 throw JSONSchemaException("Incorrect $pointer")
-            return value.get()
+            return value.value
         }
 
         @Suppress("unused")
@@ -484,7 +484,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             val value = pointer.eval(this)
             if (value !is JSONString)
                 throw JSONSchemaException("Incorrect $pointer")
-            return value.get()
+            return value.value
         }
 
         @Suppress("unused")
@@ -507,7 +507,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
 
         fun getIdOrNull(jsonValue: JSONValue): String? =
-                ((jsonValue as? JSONMapping<*>)?.get("\$id") as? JSONString)?.get()
+                ((jsonValue as? JSONMapping<*>)?.get("\$id") as? JSONString)?.value
 
     }
 

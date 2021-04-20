@@ -40,7 +40,7 @@ class JSONSchemaCustomValidatorTest {
         parser.customValidationHandler = { key, uri, location, value ->
             when (key) {
                 "x-test" -> {
-                    if (value is JSONString && value.get() == "not-empty")
+                    if (value is JSONString && value.value == "not-empty")
                         StringValidator(uri, location, StringValidator.ValidationType.MIN_LENGTH, 1)
                     else
                         fail("Unknown type")

@@ -39,13 +39,13 @@ class PatternValidator(uri: URI?, location: JSONPointer, val regex: Regex) : JSO
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
         val instance = instanceLocation.eval(json)
-        return instance !is JSONString || regex.containsMatchIn(instance.get())
+        return instance !is JSONString || regex.containsMatchIn(instance.value)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        return if (instance !is JSONString || regex.containsMatchIn(instance.get())) null else
+        return if (instance !is JSONString || regex.containsMatchIn(instance.value)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
                         "String doesn't match pattern $regex - ${instance.toErrorDisplay()}")
     }

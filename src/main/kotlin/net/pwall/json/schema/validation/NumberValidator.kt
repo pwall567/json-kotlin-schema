@@ -81,19 +81,19 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
         is Double -> instance.toDouble().rem(value) == 0.0
         is Float -> instance.toFloat().rem(value) == 0.0F
         is Long -> when (instance) {
-            is JSONDecimal -> instance.get().rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
-            is JSONDouble -> instance.get().rem(value) == 0.0
-            is JSONFloat -> instance.get().rem(value) == 0.0F
-            is JSONLong -> instance.get().rem(value) == 0L
+            is JSONDecimal -> instance.value.rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
+            is JSONDouble -> instance.value.rem(value) == 0.0
+            is JSONFloat -> instance.value.rem(value) == 0.0F
+            is JSONLong -> instance.value.rem(value) == 0L
             is JSONInteger -> instance.toLong().rem(value) == 0L
             is JSONZero -> true
             else -> throw JSONSchemaException("Impossible type")
         }
         is Int -> when (instance) {
-            is JSONDecimal -> instance.get().rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
-            is JSONDouble -> instance.get().rem(value) == 0.0
-            is JSONFloat -> instance.get().rem(value) == 0.0F
-            is JSONLong -> instance.get().rem(value) == 0L
+            is JSONDecimal -> instance.value.rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
+            is JSONDouble -> instance.value.rem(value) == 0.0
+            is JSONFloat -> instance.value.rem(value) == 0.0F
+            is JSONLong -> instance.value.rem(value) == 0L
             is JSONInteger -> instance.toLong().rem(value) == 0L
             is JSONZero -> true
             else -> throw JSONSchemaException("Impossible type")
@@ -102,30 +102,30 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
     }
 
     private fun maximum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.get() <= value.toBigDecimal()
-        is JSONDouble -> instance.get() <= value.toDouble()
-        is JSONFloat -> instance.get() <= value.toFloat()
+        is JSONDecimal -> instance.value <= value.toBigDecimal()
+        is JSONDouble -> instance.value <= value.toDouble()
+        is JSONFloat -> instance.value <= value.toFloat()
         else -> instance.toLong() <= value.toLong()
     }
 
     private fun exclusiveMaximum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.get() < value.toBigDecimal()
-        is JSONDouble -> instance.get() < value.toDouble()
-        is JSONFloat -> instance.get() < value.toFloat()
+        is JSONDecimal -> instance.value < value.toBigDecimal()
+        is JSONDouble -> instance.value < value.toDouble()
+        is JSONFloat -> instance.value < value.toFloat()
         else -> instance.toLong() < value.toLong()
     }
 
     private fun minimum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.get() >= value.toBigDecimal()
-        is JSONDouble -> instance.get() >= value.toDouble()
-        is JSONFloat -> instance.get() >= value.toFloat()
+        is JSONDecimal -> instance.value >= value.toBigDecimal()
+        is JSONDouble -> instance.value >= value.toDouble()
+        is JSONFloat -> instance.value >= value.toFloat()
         else -> instance.toLong() >= value.toLong()
     }
 
     private fun exclusiveMinimum(instance: JSONNumberValue): Boolean = when (instance) {
-        is JSONDecimal -> instance.get() > value.toBigDecimal()
-        is JSONDouble -> instance.get() > value.toDouble()
-        is JSONFloat -> instance.get() > value.toFloat()
+        is JSONDecimal -> instance.value > value.toBigDecimal()
+        is JSONDouble -> instance.value > value.toDouble()
+        is JSONFloat -> instance.value > value.toFloat()
         else -> instance.toLong() > value.toLong()
     }
 
@@ -138,11 +138,11 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
     }
 
     private fun JSONNumberValue.toBigDecimal(): BigDecimal = when (this) {
-        is JSONDecimal -> this.get()
-        is JSONDouble -> BigDecimal(this.get())
-        is JSONFloat -> BigDecimal(this.get().toDouble())
-        is JSONLong -> BigDecimal(this.get())
-        is JSONInteger -> BigDecimal(this.get())
+        is JSONDecimal -> this.value
+        is JSONDouble -> BigDecimal(this.value)
+        is JSONFloat -> BigDecimal(this.value.toDouble())
+        is JSONLong -> BigDecimal(this.value)
+        is JSONInteger -> BigDecimal(this.value)
         is JSONZero -> BigDecimal.ZERO
         else -> throw JSONSchemaException("Incorrect JSON value")
     }

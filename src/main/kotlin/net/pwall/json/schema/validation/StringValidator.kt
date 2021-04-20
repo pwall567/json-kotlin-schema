@@ -53,12 +53,12 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
         val instance = instanceLocation.eval(json)
         return if (instance !is JSONString || validLength(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
-                        "String fails length check: ${condition.keyword} $value, was ${instance.length}")
+                        "String fails length check: ${condition.keyword} $value, was ${instance.unicodeLength()}")
     }
 
     private fun validLength(instance: JSONString): Boolean = when (condition) {
-        ValidationType.MAX_LENGTH -> instance.length <= value
-        ValidationType.MIN_LENGTH -> instance.length >= value
+        ValidationType.MAX_LENGTH -> instance.unicodeLength() <= value
+        ValidationType.MIN_LENGTH -> instance.unicodeLength() >= value
     }
 
     override fun equals(other: Any?): Boolean =
@@ -66,5 +66,24 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
                     value == other.value
 
     override fun hashCode(): Int = super.hashCode() xor condition.hashCode() xor value
+
+    companion object {
+
+        fun JSONString.unicodeLength(): Int {
+            val string = value
+            val n = string.length
+            var i = 0
+            var count = 0
+            while (i < n) {
+                if (Character.isHighSurrogate(string[i++])) {
+                    if (Character.isLowSurrogate(string[i]))
+                        i++
+                }
+                count++
+            }
+            return count
+        }
+
+    }
 
 }

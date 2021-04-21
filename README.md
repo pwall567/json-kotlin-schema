@@ -78,7 +78,7 @@ To see the detail of any errors found during validation:
     val schema = JSONSchema.parse("/path/to/example.schema.json")
     val json = File("/path/to/example.json").readText()
     val output = schema.validateBasic(json)
-    output?.errors.forEach {
+    output.errors?.forEach {
         println("${it.error} - ${it.instanceLocation}")
     }
 ```

@@ -6,7 +6,7 @@
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
   <version>0.19</version>
-  <name>Kotlin implementation of JSON Schema</name>
+  <name>Kotlin implementation of JSON Schema (Draft-07)</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
 
@@ -57,6 +57,11 @@
   </pluginRepositories>
 
   <dependencies>
+    <dependency>
+      <groupId>net.pwall.util</groupId>
+      <artifactId>pipelines</artifactId>
+      <version>0.9</version>
+    </dependency>
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-pointer</artifactId>

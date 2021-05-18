@@ -5,7 +5,7 @@
 [![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v1.4.0&color=blue&logo=kotlin)](https://github.com/JetBrains/kotlin/releases/tag/v1.4.0)
 [![Maven Central](https://img.shields.io/maven-central/v/net.pwall.json/json-kotlin-schema?label=Maven%20Central)](https://search.maven.org/search?q=g:%22net.pwall.json%22%20AND%20a:%22json-kotlin-schema%22)
 
-Kotlin implementation of JSON Schema
+Kotlin implementation of JSON Schema (Draft-07)
 
 ## Quick Start
 
@@ -164,6 +164,9 @@ This will look for a sibling (URL or file) to the current document and attempt t
 ## Implemented Subset
 
 This implementation does not implement the full JSON Schema specification.
+It covers much of [Draft 07](https://json-schema.org/specification-links.html#draft-7) and a few features from
+[Draft 2019-09](https://json-schema.org/specification-links.html#draft-2019-09).
+
 The currently implemented subset includes:
 
 ### Core
@@ -261,4 +264,4 @@ The latest version of the library is 0.19, and it may be obtained from the Maven
 
 Peter Wall
 
-2021-04-20
+2021-05-18

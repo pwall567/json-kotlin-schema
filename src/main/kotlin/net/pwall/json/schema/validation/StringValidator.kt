@@ -32,6 +32,8 @@ import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
+import net.pwall.util.pipeline.AbstractIntAcceptor
+import net.pwall.util.pipeline.UTF16_CodePoint
 
 class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {
@@ -67,22 +69,20 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
 
     override fun hashCode(): Int = super.hashCode() xor condition.hashCode() xor value
 
+    class Counter(private var result: Int = 0) : AbstractIntAcceptor<Int>() {
+
+        override fun acceptInt(value: Int) {
+            result++
+        }
+
+        override fun getResult() = result
+
+    }
+
     companion object {
 
-        fun JSONString.unicodeLength(): Int {
-            val string = value
-            val n = string.length
-            var i = 0
-            var count = 0
-            while (i < n) {
-                if (Character.isHighSurrogate(string[i++])) {
-                    if (Character.isLowSurrogate(string[i]))
-                        i++
-                }
-                count++
-            }
-            return count
-        }
+        // use a UTF-16 to code point converter and simply count the output
+        fun JSONString.unicodeLength(): Int = UTF16_CodePoint(Counter()).apply { accept(value) }.result
 
     }
 

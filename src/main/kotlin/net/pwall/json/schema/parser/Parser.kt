@@ -305,7 +305,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         val hashIndex = refURIString.indexOf('#')
         val refURIPath = if (hashIndex < 0) refURIString else refURIString.substring(0, hashIndex)
         val refURIFragment = if (hashIndex < 0) null else refURIString.substring(hashIndex + 1)
-        val refJSON = if (refURIPath == uri.toString()) json else
+        val refJSON = if (hashIndex == 0 || refURIPath == uri.toString()) json else
                 jsonReader.readJSON(URI(if (refURIPath.endsWith('/')) refURIPath.dropLast(1) else refURIPath))
         val refPointer = refURIFragment?.let { JSONPointer.fromURIFragment("#$it") }  ?: JSONPointer.root
         if (!refPointer.exists(refJSON))
@@ -443,8 +443,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         val defaultURIResolver: (URI) -> InputStream? = { uri -> uri.toURL().openStream() }
 
-        fun URI.dropFragment(): URI =
-                toString().let { if (it.contains('#')) URI(it.substringBefore('#')) else this }
+        fun URI.dropFragment(): URI = when (fragment) {
+            null -> this
+            else -> URI(scheme, authority, path, query, null)
+        }
 
         fun JSONPointer.pointerOrRoot() = if (this == JSONPointer.root) "root" else toString()
 

@@ -229,6 +229,7 @@ The currently implemented subset includes:
 - `$vocabulary`
 - `unevaluatedProperties`
 - `unevaluatedItems`
+- `dependentcies`
 - `dependentSchemas`
 - `dependentRequired`
 - `contentEncoding`
@@ -243,25 +244,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.19, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.20, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.19</version>
+      <version>0.20</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.19'
+    implementation 'net.pwall.json:json-kotlin-schema:0.20'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.19")
+    implementation("net.pwall.json:json-kotlin-schema:0.20")
 ```
 
 Peter Wall
 
-2021-05-18
+2021-05-20

@@ -42,12 +42,12 @@ class TestSuiteTests {
         var totalFailed = 0
         var totalSkipped = 0
         val parser = Parser { uri ->
-            if (uri.scheme == "http" && uri.host == "localhost" && uri.port == 1234)
+            if ((uri.scheme == "http" || uri.scheme == "https") && uri.host == "localhost" && uri.port == 1234)
                 File("$testSuiteBase/remotes/${uri.path}").inputStream()
             else
                 fail("Can't resolve URI $uri")
         }
-        val baseDirectory = File("$testSuiteBase/tests/draft2019-09")
+        val baseDirectory = File("$testSuiteBase/tests/draft7")
         baseDirectory.listFiles()?.forEach { file ->
             if (file.isFile) {
                 println("***File ${file.name}")
@@ -101,42 +101,14 @@ class TestSuiteTests {
         const val testSuiteBase = "src/test/resources/test-suite"
 
         val skipFiles = listOf(
-                "anchor.json",
-                "content.json",
-                "dependentRequired.json",
-                "dependentSchemas.json",
-                "unevaluatedItems.json",
-                "unevaluatedProperties.json",
-                "recursiveRef.json",
-                "format.json" // doesn't do anything - everything is valid!
+                "id.json",
+                "ref.json",
+                "definitions.json",
+                "dependencies.json"
         )
 
         val skipTests = listOf(
-                "refRemote.json" to "base URI change - change folder",
-                "refRemote.json" to "base URI change - change folder in subschema",
-                "id.json" to "Invalid use of fragments in location-independent \$id",
-                "id.json" to "Valid use of empty fragments in location-independent \$id",
-                "id.json" to "Unnormalized \$ids are allowed but discouraged",
-                "id.json" to "\$id inside an enum is not a real identifier",
-                "items.json" to "items and subitems",
-                "defs.json" to "validate definition against metaschema",
-                "ref.json" to "root pointer ref",
-                "ref.json" to "relative pointer ref to object",
-                "ref.json" to "relative pointer ref to array",
-                "ref.json" to "escaped pointer ref",
-                "ref.json" to "nested refs",
-                "ref.json" to "ref applies alongside sibling keywords",
-                "ref.json" to "remote ref, containing refs itself",
-                "ref.json" to "property named \$ref, containing an actual \$ref",
-                "ref.json" to "\$ref to boolean schema true",
-                "ref.json" to "\$ref to boolean schema false",
-                "ref.json" to "Recursive references between schemas",
-                "ref.json" to "refs with quote",
-                "ref.json" to "ref creates new scope when adjacent to keywords",
-                "infinite-loop-detection.json" to "evaluating the same schema location against the same data location twice is not a sign of an infinite loop",
-                "unevaluatedProperties.json" to "unevaluatedProperties with \$ref",
-                "unevaluatedItems.json" to "unevaluatedItems with \$ref",
-                "recursiveRef.json" to "multiple dynamic paths to the \$recursiveRef keyword"
+                "refRemote.json" to "base URI change - change folder in subschema"
         )
 
     }

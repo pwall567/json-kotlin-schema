@@ -2,7 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.20] - 2021-05-20
+### Changed
+- `pom.xml`: updated dependency version
+- tests: switched test suite tests to use draft-07 files
+
+## [0.19] - 2021-04-20
 ### Changed
 - `Parser`: add identifier for draft 2020-12
 - `NumberValidator`, `Parser`: fixed bugs in floating point

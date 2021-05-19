@@ -889,18 +889,38 @@ class JSONSchemaTest {
         expect(file.absolutePath) { uri1.path }
         expect(null) { uri1.fragment }
         expect(null) { uri1.host }
+        expect(-1) { uri1.port }
+        expect(null) { uri1.userInfo }
+        expect(null) { uri1.query }
+        expect("//${file.absolutePath}") { uri1.schemeSpecificPart }
         val uri2 = uri1.resolve("http://pwall.net/schema/true1")
         expect("http://pwall.net/schema/true1") { uri2.toString() }
         expect("http") { uri2.scheme }
         expect("/schema/true1") { uri2.path }
         expect(null) { uri2.fragment }
         expect("pwall.net") { uri2.host }
+        expect(-1) { uri2.port }
+        expect(null) { uri2.userInfo }
+        expect(null) { uri2.query }
+        expect("//pwall.net/schema/true1") { uri2.schemeSpecificPart }
         val uri3 = uri2.resolve("true2")
         expect("http://pwall.net/schema/true2") { uri3.toString() }
         expect("http") { uri3.scheme }
         expect("/schema/true2") { uri3.path }
         expect(null) { uri3.fragment }
         expect("pwall.net") { uri3.host }
+        expect(-1) { uri3.port }
+        expect(null) { uri3.userInfo }
+        expect(null) { uri3.query }
+        val uri3a = uri2.resolve("true2?a=1&b=2")
+        expect("http://pwall.net/schema/true2?a=1&b=2") { uri3a.toString() }
+        expect("http") { uri3a.scheme }
+        expect("/schema/true2") { uri3a.path }
+        expect(null) { uri3a.fragment }
+        expect("pwall.net") { uri3a.host }
+        expect(-1) { uri3a.port }
+        expect(null) { uri3a.userInfo }
+        expect("a=1&b=2") { uri3a.query }
         val uri4 = uri3.resolve("http://pwall.net/schema/true3#")
         expect("http://pwall.net/schema/true3#") { uri4.toString() }
         expect("http") { uri4.scheme }
@@ -917,6 +937,43 @@ class JSONSchemaTest {
         expect("classpath:/example.json") { uri9.toString() }
         expect("classpath") { uri9.scheme }
         expect("/example.json") { uri9.path }
+        expect(false) { uri9.isOpaque }
+        val uri10 = URI("scm:git:git://github.com/pwall567/json-kotlin-schema.git")
+        expect(true) { uri10.isOpaque }
+        expect("scm") { uri10.scheme }
+        expect("git:git://github.com/pwall567/json-kotlin-schema.git") { uri10.schemeSpecificPart }
+        expect(null) { uri10.path }
+        expect(null) { uri10.fragment }
+        expect(null) { uri10.host }
+        expect(-1) { uri10.port }
+        expect(null) { uri10.userInfo }
+        expect(null) { uri10.query }
+        val uri10a = uri10.resolve("#frag99")
+        expect("#frag99") { uri10a.toString() } // can't add fragment to opaque URI
+        val uri11 = URI("test")
+        expect(false) { uri11.isOpaque }
+        expect(null) { uri11.scheme }
+        expect("test") { uri11.path }
+        expect(null) { uri11.fragment }
+        expect(null) { uri11.host }
+        expect(-1) { uri11.port }
+        expect(null) { uri11.userInfo }
+        expect(null) { uri11.query }
+        val uri12 = uri1.resolve("http://pwall.net:8080/schema/true1")
+        expect("http://pwall.net:8080/schema/true1") { uri12.toString() }
+        expect("http") { uri12.scheme }
+        expect("/schema/true1") { uri12.path }
+        expect(null) { uri12.fragment }
+        expect("pwall.net") { uri12.host }
+        expect(8080) { uri12.port }
+        expect(null) { uri12.userInfo }
+        expect("pwall.net:8080") { uri12.authority }
+        expect(null) { uri12.query }
+        expect("//pwall.net:8080/schema/true1") { uri12.schemeSpecificPart }
+        val uri13 = URI("http", "pwall.net:8080", "/schema/test99", "a=0", "frag88")
+        expect("http://pwall.net:8080/schema/test99?a=0#frag88") { uri13.toString() }
+        val uri14 = URI("http://pwall.net/dir1/dir2/../dir3/file").normalize()
+        expect("/dir1/dir3/file") { uri14.path }
     }
 
     companion object {

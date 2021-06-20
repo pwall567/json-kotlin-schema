@@ -4,7 +4,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 ### Changed
-- `pom.xml`: updated dependency version
+- `pom.xml`: updated dependency versions
+- `FormatValidator`: Added regex format validation
 
 ## [0.20] - 2021-05-20
 ### Changed

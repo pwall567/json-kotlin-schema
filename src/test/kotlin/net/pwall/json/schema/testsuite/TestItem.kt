@@ -29,6 +29,7 @@ import net.pwall.json.JSONValue
 
 data class TestItem(
         val description: String,
+        val comment: String?,
         val data: JSONValue?,
         val valid: Boolean
 )

@@ -38,16 +38,20 @@ import net.pwall.json.schema.parser.Parser
 class TestSuiteTests {
 
     @Test fun `should run test suite tests`() {
-        var totalPassed = 0
-        var totalFailed = 0
-        var totalSkipped = 0
         val parser = Parser { uri ->
             if ((uri.scheme == "http" || uri.scheme == "https") && uri.host == "localhost" && uri.port == 1234)
                 File("$testSuiteBase/remotes/${uri.path}").inputStream()
             else
-                fail("Can't resolve URI $uri")
+                uri.toURL().openStream()
         }
-        val baseDirectory = File("$testSuiteBase/tests/draft7")
+        testDirectory(File("$testSuiteBase/tests/draft7"), parser)
+    }
+
+    private fun testDirectory(baseDirectory: File, parser: Parser) {
+        var totalPassed = 0
+        var totalFailed = 0
+        var totalSkipped = 0
+        println()
         baseDirectory.listFiles()?.forEach { file ->
             if (file.isFile) {
                 println("***File ${file.name}")
@@ -93,6 +97,7 @@ class TestSuiteTests {
         }
         println()
         println("Total passed: $totalPassed; failed: $totalFailed, skipped $totalSkipped")
+        println()
         expect(0) { totalFailed }
     }
 

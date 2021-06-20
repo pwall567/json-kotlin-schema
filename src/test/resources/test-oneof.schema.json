@@ -1,0 +1,44 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://pwall.net/test-oneof",
+    "title": "Customer",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1
+        },
+        "customerType": {
+            "type": "string"
+        }
+    },
+    "required": [ "id", "name", "customerType" ],
+    "oneOf": [
+        {
+            "properties": {
+                "customerType": {
+                    "const": "domestic"
+                },
+                "domesticAddress": {
+                    "$ref": "test-domestic-address.schema.json"
+                }
+            },
+            "required": [ "domesticAddress" ]
+        },
+        {
+            "properties": {
+                "customerType": {
+                    "const": "international"
+                },
+                "internationalAddress": {
+                    "$ref": "test-international-address.schema.json"
+                }
+            },
+            "required": [ "internationalAddress" ]
+        }
+    ]
+}

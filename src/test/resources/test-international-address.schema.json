@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://pwall.net/test-international-address",
+    "title": "Domestic Address",
+    "type": "object",
+    "properties": {
+        "line1": {
+            "type": "string",
+            "minLength": 1
+        },
+        "line2": {
+            "type": "string",
+            "minLength": 1
+        },
+        "line3": {
+            "type": "string",
+            "minLength": 1
+        },
+        "line4": {
+            "type": "string",
+            "minLength": 1
+        },
+        "country": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "required": [ "line1", "line2", "country" ]
+}

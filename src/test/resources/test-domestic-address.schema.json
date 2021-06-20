@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://pwall.net/test-domestic-address",
+    "title": "Domestic Address",
+    "type": "object",
+    "properties": {
+        "line1": {
+            "type": "string",
+            "minLength": 1
+        },
+        "line2": {
+            "type": "string",
+            "minLength": 1
+        },
+        "state": {
+            "type": "string",
+            "enum": [ "NSW", "QLD", "VIC", "TAS", "SA", "WA", "ACT", "NT" ]
+        },
+        "postcode": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$"
+        }
+    },
+    "required": [ "line1", "state", "postcode" ]
+}

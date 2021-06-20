@@ -177,13 +177,20 @@ class FormatValidator(
 
     }
 
+    object RegexFormatChecker : FormatChecker {
+
+        override val name: String = "regex"
+
+        override fun check(value: JSONValue?): Boolean = value !is JSONString || JSONValidation.isRegex(value.value)
+
+    }
+
     // Not yet implemented:
     //   idn-email
     //   idn-hostname
     //   iri
     //   iri-reference
     //   uri-template
-    //   regex
 
     // Additional formats for OpenAPI: int32 and int64
 
@@ -283,6 +290,7 @@ class FormatValidator(
             UUIDFormatChecker,
             JSONPointerFormatChecker,
             RelativeJSONPointerFormatChecker,
+            RegexFormatChecker,
             Int32FormatChecker,
             Int64FormatChecker
         )

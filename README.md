@@ -200,7 +200,7 @@ The currently implemented subset includes:
 
 - `type` (`null`, `boolean`, `object`, `array`, `number`, `string`, `integer`)
 - `format` (`date-time`, `date`, `time`, `duration`, `email`, `hostname`, `uri`, `uri-reference`, `uuid`, `ipv4`,
-`ipv6`, `json-pointer`, `relative-json-pointer`)
+`ipv6`, `json-pointer`, `relative-json-pointer`, `regex`)
 - `enum`
 - `const`
 - `multipleOf`

@@ -118,6 +118,11 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         }
     }
 
+    fun readJSON(string: String): JSONValue {
+
+        return JSON.parse(string)
+    }
+
     fun readJSON(uri: URI): JSONValue {
         return jsonCache[uri] ?: try {
             val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")

@@ -119,7 +119,6 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
     }
 
     fun readJSON(string: String): JSONValue {
-
         return JSON.parse(string)
     }
 

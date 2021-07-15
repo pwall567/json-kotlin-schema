@@ -2,7 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.22] - 2021-07-15
+### Changed
+- `JSONSchema`, `JSONReader`, `Parser`: Added functions to read schema from string
+
+## [0.21] - 2021-06-21
 ### Changed
 - `pom.xml`: updated dependency versions
 - `FormatValidator`: Added regex format validation

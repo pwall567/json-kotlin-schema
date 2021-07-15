@@ -129,7 +129,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return parse(json, uri)
     }
 
-    private fun parse(json: JSONValue, uri: URI): JSONSchema {
+    fun parse(string: String): JSONSchema {
+        val json = jsonReader.readJSON(string)
+        return parse(json, null)
+    }
+
+    private fun parse(json: JSONValue, uri: URI?): JSONSchema {
         val schemaVersion = (json as? JSONMapping<*>)?.getStringOrNull(JSONPointer.root.child("\$schema"))
         val pointer = JSONPointer.root
         return when (schemaVersion) {

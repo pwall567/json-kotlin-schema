@@ -27,6 +27,7 @@ package net.pwall.json.schema.parser
 
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -40,6 +41,7 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
+import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.TypeValidator
 
 class ParserTest {
@@ -144,6 +146,22 @@ class ParserTest {
             fail("Unexpected schema type")
         val description = schema.description ?: fail("Description is null")
         expect(true) { description.startsWith("This is an example ") }
+    }
+
+    @Test fun `should parse a schema from a string`() {
+        val string = """{"enum":[1,2,4]}"""
+        val schema = Parser().parse(string)
+        assertTrue(schema is JSONSchema.General)
+        expect(1) { schema.children.size }
+        val child = schema.children[0]
+        assertTrue(child is EnumValidator)
+    }
+
+    @Test fun `should parse a schema from a string with a URI`() {
+        val string = """{"enum":[1,2,4]}"""
+        val uri = URI.create("http://test.com/test")
+        val schema = JSONSchema.parse(string, uri)
+        expect(uri) { schema.uri }
     }
 
 }

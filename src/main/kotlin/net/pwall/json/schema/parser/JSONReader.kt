@@ -110,6 +110,9 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
                 else -> JSON.parse(file) ?: throw JSONSchemaException("Schema file is null - $file")
             }
         }
+        catch (e: JSONSchemaException) {
+            throw e
+        }
         catch (e: Exception) {
             throw JSONSchemaException("Error reading schema file - $file", e)
         }.also {
@@ -118,8 +121,14 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         }
     }
 
-    fun readJSON(string: String): JSONValue {
-        return JSON.parse(string)
+    fun readJSON(string: String, uri: URI? = null): JSONValue {
+        if (uri != null) {
+            return jsonCache[uri] ?: JSON.parse(string)?.also {
+                jsonCache[uri] = it
+                it.cacheByURI()
+            } ?: throw JSONSchemaException("Schema is null")
+        }
+        return JSON.parse(string) ?: throw JSONSchemaException("Schema is null")
     }
 
     fun readJSON(uri: URI): JSONValue {
@@ -130,6 +139,9 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
                     YAMLSimple.process(inputStream).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
                 else -> JSON.parse(inputStream) ?: throw JSONSchemaException("Schema file is null - $uri")
             }
+        }
+        catch (e: JSONSchemaException) {
+            throw e
         }
         catch (e: Exception) {
             throw JSONSchemaException("Error reading schema file - $uri", e)

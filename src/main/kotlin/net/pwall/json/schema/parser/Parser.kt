@@ -129,9 +129,9 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return parse(json, uri)
     }
 
-    fun parse(string: String): JSONSchema {
-        val json = jsonReader.readJSON(string)
-        return parse(json, null)
+    fun parse(string: String, uri: URI? = null): JSONSchema {
+        val json = jsonReader.readJSON(string, uri)
+        return parse(json, uri)
     }
 
     private fun parse(json: JSONValue, uri: URI?): JSONSchema {

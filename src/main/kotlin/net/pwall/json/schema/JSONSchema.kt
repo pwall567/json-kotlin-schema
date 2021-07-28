@@ -272,7 +272,7 @@ sealed class JSONSchema(
 
         fun parse(file: File): JSONSchema = parser.parse(file)
 
-        fun parse(string: String): JSONSchema = parser.parse(string)
+        fun parse(string: String, uri: URI? = null): JSONSchema = parser.parse(string, uri)
 
         fun allOf(uri: URI?, location: JSONPointer, array: List<JSONSchema>) = AllOfSchema(uri, location, array)
 

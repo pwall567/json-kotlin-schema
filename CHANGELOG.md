@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.23] - 2021-07-28
+### Changed
+- `JSONSchema`, `JSONReader`, `Parser`: Updated string reading functions to take URI; added tests
+
 ## [0.22] - 2021-07-15
 ### Changed
 - `JSONSchema`, `JSONReader`, `Parser`: Added functions to read schema from string

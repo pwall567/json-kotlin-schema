@@ -32,8 +32,8 @@ import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
-import net.pwall.util.pipeline.AbstractIntAcceptor
-import net.pwall.util.pipeline.UTF16_CodePoint
+import net.pwall.pipeline.AbstractIntAcceptor
+import net.pwall.pipeline.codec.UTF16_CodePoint
 
 class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {

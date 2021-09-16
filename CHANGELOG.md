@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.24] - 2021-09-16
+### Changed
+- `pom.xml`: bumped dependency versions
+
 ## [0.23] - 2021-07-28
 ### Changed
 - `JSONSchema`, `JSONReader`, `Parser`: Updated string reading functions to take URI; added tests

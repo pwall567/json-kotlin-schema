@@ -2,6 +2,22 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.28] - 2021-09-21
+### Changed
+- `pom.xml`: bumped dependency version
+
+## [0.27] - 2021-09-21
+### Changed
+- `pom.xml`: bumped dependency version
+
+## [0.26] - 2021-09-21
+### Changed
+- `pom.xml`: bumped dependency version
+
+## [0.25] - 2021-09-21
+### Changed
+- `pom.xml`: bumped dependency version
+
 ## [0.24] - 2021-09-16
 ### Changed
 - `pom.xml`: bumped dependency versions

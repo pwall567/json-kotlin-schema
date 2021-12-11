@@ -27,6 +27,7 @@ package net.pwall.json.schema.parser
 
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.expect
 import kotlin.test.fail
@@ -162,6 +163,14 @@ class ParserTest {
         val uri = URI.create("http://test.com/test")
         val schema = JSONSchema.parse(string, uri)
         expect(uri) { schema.uri }
+    }
+
+    @Test fun `should cache parsed object in JSONReader`() {
+        val parser = Parser()
+        val file = File("src/test/resources/example.json")
+        val object1 = parser.jsonReader.readJSON(file)
+        val object2 = parser.jsonReader.readJSON(file)
+        assertSame(object1, object2)
     }
 
 }

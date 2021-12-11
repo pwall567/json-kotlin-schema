@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.31] - 2021-12-11
+### Changed
+- `AdditionalItemsSchema`: fixed recursion bug in `hashCode()` and `equals()`
+- `AdditionalPropertiesSchema`: fixed recursion bug in `hashCode()` and `equals()`
+- `Parser`: made `jsonReader` publicly-accessible
+
 ## [0.30] - 2021-11-07
 ### Changed
 - `pom.xml`: updated to Kotlin 1.5.20

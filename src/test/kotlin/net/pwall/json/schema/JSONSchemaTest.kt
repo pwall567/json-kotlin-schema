@@ -26,6 +26,7 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -879,6 +880,14 @@ class JSONSchemaTest {
         expect(false) { schema.validate("[]") }
         expect(false) { schema.validateBasic("[]").valid }
         expect(false) { schema.validateDetailed("[]").valid }
+    }
+
+    @Test fun `should perform equals and hashCode correctly`() {
+        val filename = "src/test/resources/test-additional.schema.json"
+        val schema1 = JSONSchema.parseFile(filename)
+        val schema2 = JSONSchema.parseFile(filename)
+        assertEquals(schema1, schema2)
+        assertEquals(schema1.hashCode(), schema2.hashCode())
     }
 
     @Test fun `check assumptions about URIs`() {

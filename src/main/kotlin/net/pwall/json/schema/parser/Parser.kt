@@ -85,7 +85,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     var nonstandardFormatHandler: (String) -> FormatValidator.FormatChecker? = { _ -> null }
 
-    private val jsonReader = JSONReader(uriResolver)
+    val jsonReader = JSONReader(uriResolver)
 
     private val schemaCache = mutableMapOf<URI, JSONSchema>()
 

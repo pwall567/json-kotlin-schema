@@ -113,9 +113,19 @@ class AdditionalPropertiesSchema(private val parent: General, uri: URI?, locatio
         return false
     }
 
+    /**
+     * Compare two `AdditionalPropertiesSchema` objects for equality.
+     *
+     * This will report two objects as equal even if the `parent` is different, because including the parent in the
+     * comparison leads to infinite recursion.  This should be a reasonable approach, since the function will mostly be
+     * called as a nested equality comparison on the parent object.
+     *
+     * @param   other       the other object
+     * @return              `true` if the two objects are equal, subject to the above note.
+     */
     override fun equals(other: Any?): Boolean = this === other || other is AdditionalPropertiesSchema &&
-            super.equals(other) && parent == other.parent && schema == other.schema
+            super.equals(other) && schema == other.schema
 
-    override fun hashCode(): Int = super.hashCode() xor parent.hashCode() xor schema.hashCode()
+    override fun hashCode(): Int = super.hashCode() xor schema.hashCode()
 
 }

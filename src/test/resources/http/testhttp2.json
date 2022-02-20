@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://pwall.net/test/schema/testhttp2.json",
+  "$defs": {
+    "Def1": {
+      "type": "object",
+      "properties": {
+        "aaa": {
+          "type": "integer"
+        }
+      },
+      "required": [ "aaa" ]
+    }
+  }
+}

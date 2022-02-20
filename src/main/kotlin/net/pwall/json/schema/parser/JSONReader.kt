@@ -2,7 +2,7 @@
  * @(#) JSONReader.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2022 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ import net.pwall.yaml.YAMLSimple
 
 class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
+    var extendedResolver: ((URI) -> InputDetails?)? = null
+
     private val jsonCache: MutableMap<URI, JSONValue> = mutableMapOf()
 
     fun preLoad(filename: String) {
@@ -49,17 +51,19 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         when {
             file.isDirectory -> file.listFiles()?.forEach { if (!it.name.startsWith('.')) preLoad(it) }
             file.isFile -> {
+                val uri = file.toURI()
                 when {
-                    file.name.extension(".json") -> {
+                    jsonCache.containsKey(uri) -> {}
+                    file.name.endsWith(".json", ignoreCase = true) -> {
                         JSON.parse(file)?.let {
-                            jsonCache[file.toURI()] = it
-                            it.cacheByURI()
+                            jsonCache[uri] = it
+                            it.cacheById()
                         }
                     }
-                    file.name.extension(".yaml") || file.name.extension(".yml") -> {
+                    looksLikeYAML(file.name) -> {
                         YAMLSimple.process(file).rootNode?.let {
-                            jsonCache[file.toURI()] = it
-                            it.cacheByURI()
+                            jsonCache[uri] = it
+                            it.cacheById()
                         }
                     }
                 }
@@ -80,19 +84,19 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             Files.isRegularFile(path) -> {
                 val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
                 when {
-                    fileName.extension(".json") -> {
+                    fileName.endsWith(".json", ignoreCase = true) -> {
                         Files.newBufferedReader(path).use { reader ->
                             JSON.parse(reader)?.let {
                                 jsonCache[path.toUri()] = it
-                                it.cacheByURI()
+                                it.cacheById()
                             }
                         }
                     }
-                    fileName.extension(".yaml") || fileName.extension(".yml") -> {
+                    looksLikeYAML(fileName) -> {
                         Files.newBufferedReader(path).use { reader ->
                             YAMLSimple.process(reader).rootNode?.let {
                                 jsonCache[path.toUri()] = it
-                                it.cacheByURI()
+                                it.cacheById()
                             }
                         }
                     }
@@ -105,7 +109,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         val uri = file.toURI()
         return jsonCache[uri] ?: try {
             when {
-                file.name.extension(".yaml") || file.name.extension(".yml") ->
+                looksLikeYAML(file.name) ->
                     YAMLSimple.process(file).rootNode ?: throw JSONSchemaException("Schema file is null - $file")
                 else -> JSON.parse(file) ?: throw JSONSchemaException("Schema file is null - $file")
             }
@@ -117,7 +121,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             throw JSONSchemaException("Error reading schema file - $file", e)
         }.also {
             jsonCache[uri] = it
-            it.cacheByURI()
+            it.cacheById()
         }
     }
 
@@ -125,7 +129,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         if (uri != null) {
             return jsonCache[uri] ?: JSON.parse(string)?.also {
                 jsonCache[uri] = it
-                it.cacheByURI()
+                it.cacheById()
             } ?: throw JSONSchemaException("Schema is null")
         }
         return JSON.parse(string) ?: throw JSONSchemaException("Schema is null")
@@ -133,12 +137,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
     fun readJSON(uri: URI): JSONValue {
         return jsonCache[uri] ?: try {
-            val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
-            when {
-                uri.path.extension(".yaml") || uri.path.extension(".yml") ->
-                    YAMLSimple.process(inputStream).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
-                else -> JSON.parse(inputStream) ?: throw JSONSchemaException("Schema file is null - $uri")
-            }
+            readByResolver(uri)
         }
         catch (e: JSONSchemaException) {
             throw e
@@ -147,7 +146,28 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             throw JSONSchemaException("Error reading schema file - $uri", e)
         }.also {
             jsonCache[uri] = it
-            it.cacheByURI()
+            it.cacheById()
+        }
+    }
+
+    private fun readByResolver(uri: URI): JSONValue {
+        extendedResolver?.let { resolver ->
+            val inputDetails = resolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
+            return inputDetails.reader.use {
+                when {
+                    looksLikeYAML(uri.path, inputDetails.contentType) ->
+                        YAMLSimple.process(it).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
+                    else -> JSON.parse(it) ?: throw JSONSchemaException("Schema file is null - $uri")
+                }
+            }
+        }
+        val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
+        return inputStream.use {
+            when {
+                looksLikeYAML(uri.path) ->
+                    YAMLSimple.process(it).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
+                else -> JSON.parse(it) ?: throw JSONSchemaException("Schema file is null - $uri")
+            }
         }
     }
 
@@ -157,7 +177,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
             Files.newBufferedReader(path).use { reader ->
                 when {
-                    fileName.extension(".yaml") || fileName.extension(".yml") ->
+                    looksLikeYAML(fileName) ->
                         YAMLSimple.process(reader).rootNode ?: throw JSONSchemaException("Schema file is null - $path")
                     else -> JSON.parse(reader) ?: throw JSONSchemaException("Schema file is null - $path")
                 }
@@ -167,11 +187,11 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             throw JSONSchemaException("Error reading schema file - $path", e)
         }.also {
             jsonCache[uri] = it
-            it.cacheByURI()
+            it.cacheById()
         }
     }
 
-    private fun JSONValue.cacheByURI() {
+    private fun JSONValue.cacheById() {
         Parser.getIdOrNull(this)?.let {
             jsonCache[URI(it).dropFragment()] = this
         }
@@ -179,8 +199,14 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
     companion object {
 
-        private fun String.extension(ext: String): Boolean {
-            return endsWith(ext, ignoreCase = true)
+        fun looksLikeYAML(path: String, contentType: String? = null): Boolean {
+            contentType?.let {
+                if (it.contains("yaml", ignoreCase = true) || it.contains("yml", ignoreCase = true))
+                    return true
+                if (it.contains("json", ignoreCase = true))
+                    return false
+            }
+            return path.endsWith(".yaml", ignoreCase = true) || path.endsWith(".yml", ignoreCase = true)
         }
 
     }

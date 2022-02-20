@@ -2,7 +2,7 @@
  * @(#) ParserTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021 Peter Wall
+ * Copyright (c) 2020, 2021, 2022 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,10 @@ import net.pwall.json.JSON
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.parser.Parser.Companion.defaultExtendedResolver
 import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
+import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.TypeValidator
 
@@ -171,6 +173,59 @@ class ParserTest {
         val object1 = parser.jsonReader.readJSON(file)
         val object2 = parser.jsonReader.readJSON(file)
         assertSame(object1, object2)
+    }
+
+    @Test fun `should read schema using HTTP`() {
+        val parser = Parser()
+        parser.setExtendedResolver(defaultExtendedResolver)
+        val schema = parser.parse(URI("http://kjson.io/json/http/testhttp1.json"))
+        assertTrue(schema is JSONSchema.General)
+        expect(2) { schema.children.size }
+        with(schema.children[0]) {
+            assertTrue(this is TypeValidator)
+            expect(listOf(JSONSchema.Type.OBJECT)) { types }
+        }
+        with(schema.children[1]) {
+            assertTrue(this is PropertiesSchema)
+            expect(1) { properties.size }
+            with(properties[0]) {
+                expect("xxx") { first }
+                with(second) {
+                    assertTrue(this is JSONSchema.General)
+                    expect(1) { children.size }
+                    with(children[0]) {
+                        assertTrue(this is RefSchema)
+                        with(target) {
+                            assertTrue(this is JSONSchema.General)
+                            expect(3) { children.size }
+                            with(children[0]) {
+                                assertTrue(this is TypeValidator)
+                                expect(listOf(JSONSchema.Type.OBJECT)) { types }
+                            }
+                            with(children[1]) {
+                                assertTrue(this is PropertiesSchema)
+                                expect(1) { properties.size }
+                                with(properties[0]) {
+                                    expect("aaa") { first }
+                                    with(second) {
+                                        assertTrue(this is JSONSchema.General)
+                                        expect(1) { children.size }
+                                        with(children[0]) {
+                                            assertTrue(this is TypeValidator)
+                                            expect(listOf(JSONSchema.Type.INTEGER)) { types }
+                                        }
+                                    }
+                                }
+                            }
+                            with(children[2]) {
+                                assertTrue(this is RequiredSchema)
+                                expect(listOf("aaa")) { properties }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

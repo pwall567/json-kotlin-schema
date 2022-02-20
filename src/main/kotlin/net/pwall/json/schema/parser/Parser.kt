@@ -2,7 +2,7 @@
  * @(#) Parser.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021 Peter Wall
+ * Copyright (c) 2020, 2021, 2022 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,9 @@ import java.io.File
 import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.net.HttpURLConnection
 import java.net.URI
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -86,6 +88,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     var nonstandardFormatHandler: (String) -> FormatValidator.FormatChecker? = { _ -> null }
 
     val jsonReader = JSONReader(uriResolver)
+
+    fun setExtendedResolver(extendedResolver: (URI) -> InputDetails?) {
+        jsonReader.extendedResolver = extendedResolver
+    }
 
     private val schemaCache = mutableMapOf<URI, JSONSchema>()
 
@@ -448,8 +454,32 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         val defaultURIResolver: (URI) -> InputStream? = { uri -> uri.toURL().openStream() }
 
-        fun URI.dropFragment(): URI = when (fragment) {
-            null -> this
+        val defaultExtendedResolver: (URI) -> InputDetails? = { uri ->
+            when (val conn = uri.toURL().openConnection()) {
+                is HttpURLConnection -> {
+                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                        null
+                    else {
+                        val contentType = conn.contentType?.split(';')?.map { it.trim() }
+                        val charset = contentType?.findStartingFrom(1) { it.startsWith("charset=") }?.drop(8)?.trim()
+                        val reader = charset?.let { conn.inputStream.reader(Charset.forName(it)) } ?:
+                                conn.inputStream.reader()
+                        InputDetails(reader, contentType?.get(0))
+                    }
+                }
+                else -> InputDetails(conn.inputStream.reader())
+            }
+        }
+
+        private inline fun <T> List<T>.findStartingFrom(index: Int = 0, predicate: (T) -> Boolean): T? {
+            for (i in index until this.size)
+                this[i].let { if (predicate(it)) return it }
+            return null
+        }
+
+        fun URI.dropFragment(): URI = when {
+            fragment == null -> this
+            isOpaque -> URI(scheme, schemeSpecificPart, null)
             else -> URI(scheme, authority, path, query, null)
         }
 

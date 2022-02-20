@@ -91,8 +91,8 @@ It is also possible to read a schema from a string in memory:
     val str = File("/path/to/example.schema.json").readText()
     val schema = JSONSchema.parse(str)
 ```
-An option second parameter on the `parse()` function takes a URI, which will be used to construct the location in error
-objects.
+An optional second parameter on the `parse()` function takes a URI, which will be used to construct the location in
+error objects.
 
 ## YAML
 
@@ -252,25 +252,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.31, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.32, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.31</version>
+      <version>0.32</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.31'
+    implementation 'net.pwall.json:json-kotlin-schema:0.32'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.31")
+    implementation("net.pwall.json:json-kotlin-schema:0.32")
 ```
 
 Peter Wall
 
-2021-12-11
+2022-02-20

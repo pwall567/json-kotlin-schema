@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.32] - 2022-02-20
+### Changed
+- `Parser`, `JSONReader`: added extended resolver mechanism (helps with http/s)
+### Added
+- `InoutDetails`: new
+
 ## [0.31] - 2021-12-11
 ### Changed
 - `AdditionalItemsSchema`: fixed recursion bug in `hashCode()` and `equals()`

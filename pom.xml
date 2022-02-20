@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.31</version>
+  <version>0.32</version>
   <name>Kotlin implementation of JSON Schema (Draft-07)</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
@@ -13,7 +13,7 @@
   <parent>
     <groupId>net.pwall.maven</groupId>
     <artifactId>maven-kotlin</artifactId>
-    <version>3.0</version>
+    <version>3.1</version>
   </parent>
 
   <properties>
@@ -80,7 +80,7 @@
     <dependency>
       <groupId>net.pwall.yaml</groupId>
       <artifactId>yaml-simple</artifactId>
-      <version>1.9</version>
+      <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>net.pwall.yaml</groupId>
@@ -101,6 +101,12 @@
       <artifactId>kotlin-reflect</artifactId>
     </dependency>
     <dependency>
+      <!-- This is required because kotlin-test-junit 1.5.20 includes junit 4.12 -->
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-test-junit</artifactId>
       <scope>test</scope>
@@ -108,7 +114,7 @@
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin</artifactId>
-      <version>4.5</version>
+      <version>4.7</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

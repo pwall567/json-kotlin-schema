@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Unreleased]
+### Changed
+- `Parser`: improved error reporting on invalid `pattern`
+
 ## [0.32] - 2022-02-20
 ### Changed
 - `Parser`, `JSONReader`: added extended resolver mechanism (helps with http/s)

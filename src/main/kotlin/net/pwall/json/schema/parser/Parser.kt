@@ -433,7 +433,8 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             Regex(value.value)
         }
         catch (e: Exception) {
-            throw JSONSchemaException("Pattern invalid (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
+            val msg = e.message?.let { "- ${it.substringBefore('\n').trim()}" } ?: ""
+            throw JSONSchemaException("Pattern invalid $msg (${value.toErrorDisplay()}) - ${pointer.pointerOrRoot()}")
         }
         return PatternValidator(uri, pointer, regex)
     }

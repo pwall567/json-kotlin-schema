@@ -1,4 +1,4 @@
-![Stop the war in Ukraine](https://pwall.net/ukraine.png)
+![Stop the war in Ukraine](https://pwall.net/ukraine1.png)
 
 # json-kotlin-schema
 

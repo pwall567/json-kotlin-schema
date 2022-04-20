@@ -2,7 +2,7 @@
  * @(#) JSONSchemaTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021 Peter Wall
+ * Copyright (c) 2020, 2021, 2022 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -701,185 +701,205 @@ class JSONSchemaTest {
     }
 
     @Test fun `should validate string of JSON`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
         expect(true) { trueSchema.validate("{}") }
         expect(true) { trueSchema.validateBasic("{}").valid }
         expect(true) { trueSchema.validateDetailed("{}").valid }
     }
 
     @Test fun `should return true from true schema`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
         expect(true) { trueSchema.validate(emptyObject) }
         expect(true) { trueSchema.validateBasic(emptyObject).valid }
         expect(true) { trueSchema.validateDetailed(emptyObject).valid }
     }
 
     @Test fun `should return false from false schema`() {
-        val falseSchema = JSONSchema.False(null, JSONPointer.root)
         expect(false) { falseSchema.validate(emptyObject) }
         expect(false) { falseSchema.validateBasic(emptyObject).valid }
         expect(false) { falseSchema.validateDetailed(emptyObject).valid }
     }
 
     @Test fun `should return false from not true schema`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
-        val notTrueSchema = JSONSchema.Not(null, JSONPointer.root, trueSchema)
-        expect(false) { notTrueSchema.validate(emptyObject) }
-        expect(false) { notTrueSchema.validateBasic(emptyObject).valid }
-        expect(false) { notTrueSchema.validateDetailed(emptyObject).valid }
+        JSONSchema.Not(null, JSONPointer.root, trueSchema).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
     }
 
     @Test fun `should return true from not false schema`() {
-        val falseSchema = JSONSchema.False(null, JSONPointer.root)
-        val notFalseSchema = JSONSchema.Not(null, JSONPointer.root, falseSchema)
-        expect(true) { notFalseSchema.validate(emptyObject) }
-        expect(true) { notFalseSchema.validateBasic(emptyObject).valid }
-        expect(true) { notFalseSchema.validateDetailed(emptyObject).valid }
+        JSONSchema.Not(null, JSONPointer.root, falseSchema).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
     }
 
     @Test fun `should give correct result from allOf`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
-        val falseSchema = JSONSchema.False(null, JSONPointer.root)
-        val allOf1 = JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema))
-        expect(true) { allOf1.validate(emptyObject) }
-        expect(true) { allOf1.validateBasic(emptyObject).valid }
-        expect(true) { allOf1.validateDetailed(emptyObject).valid }
-        val allOf2 = JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema))
-        expect(true) { allOf2.validate(emptyObject) }
-        expect(true) { allOf2.validateBasic(emptyObject).valid }
-        expect(true) { allOf2.validateDetailed(emptyObject).valid }
-        val allOf3 = JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema))
-        expect(true) { allOf3.validate(emptyObject) }
-        expect(true) { allOf3.validateBasic(emptyObject).valid }
-        expect(true) { allOf3.validateDetailed(emptyObject).valid }
-        val allOf4 = JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema))
-        expect(false) { allOf4.validate(emptyObject) }
-        expect(false) { allOf4.validateBasic(emptyObject).valid }
-        expect(false) { allOf4.validateDetailed(emptyObject).valid }
-        val allOf5 = JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, falseSchema))
-        expect(false) { allOf5.validate(emptyObject) }
-        expect(false) { allOf5.validateBasic(emptyObject).valid }
-        expect(false) { allOf5.validateDetailed(emptyObject).valid }
-        val allOf6 = JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema))
-        expect(false) { allOf6.validate(emptyObject) }
-        expect(false) { allOf6.validateBasic(emptyObject).valid }
-        expect(false) { allOf6.validateDetailed(emptyObject).valid }
-        val allOf7 = JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, trueSchema))
-        expect(false) { allOf7.validate(emptyObject) }
-        expect(false) { allOf7.validateBasic(emptyObject).valid }
-        expect(false) { allOf7.validateDetailed(emptyObject).valid }
-        val allOf8 = JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, falseSchema))
-        expect(false) { allOf8.validate(emptyObject) }
-        expect(false) { allOf8.validateBasic(emptyObject).valid }
-        expect(false) { allOf8.validateDetailed(emptyObject).valid }
-        val allOf9 = JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema))
-        expect(false) { allOf9.validate(emptyObject) }
-        expect(false) { allOf9.validateBasic(emptyObject).valid }
-        expect(false) { allOf9.validateDetailed(emptyObject).valid }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(falseSchema, trueSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.allOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
     }
 
     @Test fun `should give correct result from anyOf`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
-        val falseSchema = JSONSchema.False(null, JSONPointer.root)
-        val anyOf1 = JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema))
-        expect(true) { anyOf1.validate(emptyObject) }
-        expect(true) { anyOf1.validateBasic(emptyObject).valid }
-        expect(true) { anyOf1.validateDetailed(emptyObject).valid }
-        val anyOf2 = JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema))
-        expect(true) { anyOf2.validate(emptyObject) }
-        expect(true) { anyOf2.validateBasic(emptyObject).valid }
-        expect(true) { anyOf2.validateDetailed(emptyObject).valid }
-        val anyOf3 = JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema))
-        expect(true) { anyOf3.validate(emptyObject) }
-        expect(true) { anyOf3.validateBasic(emptyObject).valid }
-        expect(true) { anyOf3.validateDetailed(emptyObject).valid }
-        val anyOf4 = JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema))
-        expect(false) { anyOf4.validate(emptyObject) }
-        expect(false) { anyOf4.validateBasic(emptyObject).valid }
-        expect(false) { anyOf4.validateDetailed(emptyObject).valid }
-        val anyOf5 = JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, falseSchema))
-        expect(false) { anyOf5.validate(emptyObject) }
-        expect(false) { anyOf5.validateBasic(emptyObject).valid }
-        expect(false) { anyOf5.validateDetailed(emptyObject).valid }
-        val anyOf6 = JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema))
-        expect(false) { anyOf6.validate(emptyObject) }
-        expect(false) { anyOf6.validateBasic(emptyObject).valid }
-        expect(false) { anyOf6.validateDetailed(emptyObject).valid }
-        val anyOf7 = JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, trueSchema))
-        expect(true) { anyOf7.validate(emptyObject) }
-        expect(true) { anyOf7.validateBasic(emptyObject).valid }
-        expect(true) { anyOf7.validateDetailed(emptyObject).valid }
-        val anyOf8 = JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, falseSchema))
-        expect(true) { anyOf8.validate(emptyObject) }
-        expect(true) { anyOf8.validateBasic(emptyObject).valid }
-        expect(true) { anyOf8.validateDetailed(emptyObject).valid }
-        val anyOf9 = JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema))
-        expect(true) { anyOf9.validate(emptyObject) }
-        expect(true) { anyOf9.validateBasic(emptyObject).valid }
-        expect(true) { anyOf9.validateDetailed(emptyObject).valid }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(falseSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, falseSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.anyOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
     }
 
     @Test fun `should give correct result from oneOf`() {
-        val trueSchema = JSONSchema.True(null, JSONPointer.root)
-        val falseSchema = JSONSchema.False(null, JSONPointer.root)
-        val oneOf1 = JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema))
-        expect(true) { oneOf1.validate(emptyObject) }
-        expect(true) { oneOf1.validateBasic(emptyObject).valid }
-        expect(true) { oneOf1.validateDetailed(emptyObject).valid }
-        val oneOf2 = JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema))
-        expect(false) { oneOf2.validate(emptyObject) }
-        expect(false) { oneOf2.validateBasic(emptyObject).valid }
-        expect(false) { oneOf2.validateDetailed(emptyObject).valid }
-        val oneOf3 = JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema))
-        expect(false) { oneOf3.validate(emptyObject) }
-        expect(false) { oneOf3.validateBasic(emptyObject).valid }
-        expect(false) { oneOf3.validateDetailed(emptyObject).valid }
-        val oneOf4 = JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema))
-        expect(false) { oneOf4.validate(emptyObject) }
-        expect(false) { oneOf4.validateBasic(emptyObject).valid }
-        expect(false) { oneOf4.validateDetailed(emptyObject).valid }
-        val oneOf5 = JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, falseSchema))
-        expect(false) { oneOf5.validate(emptyObject) }
-        expect(false) { oneOf5.validateBasic(emptyObject).valid }
-        expect(false) { oneOf5.validateDetailed(emptyObject).valid }
-        val oneOf6 = JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema))
-        expect(false) { oneOf6.validate(emptyObject) }
-        expect(false) { oneOf6.validateBasic(emptyObject).valid }
-        expect(false) { oneOf6.validateDetailed(emptyObject).valid }
-        val oneOf7 = JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, trueSchema))
-        expect(true) { oneOf7.validate(emptyObject) }
-        expect(true) { oneOf7.validateBasic(emptyObject).valid }
-        expect(true) { oneOf7.validateDetailed(emptyObject).valid }
-        val oneOf8 = JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, falseSchema))
-        expect(true) { oneOf8.validate(emptyObject) }
-        expect(true) { oneOf8.validateBasic(emptyObject).valid }
-        expect(true) { oneOf8.validateDetailed(emptyObject).valid }
-        val oneOf9 = JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema))
-        expect(false) { oneOf9.validate(emptyObject) }
-        expect(false) { oneOf9.validateBasic(emptyObject).valid }
-        expect(false) { oneOf9.validateDetailed(emptyObject).valid }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, trueSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, falseSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(falseSchema, trueSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, falseSchema)).let {
+            expect(true) { it.validate(emptyObject) }
+            expect(true) { it.validateBasic(emptyObject).valid }
+            expect(true) { it.validateDetailed(emptyObject).valid }
+        }
+        JSONSchema.oneOf(null, JSONPointer.root, listOf(trueSchema, trueSchema, falseSchema)).let {
+            expect(false) { it.validate(emptyObject) }
+            expect(false) { it.validateBasic(emptyObject).valid }
+            expect(false) { it.validateDetailed(emptyObject).valid }
+        }
     }
 
     @Test fun `should give correct absolute location`() {
-        val schema1 = JSONSchema.True(URI("http://pwall.net/schema/true1"), JSONPointer("/abc/0"))
-        expect("http://pwall.net/schema/true1#/abc/0") { schema1.absoluteLocation }
+        JSONSchema.True(URI("http://pwall.net/schema/true1"), JSONPointer("/abc/0")).let {
+            expect("http://pwall.net/schema/true1#/abc/0") { it.absoluteLocation }
+        }
     }
 
     @Test fun `should validate null`() {
         val filename = "src/test/resources/test-type-null.schema.json"
-        val schema = JSONSchema.parseFile(filename)
-        expect(true) { schema.validate("null") }
-        expect(true) { schema.validateBasic("null").valid }
-        expect(true) { schema.validateDetailed("null").valid }
-        expect(false) { schema.validate("{}") }
-        expect(false) { schema.validateBasic("{}").valid }
-        expect(false) { schema.validateDetailed("{}").valid }
-        expect(false) { schema.validate("123") }
-        expect(false) { schema.validateBasic("123").valid }
-        expect(false) { schema.validateDetailed("123").valid }
-        expect(false) { schema.validate("[]") }
-        expect(false) { schema.validateBasic("[]").valid }
-        expect(false) { schema.validateDetailed("[]").valid }
+        JSONSchema.parseFile(filename).let {
+            expect(true) { it.validate("null") }
+            expect(true) { it.validateBasic("null").valid }
+            expect(true) { it.validateDetailed("null").valid }
+            expect(false) { it.validate("{}") }
+            expect(false) { it.validateBasic("{}").valid }
+            expect(false) { it.validateDetailed("{}").valid }
+            expect(false) { it.validate("123") }
+            expect(false) { it.validateBasic("123").valid }
+            expect(false) { it.validateDetailed("123").valid }
+            expect(false) { it.validate("[]") }
+            expect(false) { it.validateBasic("[]").valid }
+            expect(false) { it.validateDetailed("[]").valid }
+        }
     }
 
     @Test fun `should perform equals and hashCode correctly`() {
@@ -983,11 +1003,15 @@ class JSONSchemaTest {
         expect("http://pwall.net:8080/schema/test99?a=0#frag88") { uri13.toString() }
         val uri14 = URI("http://pwall.net/dir1/dir2/../dir3/file").normalize()
         expect("/dir1/dir3/file") { uri14.path }
+        val uri15 = URI("http://pwall.net")
+        expect("") { uri15.path }
     }
 
     companion object {
 
         val emptyObject = JSONObject()
+        val trueSchema = JSONSchema.True(null, JSONPointer.root)
+        val falseSchema = JSONSchema.False(null, JSONPointer.root)
 
     }
 

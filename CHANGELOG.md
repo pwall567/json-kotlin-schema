@@ -2,9 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.33] - 2022-04-20
 ### Changed
 - `Parser`: improved error reporting on invalid `pattern`
+- `pom.xml`: bumped dependency version
 
 ## [0.32] - 2022-02-20
 ### Changed

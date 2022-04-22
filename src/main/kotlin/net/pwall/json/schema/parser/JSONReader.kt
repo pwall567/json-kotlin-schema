@@ -83,7 +83,9 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             }
             Files.isRegularFile(path) -> {
                 val fileName = path.fileName?.toString() ?: throw JSONSchemaException("Path filename is null")
+                val uri = path.toUri()
                 when {
+                    jsonCache.containsKey(uri) -> {}
                     fileName.endsWith(".json", ignoreCase = true) -> {
                         Files.newBufferedReader(path).use { reader ->
                             JSON.parse(reader)?.let {

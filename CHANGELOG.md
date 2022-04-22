@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.34] - 2022-04-22
+### Changed
+- `JSONReader`: added cache check to `preLoad()` for `Path`
+
 ## [0.33] - 2022-04-20
 ### Changed
 - `Parser`: improved error reporting on invalid `pattern`

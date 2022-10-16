@@ -27,12 +27,15 @@ package net.pwall.json.schema.parser
 
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.expect
 import kotlin.test.fail
 
 import java.io.File
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.net.URI
 import java.nio.file.FileSystems
 
@@ -41,6 +44,7 @@ import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.parser.Parser.Companion.defaultExtendedResolver
+import net.pwall.json.schema.parser.Parser.Companion.isPositive
 import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
@@ -226,6 +230,49 @@ class ParserTest {
                 }
             }
         }
+    }
+
+    // Test functions in companion object (flagged as errors in IntelliJ)
+    // For some unknown reason IntelliJ shows some branches of the "isPositive" function as "always false"
+    // This test is just to reassure myself that the function is working as expected
+
+    @Test fun `should test isPositive correctly`() {
+        val bigDecimal1 = BigDecimal("0.1")
+        assertTrue(bigDecimal1.isPositive())
+        val bigDecimal2 = BigDecimal.ZERO
+        assertFalse(bigDecimal2.isPositive())
+        val bigDecimal3 = BigDecimal("-999")
+        assertFalse(bigDecimal3.isPositive())
+        val bigInteger1 = BigInteger.ONE
+        assertTrue(bigInteger1.isPositive())
+        val bigInteger2 = BigInteger.ZERO
+        assertFalse(bigInteger2.isPositive())
+        val bigInteger3 = BigInteger("-9")
+        assertFalse(bigInteger3.isPositive())
+        val double1 = 0.1
+        assertTrue(double1.isPositive())
+        val double2 = 0.0
+        assertFalse(double2.isPositive())
+        val double3 = -9.0
+        assertFalse(double3.isPositive())
+        val float1 = 0.1F
+        assertTrue((float1.isPositive()))
+        val float2 = 0.0F
+        assertFalse((float2.isPositive()))
+        val float3 = -10.0F
+        assertFalse((float3.isPositive()))
+        val long1 = 1L
+        assertTrue(long1.isPositive())
+        val long2 = 0L
+        assertFalse(long2.isPositive())
+        val long3 = -8L
+        assertFalse(long3.isPositive())
+        val int1 = 1
+        assertTrue(int1.isPositive())
+        val int2 = 0
+        assertFalse(int2.isPositive())
+        val int3 = -5
+        assertFalse(int3.isPositive())
     }
 
 }

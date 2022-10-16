@@ -321,8 +321,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         val refPointer = refURIFragment?.let { JSONPointer.fromURIFragment("#$it") }  ?: JSONPointer.root
         if (!refPointer.exists(refJSON))
             throw JSONSchemaException("\$ref not found $value - $pointer")
-        val target = parseSchema(refJSON, refPointer, URI(refURIPath))
-        return RefSchema(uri, pointer, target, refURIFragment)
+        return RefSchema(
+            uri = uri,
+            location = pointer,
+            target = parseSchema(refJSON, refPointer, URI(refURIPath)),
+            fragment = refURIFragment,
+        )
     }
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {

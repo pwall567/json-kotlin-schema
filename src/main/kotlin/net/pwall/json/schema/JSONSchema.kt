@@ -154,7 +154,7 @@ sealed class JSONSchema(
 
     }
 
-    class Not(uri: URI?, location: JSONPointer, private val nested: JSONSchema) : JSONSchema(uri, location) {
+    class Not(uri: URI?, location: JSONPointer, val nested: JSONSchema) : JSONSchema(uri, location) {
 
         override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("not")
 

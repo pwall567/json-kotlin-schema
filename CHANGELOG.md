@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.39] - 2022-11-08
+### Changed
+- `pom.xml`: updated dependency versions
+
 ## [0.38] - 2022-11-02
 ### Changed
 - `JSONSchema`: minor change to `Not` schema (to help with codegen)

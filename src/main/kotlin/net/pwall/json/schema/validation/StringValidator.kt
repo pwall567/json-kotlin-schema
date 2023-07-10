@@ -2,7 +2,7 @@
  * @(#) StringValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2023 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ import net.pwall.json.JSONValue
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
-import net.pwall.pipeline.AbstractIntAcceptor
+import net.pwall.pipeline.IntCounter
 import net.pwall.pipeline.codec.UTF16_CodePoint
 
 class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
@@ -69,20 +69,10 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
 
     override fun hashCode(): Int = super.hashCode() xor condition.hashCode() xor value
 
-    class Counter(private var result: Int = 0) : AbstractIntAcceptor<Int>() {
-
-        override fun acceptInt(value: Int) {
-            result++
-        }
-
-        override fun getResult() = result
-
-    }
-
     companion object {
 
         // use a UTF-16 to code point converter and simply count the output
-        fun JSONString.unicodeLength(): Int = UTF16_CodePoint(Counter()).apply { accept(value) }.result
+        fun JSONString.unicodeLength(): Int = UTF16_CodePoint(IntCounter()).apply { accept(value) }.result
 
     }
 

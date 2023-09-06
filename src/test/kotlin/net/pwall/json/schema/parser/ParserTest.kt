@@ -83,10 +83,10 @@ class ParserTest {
 
     @Test fun `should fail on invalid schema`() {
         val filename = "src/test/resources/invalid-1.schema.json"
-        val errorMessage = assertFailsWith<JSONSchemaException> {
-            JSONSchema.parseFile(filename)
+        with(assertFailsWith<JSONSchemaException> { JSONSchema.parseFile(filename) }.message) {
+            assertTrue(this != null)
+            assertTrue(startsWith("Schema is not boolean or object"))
         }
-        expect("Schema is not boolean or object - root") { errorMessage.message }
     }
 
     @Test fun `should pre-load directory`() {

@@ -2,11 +2,15 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.42] - 2023-09-27
+### Changed
+- `Parser`: fixed bug in `$ref` 
+
 ## [0.41] - 2023-09-06
 ### Changed
 - `Parser`: fixed bug in use of URN as `$id`
 - `Parser`: added file URL to error messages
-- `pom.xml`: updated to Kotlin 1.5.20
+- `pom.xml`: updated to Kotlin 1.8.22
 
 ## [0.40] - 2023-07-10
 ### Changed

@@ -308,31 +308,39 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             fatal("\$ref must be string", uri, pointer)
         val refString = value.value
         val refURI: URI?
-        val refPointer: JSONPointer
         val refJSON: JSONValue
         val refURIFragment: String?
+        val refPointer: JSONPointer
         val hashIndex = refString.indexOf('#')
-        if (hashIndex == 0 || hashIndex > 0 && uri != null && uri.toString() == refString.substring(0, hashIndex)) {
-            // fragment only
-            refURIFragment = refString.substring(hashIndex + 1)
-            refURI = uri
-            refPointer = JSONPointer.fromURIFragment(refString)
-            refJSON = json
-        }
-        else if (hashIndex < 0) {
-            // no fragment
-            refURIFragment = null
-            refURI = uri?.resolve(refString) ?: URI(refString)
-            refPointer = JSONPointer.root
-            refJSON = jsonReader.readJSON(refURI)
-        }
-        else {
-            // uri with fragment
-            refURIFragment = refString.substring(hashIndex + 1)
-            val refStringWithoutFragment = refString.substring(0, hashIndex)
-            refURI = uri?.resolve(refStringWithoutFragment) ?: URI(refStringWithoutFragment)
-            refPointer = JSONPointer(refString.substring(hashIndex + 1))
-            refJSON = jsonReader.readJSON(refURI)
+        when {
+            hashIndex < 0 -> {
+                // no fragment
+                refURI = uri?.resolve(refString) ?: URI(refString)
+                refJSON = jsonReader.readJSON(refURI)
+                refURIFragment = null
+                refPointer = JSONPointer.root
+            }
+            hashIndex == 0 -> {
+                // fragment only
+                refURI = uri
+                refJSON = json
+                refURIFragment = refString.substring(1)
+                refPointer = JSONPointer.fromURIFragment(refString)
+            }
+            else -> {
+                // uri with fragment
+                val refStringWithoutFragment = refString.substring(0, hashIndex)
+                if (uri != null && uri.toString() == refStringWithoutFragment) { // same base URI?
+                    refURI = uri
+                    refJSON = json
+                }
+                else {
+                    refURI = uri?.resolve(refStringWithoutFragment) ?: URI(refStringWithoutFragment)
+                    refJSON = jsonReader.readJSON(refURI)
+                }
+                refURIFragment = refString.substring(hashIndex + 1)
+                refPointer = JSONPointer.fromURIFragment(refString.substring(hashIndex))
+            }
         }
         if (!refPointer.exists(refJSON))
             fatal("\$ref not found $refString", uri, pointer)

@@ -206,6 +206,22 @@ class ParserTest {
         assertTrue(schema is JSONSchema.General)
     }
 
+    @Test fun `should parse schema from a jar URI providing JSON`() {
+        val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.json")
+        val parser = Parser()
+        parser.setExtendedResolver(defaultExtendedResolver)
+        val schema = parser.parse(uri)
+        assertTrue(schema is JSONSchema.General)
+    }
+
+    @Test fun `should parse schema from a jar URI providing YAML`() {
+        val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.yaml")
+        val parser = Parser()
+        parser.setExtendedResolver(defaultExtendedResolver)
+        val schema = parser.parse(uri)
+        assertTrue(schema is JSONSchema.General)
+    }
+
     @Test fun `should read schema using HTTP`() {
         val parser = Parser()
         parser.setExtendedResolver(defaultExtendedResolver)

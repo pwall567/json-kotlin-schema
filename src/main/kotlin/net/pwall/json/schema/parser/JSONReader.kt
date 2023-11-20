@@ -201,14 +201,16 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
     companion object {
 
-        fun looksLikeYAML(path: String, contentType: String? = null): Boolean {
+        fun looksLikeYAML(path: String?, contentType: String? = null): Boolean {
             contentType?.let {
                 if (it.contains("yaml", ignoreCase = true) || it.contains("yml", ignoreCase = true))
                     return true
                 if (it.contains("json", ignoreCase = true))
                     return false
             }
-            return path.endsWith(".yaml", ignoreCase = true) || path.endsWith(".yml", ignoreCase = true)
+            return path?.let {
+                it.endsWith(".yaml", ignoreCase = true) || it.endsWith(".yml", ignoreCase = true)
+            } ?: false // null path and contentType do not look like YAML
         }
 
     }

@@ -179,6 +179,33 @@ class ParserTest {
         assertSame(object1, object2)
     }
 
+    @Test fun `should parse schema from an opaque URI providing JSON without content type`() {
+        val file = File("src/test/resources/example.schema.json")
+        val uri = URI.create("opaque:example-schema-json")
+        val parser = Parser()
+        parser.setExtendedResolver { InputDetails(file.reader()) }
+        val schema = parser.parse(uri)
+        assertTrue(schema is JSONSchema.General)
+    }
+
+    @Test fun `should parse schema from an opaque URI providing JSON with content type`() {
+        val file = File("src/test/resources/example.schema.json")
+        val uri = URI.create("opaque:example-schema-json")
+        val parser = Parser()
+        parser.setExtendedResolver { InputDetails(file.reader(), "application/json") }
+        val schema = parser.parse(uri)
+        assertTrue(schema is JSONSchema.General)
+    }
+
+    @Test fun `should parse schema from an opaque URI providing YAML with content type`() {
+        val file = File("src/test/resources/example.schema.yaml")
+        val uri = URI.create("opaque:example-schema-yaml")
+        val parser = Parser()
+        parser.setExtendedResolver { InputDetails(file.reader(), "application/yaml") }
+        val schema = parser.parse(uri)
+        assertTrue(schema is JSONSchema.General)
+    }
+
     @Test fun `should read schema using HTTP`() {
         val parser = Parser()
         parser.setExtendedResolver(defaultExtendedResolver)

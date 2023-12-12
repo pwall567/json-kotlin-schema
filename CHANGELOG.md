@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.43] - 2023-12-12
+### Changed
+- `pom.xml`: updated dependency versions
+
 ## [0.42] - 2023-09-27
 ### Changed
 - `Parser`: fixed bug in `$ref` 

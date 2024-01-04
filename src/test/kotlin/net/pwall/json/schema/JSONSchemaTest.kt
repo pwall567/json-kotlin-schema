@@ -950,18 +950,29 @@ class JSONSchemaTest {
         expect(-1) { uri3a.port }
         expect(null) { uri3a.userInfo }
         expect("a=1&b=2") { uri3a.query }
+        expect("//pwall.net/schema/true2?a=1&b=2") { uri3a.schemeSpecificPart }
         val uri4 = uri3.resolve("http://pwall.net/schema/true3#")
         expect("http://pwall.net/schema/true3#") { uri4.toString() }
         expect("http") { uri4.scheme }
         expect("/schema/true3") { uri4.path }
         expect("") { uri4.fragment }
         expect("pwall.net") { uri4.host }
+        expect("//pwall.net/schema/true3") { uri4.schemeSpecificPart }
         val uri5 = uri3.resolve("#frag1")
         expect("http://pwall.net/schema/true2#frag1") { uri5.toString() }
         expect("http") { uri5.scheme }
         expect("/schema/true2") { uri5.path }
         expect("frag1") { uri5.fragment }
         expect("pwall.net") { uri5.host }
+        expect("//pwall.net/schema/true2") { uri5.schemeSpecificPart }
+        val uri6 = URI("http://pwall.net/schema/true2?a=1&b=2#frag1")
+        expect("http://pwall.net/schema/true2?a=1&b=2#frag1") { uri6.toString() }
+        expect("http") { uri6.scheme }
+        expect("/schema/true2") { uri6.path }
+        expect("frag1") { uri6.fragment }
+        expect("pwall.net") { uri6.host }
+        expect("a=1&b=2") { uri6.query }
+        expect("//pwall.net/schema/true2?a=1&b=2") { uri6.schemeSpecificPart }
         val uri9 = URI("classpath:/example.json")
         expect("classpath:/example.json") { uri9.toString() }
         expect("classpath") { uri9.scheme }

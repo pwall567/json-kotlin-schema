@@ -30,7 +30,6 @@ import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.HttpURLConnection
-import java.net.JarURLConnection
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -494,15 +493,6 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                                 conn.inputStream.reader()
                         InputDetails(reader, contentType?.get(0))
                     }
-                }
-                is JarURLConnection -> {
-                    val suffix = conn.entryName?.substringAfterLast(".", "")?.lowercase()
-                    val contentType = when (suffix) {
-                        "yaml", "yml" -> "application/yaml"
-                        "json" -> "application/json"
-                        else -> null
-                    }
-                    InputDetails(conn.inputStream.reader(), contentType)
                 }
                 else -> InputDetails(conn.inputStream.reader())
             }

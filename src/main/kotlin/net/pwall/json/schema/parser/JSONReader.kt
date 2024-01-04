@@ -157,7 +157,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
             val inputDetails = resolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
             return inputDetails.reader.use {
                 when {
-                    looksLikeYAML(uri.path, inputDetails.contentType) ->
+                    looksLikeYAML(uri.extendedPath(), inputDetails.contentType) ->
                         YAMLSimple.process(it).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
                     else -> JSON.parse(it) ?: throw JSONSchemaException("Schema file is null - $uri")
                 }
@@ -166,7 +166,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
         val inputStream = uriResolver(uri) ?: throw JSONSchemaException("Can't resolve name - $uri")
         return inputStream.use {
             when {
-                looksLikeYAML(uri.path) ->
+                looksLikeYAML(uri.extendedPath()) ->
                     YAMLSimple.process(it).rootNode ?: throw JSONSchemaException("Schema file is null - $uri")
                 else -> JSON.parse(it) ?: throw JSONSchemaException("Schema file is null - $uri")
             }
@@ -201,16 +201,20 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
     companion object {
 
-        fun looksLikeYAML(path: String?, contentType: String? = null): Boolean {
+        fun looksLikeYAML(path: String, contentType: String? = null): Boolean {
             contentType?.let {
                 if (it.contains("yaml", ignoreCase = true) || it.contains("yml", ignoreCase = true))
                     return true
                 if (it.contains("json", ignoreCase = true))
                     return false
             }
-            return path?.let {
-                it.endsWith(".yaml", ignoreCase = true) || it.endsWith(".yml", ignoreCase = true)
-            } ?: false // null path and contentType do not look like YAML
+            return path.endsWith(".yaml", ignoreCase = true) || path.endsWith(".yml", ignoreCase = true)
+        }
+
+        fun URI.extendedPath(): String = when (scheme) {
+            "file", "http", "https" -> path
+            "jar" -> schemeSpecificPart.substringBefore('#').substringBefore("?").substringAfter("!")
+            else -> "UNKNOWN"
         }
 
     }

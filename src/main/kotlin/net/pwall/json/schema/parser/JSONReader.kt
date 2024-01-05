@@ -2,7 +2,7 @@
  * @(#) JSONReader.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2022 Peter Wall
+ * Copyright (c) 2020, 2022, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -213,7 +213,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
         fun URI.extendedPath(): String = when (scheme) {
             "file", "http", "https" -> path
-            "jar" -> schemeSpecificPart.substringBefore('#').substringBefore("?").substringAfter("!")
+            "jar" -> schemeSpecificPart.substringBefore("?").substringAfter("!")
             else -> "UNKNOWN"
         }
 

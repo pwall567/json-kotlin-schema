@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.44] - 2024-01-05
+### Changed
+- `JSONReader`: improved handling of jar and other opaque URIs (thanks @dhealio)
+
 ## [0.43] - 2023-12-12
 ### Changed
 - `pom.xml`: updated dependency versions

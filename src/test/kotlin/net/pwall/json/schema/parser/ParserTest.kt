@@ -2,7 +2,7 @@
  * @(#) ParserTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021, 2022 Peter Wall
+ * Copyright (c) 2020, 2021, 2022, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ package net.pwall.json.schema.parser
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.expect
@@ -185,7 +186,8 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader()) }
         val schema = parser.parse(uri)
-        assertTrue(schema is JSONSchema.General)
+        assertIs<JSONSchema.General>(schema)
+        expect("Product") { schema.title }
     }
 
     @Test fun `should parse schema from an opaque URI providing JSON with content type`() {
@@ -194,7 +196,8 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader(), "application/json") }
         val schema = parser.parse(uri)
-        assertTrue(schema is JSONSchema.General)
+        assertIs<JSONSchema.General>(schema)
+        expect("Product") { schema.title }
     }
 
     @Test fun `should parse schema from an opaque URI providing YAML with content type`() {
@@ -203,19 +206,22 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader(), "application/yaml") }
         val schema = parser.parse(uri)
-        assertTrue(schema is JSONSchema.General)
+        assertIs<JSONSchema.General>(schema)
+        expect("Product") { schema.title }
     }
 
     @Test fun `should parse schema from a jar URI providing JSON`() {
         val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.json")
         val schema = Parser().parse(uri)
-        assertTrue(schema is JSONSchema.General)
+        assertIs<JSONSchema.General>(schema)
+        expect("Product") { schema.title }
     }
 
     @Test fun `should parse schema from a jar URI providing YAML`() {
         val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.yaml")
         val schema = Parser().parse(uri)
-        assertTrue(schema is JSONSchema.General)
+        assertIs<JSONSchema.General>(schema)
+        expect("Product") { schema.title }
     }
 
     @Test fun `should read schema using HTTP`() {

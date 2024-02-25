@@ -270,25 +270,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.45, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.46, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.45</version>
+      <version>0.46</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.45'
+    implementation 'net.pwall.json:json-kotlin-schema:0.46'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.45")
+    implementation("net.pwall.json:json-kotlin-schema:0.46")
 ```
 
 Peter Wall
 
-2024-02-22
+2024-02-25

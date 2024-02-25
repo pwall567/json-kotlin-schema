@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.46] - 2024-02-25
+### Changed
+- `pom.xml`: updated dependency version
+
 ## [0.45] - 2024-02-22
 ### Changed
 - `Parser`: added option to validate examples and default

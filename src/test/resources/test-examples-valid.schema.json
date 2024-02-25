@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-examples-valid",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 10
+    },
+    "bbb": {
+      "type": "integer",
+      "minimum": 0,
+      "examples": [ 99 ]
+    }
+  },
+  "required": [ "aaa" ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "aaa": "GOOD",
+      "bbb": 10
+    },
+    {
+      "aaa": "BETTER"
+    }
+  ]
+}

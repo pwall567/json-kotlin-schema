@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-example-invalid",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 10
+    }
+  },
+  "example": {
+    "aaa": "NO"
+  }
+}

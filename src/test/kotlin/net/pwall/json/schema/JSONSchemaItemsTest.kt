@@ -50,19 +50,19 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-item#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-item#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/properties/aaa/items") { it.keywordLocation }
             expect("http://pwall.net/test-item#/properties/aaa/items") { it.absoluteKeywordLocation }
             expect("#/aaa/0") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[3].let {
             expect("#/properties/aaa/items/minimum") { it.keywordLocation }
@@ -90,13 +90,13 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-item-array#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-item-array#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/properties/aaa/additionalItems") { it.keywordLocation }
@@ -108,7 +108,7 @@ class JSONSchemaItemsTest {
             expect("#/properties/aaa/additionalItems") { it.keywordLocation }
             expect("http://pwall.net/test-item-array#/properties/aaa/additionalItems") { it.absoluteKeywordLocation }
             expect("#/aaa/2") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[4].let {
             expect("#/properties/aaa/additionalItems/exclusiveMaximum") { it.keywordLocation }
@@ -137,13 +137,13 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-unique-item#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-unique-item#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/properties/aaa/uniqueItems") { it.keywordLocation }
@@ -171,7 +171,7 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-contains#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/contains") { it.keywordLocation }
@@ -199,7 +199,7 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors1[1].let {
             expect("#/minContains") { it.keywordLocation }
@@ -218,7 +218,7 @@ class JSONSchemaItemsTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors2[1].let {
             expect("#/maxContains") { it.keywordLocation }

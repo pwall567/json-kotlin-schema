@@ -171,6 +171,22 @@ For example:
 This will look for a sibling (URL or file) to the current document and attempt to locate the `Address` schema in the
 `$defs` section of that document.
 
+## `examples` and `default`
+
+The JSON Schema specification says, of `examples` and `default`: &ldquo;It is RECOMMENDED that these values be valid
+against the associated schema.&rdquo;
+The schema parser allows for the optional validation of `examples` and `default` entries; it requires the creation of a
+new Parser instance, and the setting of option flags:
+```kotlin
+    val parser = Parser()
+    parser.options.validateExamples = true // to cause "examples" (and "example") entries to be validated
+    parser.options.validateDefault = true  // to cause "default" entries to be validated
+    parser.parseFile(filename)
+    if (parser.parserValidationErrors.isNotEmpty()) {
+        // parser.parserValidationErrors is a List of BasicOutput objects, one for each error found
+    }
+```
+
 ## Implemented Subset
 
 This implementation does not implement the full JSON Schema specification.
@@ -254,25 +270,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.44, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.45, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.44</version>
+      <version>0.45</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.44'
+    implementation 'net.pwall.json:json-kotlin-schema:0.45'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.44")
+    implementation("net.pwall.json:json-kotlin-schema:0.45")
 ```
 
 Peter Wall
 
-2024-01-05
+2024-02-22

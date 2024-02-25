@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.45] - 2024-02-22
+### Changed
+- `Parser`: added option to validate examples and default
+
 ## [0.44] - 2024-01-05
 ### Changed
 - `JSONReader`: improved handling of jar and other opaque URIs (thanks @dhealio)

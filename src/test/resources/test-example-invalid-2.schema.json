@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-example-invalid-2",
+  "title": "Dummy",
+  "type": "integer",
+  "minimum": 20,
+  "example": 19
+}

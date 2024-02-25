@@ -50,14 +50,14 @@ class JSONSchemaPropertiesTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-pattern#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/patternProperties/%5Efield%5B0-9%5D%7B1%2C3%7D\$") { it.keywordLocation }
             expect("http://pwall.net/test-pattern#/patternProperties/%5Efield%5B0-9%5D%7B1%2C3%7D\$") {
                     it.absoluteKeywordLocation }
             expect("#/field1") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/patternProperties/%5Efield%5B0-9%5D%7B1%2C3%7D\$/minimum") { it.keywordLocation }
@@ -86,7 +86,7 @@ class JSONSchemaPropertiesTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-pattern#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/additionalProperties") { it.keywordLocation }
@@ -99,7 +99,7 @@ class JSONSchemaPropertiesTest {
             expect("#/additionalProperties") { it.keywordLocation }
             expect("http://pwall.net/test-pattern#/additionalProperties") { it.absoluteKeywordLocation }
             expect("#/extra") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[3].let {
             expect("#/additionalProperties/minimum") { it.keywordLocation }
@@ -127,13 +127,13 @@ class JSONSchemaPropertiesTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-property-names#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/propertyNames") { it.keywordLocation }
             expect("http://pwall.net/test-property-names#/propertyNames") { it.absoluteKeywordLocation }
             expect("#/bbbb") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/propertyNames/maxLength") { it.keywordLocation }

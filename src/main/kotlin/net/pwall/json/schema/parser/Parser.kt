@@ -2,7 +2,7 @@
  * @(#) Parser.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021, 2022, 2023 Peter Wall
+ * Copyright (c) 2020, 2021, 2022, 2023, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
+import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.subschema.AdditionalItemsSchema
 import net.pwall.json.schema.subschema.AdditionalPropertiesSchema
 import net.pwall.json.schema.subschema.ExtensionSchema
@@ -79,7 +80,13 @@ import net.pwall.json.schema.validation.UniqueItemsValidator
 
 class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
-    data class Options(var allowDescriptionRef: Boolean = false)
+    data class Options(
+        var allowDescriptionRef: Boolean = false,
+        var validateExamples: Boolean = false,
+        var validateDefault: Boolean = false,
+    )
+
+    val parserValidationErrors = mutableListOf<BasicOutput>()
 
     var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
             { _, _, _, _ -> null }
@@ -189,7 +196,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                     if (value !is JSONString)
                         fatal("String expected", uri, childPointer)
                 }
-                "\$id", "\$defs", "title", "description", "then", "else", "minContains", "maxContains" -> {}
+                "\$id", "\$defs", "title", "description", "then", "else", "minContains", "maxContains", "example" -> {}
                 "\$comment" -> {
                     if (value !is JSONString)
                         fatal("String expected", uri, childPointer)
@@ -245,8 +252,27 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             if (key.startsWith("x-"))
                 children.add(ExtensionSchema(uri, childPointer, key, value?.toSimpleValue()))
         }
+        if (options.validateExamples) {
+            if (schemaJSON.containsKey("example"))
+                validateExample(result, pointer, json, pointer.child("example"))
+            if (schemaJSON.containsKey("examples")) {
+                val examplesArray = schemaJSON["examples"] as JSONSequence<*> // checked earlier
+                val examplesPointer = pointer.child("examples")
+                for (i in examplesArray.indices)
+                    validateExample(result, pointer, json, examplesPointer.child(i))
+            }
+        }
+        if (options.validateDefault && schemaJSON.containsKey("default"))
+            validateExample(result, pointer,  json, pointer.child("default"))
         uri?.let { schemaCache[uri.withFragment(pointer)] = result }
         return result
+    }
+
+    private fun validateExample(schema: JSONSchema, relativeLocation: JSONPointer, root: JSONValue?,
+            location: JSONPointer) {
+        val result = schema.validateBasic(relativeLocation, root, location)
+        if (!result.valid)
+            parserValidationErrors.add(result)
     }
 
     private fun getDescription(schemaJSON: JSONMapping<*>, uri: URI?, pointer: JSONPointer): String? {

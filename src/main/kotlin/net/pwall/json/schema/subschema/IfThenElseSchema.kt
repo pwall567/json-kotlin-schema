@@ -62,8 +62,8 @@ class IfThenElseSchema(uri: URI?, location: JSONPointer, private val ifSchema: J
                 createAnnotation(relativeLocation, instanceLocation, "\"if\" schema is true",
                         annotations = listOf(ifResult, thenResult))
             else
-                createError(relativeLocation, instanceLocation, "A subschema had errors.",
-                        errors = listOf(thenResult), annotations = listOf(ifResult))
+                createSubSchemaError(relativeLocation, instanceLocation, errors = listOf(thenResult),
+                        annotations = listOf(ifResult))
         }
         else {
             if (elseSchema == null)
@@ -74,8 +74,8 @@ class IfThenElseSchema(uri: URI?, location: JSONPointer, private val ifSchema: J
                 createAnnotation(relativeLocation, instanceLocation, "\"if\" schema is false",
                         annotations = listOf(ifResult, elseResult))
             else
-                createError(relativeLocation, instanceLocation, "A subschema had errors.",
-                        errors = listOf(elseResult), annotations = listOf(ifResult))
+                createSubSchemaError(relativeLocation, instanceLocation, errors = listOf(elseResult),
+                        annotations = listOf(ifResult))
         }
     }
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "http://pwall.net/test-default-valid",
+  "title": "Dummy",
+  "type": "object",
+  "properties": {
+    "aaa": {
+      "type": "integer",
+      "minimum": 20,
+      "default": 25
+    }
+  }
+}

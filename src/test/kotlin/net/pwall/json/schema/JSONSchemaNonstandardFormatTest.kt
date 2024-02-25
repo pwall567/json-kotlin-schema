@@ -61,13 +61,13 @@ class JSONSchemaNonstandardFormatTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/properties/aaa/format") { it.keywordLocation }
@@ -102,13 +102,13 @@ class JSONSchemaNonstandardFormatTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors2[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors2[2].let {
             expect("#/properties/aaa/format") { it.keywordLocation }
@@ -126,13 +126,13 @@ class JSONSchemaNonstandardFormatTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors3[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors3[2].let {
             expect("#/properties/aaa/format") { it.keywordLocation }

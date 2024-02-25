@@ -111,9 +111,17 @@ sealed class JSONSchema(
                 instanceLocation.schemaURIFragment(), error, errors, annotations)
     }
 
+    fun createSubSchemaError(relativeLocation: JSONPointer, instanceLocation: JSONPointer,
+            errors: List<Output>? = null, annotations: List<Output>? = null): DetailedOutput {
+        return createError(relativeLocation, instanceLocation, subSchemaErrorMessage, errors, annotations)
+    }
+
     fun createBasicErrorEntry(relativeLocation: JSONPointer, instanceLocation: JSONPointer, error: String) =
             BasicErrorEntry(relativeLocation.schemaURIFragment(), absoluteLocation,
                     instanceLocation.schemaURIFragment(), error)
+
+    fun createSubSchemaBasicErrorEntry(relativeLocation: JSONPointer, instanceLocation: JSONPointer) =
+            createBasicErrorEntry(relativeLocation, instanceLocation, subSchemaErrorMessage)
 
     fun createBasicError(relativeLocation: JSONPointer, instanceLocation: JSONPointer, error: String): BasicOutput {
         return BasicOutput(false, listOf(createBasicErrorEntry(relativeLocation, instanceLocation, error)))
@@ -234,7 +242,7 @@ sealed class JSONSchema(
             }
             if (errors.isEmpty())
                 return BasicOutput.trueOutput
-            errors.add(0, createBasicErrorEntry(relativeLocation, instanceLocation, "A subschema had errors"))
+            errors.add(0, createSubSchemaBasicErrorEntry(relativeLocation, instanceLocation))
             return BasicOutput(false, errors)
         }
 
@@ -249,7 +257,7 @@ sealed class JSONSchema(
             }
             if (errors.isEmpty())
                 return createAnnotation(relativeLocation, instanceLocation, "Validation successful")
-            return createError(relativeLocation, instanceLocation, "A subschema had errors", errors)
+            return createSubSchemaError(relativeLocation, instanceLocation, errors)
         }
 
         override fun equals(other: Any?): Boolean =
@@ -264,6 +272,8 @@ sealed class JSONSchema(
     companion object {
 
         val parser by lazy { Parser() }
+
+        const val subSchemaErrorMessage = "A subschema had errors"
 
         fun booleanSchema(value: Boolean, uri: URI?, location: JSONPointer): JSONSchema =
                 if (value) True(uri, location) else False(uri, location)

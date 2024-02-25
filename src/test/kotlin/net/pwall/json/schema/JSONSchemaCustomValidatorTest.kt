@@ -63,13 +63,13 @@ class JSONSchemaCustomValidatorTest {
             expect("#") { it.keywordLocation }
             expect("http://pwall.net/test-custom#") { it.absoluteKeywordLocation }
             expect("#") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[1].let {
             expect("#/properties/aaa") { it.keywordLocation }
             expect("http://pwall.net/test-custom#/properties/aaa") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("A subschema had errors") { it.error }
+            expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
             expect("#/properties/aaa/x-test") { it.keywordLocation }

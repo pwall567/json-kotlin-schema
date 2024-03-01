@@ -86,7 +86,8 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         var validateDefault: Boolean = false,
     )
 
-    val parserValidationErrors = mutableListOf<BasicOutput>()
+    val examplesValidationErrors = mutableListOf<BasicOutput>()
+    val defaultValidationErrors = mutableListOf<BasicOutput>()
 
     var customValidationHandler: (String, URI?, JSONPointer, JSONValue?) -> JSONSchema.Validator? =
             { _, _, _, _ -> null }
@@ -254,25 +255,25 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
         if (options.validateExamples) {
             if (schemaJSON.containsKey("example"))
-                validateExample(result, pointer, json, pointer.child("example"))
+                validateExample(result, pointer, json, pointer.child("example"), examplesValidationErrors)
             if (schemaJSON.containsKey("examples")) {
                 val examplesArray = schemaJSON["examples"] as JSONSequence<*> // checked earlier
                 val examplesPointer = pointer.child("examples")
                 for (i in examplesArray.indices)
-                    validateExample(result, pointer, json, examplesPointer.child(i))
+                    validateExample(result, pointer, json, examplesPointer.child(i), examplesValidationErrors)
             }
         }
         if (options.validateDefault && schemaJSON.containsKey("default"))
-            validateExample(result, pointer,  json, pointer.child("default"))
+            validateExample(result, pointer,  json, pointer.child("default"), defaultValidationErrors)
         uri?.let { schemaCache[uri.withFragment(pointer)] = result }
         return result
     }
 
     private fun validateExample(schema: JSONSchema, relativeLocation: JSONPointer, root: JSONValue?,
-            location: JSONPointer) {
+            location: JSONPointer, errorList: MutableList<BasicOutput>) {
         val result = schema.validateBasic(relativeLocation, root, location)
         if (!result.valid)
-            parserValidationErrors.add(result)
+            errorList.add(result)
     }
 
     private fun getDescription(schemaJSON: JSONMapping<*>, uri: URI?, pointer: JSONPointer): String? {

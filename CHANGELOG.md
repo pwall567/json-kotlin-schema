@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.47] - 2024-03-01
+### Changed
+- `FormatValidator`: improved error reporting for custom format validations
+- `Parser`: split errors from examples and format validations into separate lists
+
 ## [0.46] - 2024-02-25
 ### Changed
 - `pom.xml`: updated dependency version

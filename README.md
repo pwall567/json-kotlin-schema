@@ -182,8 +182,11 @@ new Parser instance, and the setting of option flags:
     parser.options.validateExamples = true // to cause "examples" (and "example") entries to be validated
     parser.options.validateDefault = true  // to cause "default" entries to be validated
     parser.parseFile(filename)
-    if (parser.parserValidationErrors.isNotEmpty()) {
-        // parser.parserValidationErrors is a List of BasicOutput objects, one for each error found
+    if (parser.examplesValidationErrors.isNotEmpty()) {
+        // parser.examplesValidationErrors is a List of BasicOutput objects, one for each error found in examples
+    }
+    if (parser.defaultValidationErrors.isNotEmpty()) {
+        // parser.examplesValidationErrors is a List of BasicOutput objects, one for each error found in default entries
     }
 ```
 
@@ -270,25 +273,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.46, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.47, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.46</version>
+      <version>0.47</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.46'
+    implementation 'net.pwall.json:json-kotlin-schema:0.47'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.46")
+    implementation("net.pwall.json:json-kotlin-schema:0.47")
 ```
 
 Peter Wall
 
-2024-02-25
+2024-03-01

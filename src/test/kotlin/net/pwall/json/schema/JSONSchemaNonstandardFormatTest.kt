@@ -2,7 +2,7 @@
  * @(#) JSONSchemaNonstandardFormatTest.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2021 Peter Wall
+ * Copyright (c) 2021, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@ import kotlin.test.Test
 import kotlin.test.expect
 import kotlin.test.fail
 
+import java.net.URI
+
 import net.pwall.json.JSON
 import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.parser.Parser
@@ -39,10 +41,11 @@ class JSONSchemaNonstandardFormatTest {
 
     @Test fun `should make use of nonstandard format replacement validation`() {
         val parser = Parser()
+        val configURI = URI("https://example.com/config.json")
         parser.nonstandardFormatHandler = { keyword ->
             if (keyword == "non-standard")
                 FormatValidator.DelegatingFormatChecker(keyword,
-                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MIN_LENGTH, 1))
+                        StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1))
             else
                 null
         }
@@ -70,20 +73,21 @@ class JSONSchemaNonstandardFormatTest {
             expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors[2].let {
-            expect("#/properties/aaa/format") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
+            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
+            expect("https://example.com/config.json#/x-f/0") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("""Value fails format check "non-standard", was """"") { it.error }
+            expect("String fails length check: minLength 1, was 0") { it.error }
         }
     }
 
     @Test fun `should make use of nonstandard format replacement validation - multiple`() {
         val parser = Parser()
+        val configURI = URI("https://example.com/config.json")
         parser.nonstandardFormatHandler = { keyword ->
             when (keyword) {
                 "non-standard" -> FormatValidator.DelegatingFormatChecker(keyword,
-                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MIN_LENGTH, 1),
-                        StringValidator(null, JSONPointer.root, StringValidator.ValidationType.MAX_LENGTH, 3))
+                        StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1),
+                        StringValidator(configURI, JSONPointer("/x-f/1"), StringValidator.ValidationType.MAX_LENGTH, 3))
                 else -> null
             }
         }
@@ -111,10 +115,10 @@ class JSONSchemaNonstandardFormatTest {
             expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors2[2].let {
-            expect("#/properties/aaa/format") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
+            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
+            expect("https://example.com/config.json#/x-f/0") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("""Value fails format check "non-standard", was """"") { it.error }
+            expect("String fails length check: minLength 1, was 0") { it.error }
         }
         val json3 = JSON.parse("""{"aaa":"XXXX"}""")
         expect(false) { schema.validate(json3) }
@@ -135,10 +139,10 @@ class JSONSchemaNonstandardFormatTest {
             expect(JSONSchema.subSchemaErrorMessage) { it.error }
         }
         errors3[2].let {
-            expect("#/properties/aaa/format") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa/format") { it.absoluteKeywordLocation }
+            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
+            expect("https://example.com/config.json#/x-f/1") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("""Value fails format check "non-standard", was "XXXX"""") { it.error }
+            expect("String fails length check: maxLength 3, was 4") { it.error }
         }
     }
 

@@ -2,7 +2,7 @@
  * @(#) FormatValidator.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020, 2021 Peter Wall
+ * Copyright (c) 2020, 2021, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,8 @@ class FormatValidator(
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
         val instance = instanceLocation.eval(json)
-        return if (checker.check(instance)) null else createBasicErrorEntry(relativeLocation, instanceLocation,
-                "Value fails format check \"${checker.name}\", was ${instance.toJSON()}")
+        return if (checker.check(instance)) null else
+                checker.getBasicErrorEntry(this, relativeLocation, instanceLocation, json)
     }
 
     override fun equals(other: Any?): Boolean = this === other ||
@@ -66,8 +66,24 @@ class FormatValidator(
     override fun hashCode(): Int = super.hashCode() xor checker.hashCode()
 
     interface FormatChecker {
+
         val name: String
+
         fun check(value: JSONValue?): Boolean
+
+        fun getBasicErrorEntry(
+            schema: JSONSchema,
+            relativeLocation: JSONPointer,
+            instanceLocation: JSONPointer,
+            json: JSONValue?,
+        ):  BasicErrorEntry {
+            return schema.createBasicErrorEntry(
+                relativeLocation = relativeLocation,
+                instanceLocation = instanceLocation,
+                error = "Value fails format check \"$name\", was ${instanceLocation.eval(json)?.toJSON()}",
+            )
+        }
+
     }
 
     object DateTimeFormatChecker : FormatChecker {
@@ -265,6 +281,17 @@ class FormatValidator(
                 if (!validator.validate(value))
                     return false
             return true
+        }
+
+        override fun getBasicErrorEntry(
+            schema: JSONSchema,
+            relativeLocation: JSONPointer,
+            instanceLocation: JSONPointer,
+            json: JSONValue?,
+        ): BasicErrorEntry {
+            for (validator in validators)
+                validator.getErrorEntry(relativeLocation.child(name), json, instanceLocation)?.let { return it }
+            return super.getBasicErrorEntry(schema, relativeLocation, instanceLocation, json)
         }
 
         override fun equals(other: Any?): Boolean = this === other ||

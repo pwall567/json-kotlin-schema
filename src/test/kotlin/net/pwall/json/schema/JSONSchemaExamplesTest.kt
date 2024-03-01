@@ -40,7 +40,7 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        assertTrue(parser.parserValidationErrors.isEmpty())
+        assertTrue(parser.examplesValidationErrors.isEmpty())
     }
 
     @Test fun `should validate invalid example`() {
@@ -48,8 +48,8 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(1) { parser.parserValidationErrors.size }
-        with(parser.parserValidationErrors[0]) {
+        expect(1) { parser.examplesValidationErrors.size }
+        with(parser.examplesValidationErrors[0]) {
             assertFalse(valid)
             with(errors) {
                 assertNotNull(this)
@@ -83,8 +83,8 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(1) { parser.parserValidationErrors.size }
-        with(parser.parserValidationErrors[0]) {
+        expect(1) { parser.examplesValidationErrors.size }
+        with(parser.examplesValidationErrors[0]) {
             assertFalse(valid)
             with(errors) {
                 assertNotNull(this)
@@ -110,7 +110,7 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        assertTrue(parser.parserValidationErrors.isEmpty())
+        assertTrue(parser.examplesValidationErrors.isEmpty())
     }
 
     @Test fun `should validate invalid examples`() {
@@ -118,8 +118,8 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(3) { parser.parserValidationErrors.size }
-        with(parser.parserValidationErrors[0]) {
+        expect(3) { parser.examplesValidationErrors.size }
+        with(parser.examplesValidationErrors[0]) {
             assertFalse(valid)
             with(errors) {
                 assertNotNull(this)
@@ -138,7 +138,7 @@ class JSONSchemaExamplesTest {
                 }
             }
         }
-        with(parser.parserValidationErrors[1]) {
+        with(parser.examplesValidationErrors[1]) {
             with(errors) {
                 assertNotNull(this)
                 expect(3) { size }
@@ -164,7 +164,7 @@ class JSONSchemaExamplesTest {
                 }
             }
         }
-        with(parser.parserValidationErrors[2]) {
+        with(parser.examplesValidationErrors[2]) {
             with(errors) {
                 assertNotNull(this)
                 expect(4) { size }
@@ -203,7 +203,7 @@ class JSONSchemaExamplesTest {
         Parser().apply {
             options.validateDefault = true
             parseFile(filename)
-            assertTrue(parserValidationErrors.isEmpty())
+            assertTrue(defaultValidationErrors.isEmpty())
         }
     }
 
@@ -212,8 +212,8 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateDefault = true
         parser.parseFile(filename)
-        expect(1) { parser.parserValidationErrors.size }
-        with(parser.parserValidationErrors[0]) {
+        expect(1) { parser.defaultValidationErrors.size }
+        with(parser.defaultValidationErrors[0]) {
             assertFalse(valid)
             with(errors) {
                 assertNotNull(this)

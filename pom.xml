@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.47</version>
+  <version>0.48</version>
   <name>Kotlin implementation of JSON Schema (Draft-07)</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
@@ -13,7 +13,7 @@
   <parent>
     <groupId>net.pwall.maven</groupId>
     <artifactId>maven-kotlin</artifactId>
-    <version>6.0</version>
+    <version>7.0</version>
   </parent>
 
   <properties>
@@ -94,6 +94,11 @@
       <groupId>net.pwall.util</groupId>
       <artifactId>javautil</artifactId>
       <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>io.kjson</groupId>
+      <artifactId>resource-loader</artifactId>
+      <version>5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>

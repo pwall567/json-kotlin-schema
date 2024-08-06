@@ -2,6 +2,15 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.48] - 2024-08-07
+### Added
+- `build.yml`, `deploy.yml`: converted project to GitHub Actions
+### Changed
+- `Parser`: added filter mechanism, with `AuthorizationFilter` and `RedirectionFilter`
+- `pom.xml`: updated Kotlin version to 1.9.24
+### Removed
+- `.travis.yml`
+
 ## [0.47] - 2024-03-01
 ### Changed
 - `FormatValidator`: improved error reporting for custom format validations

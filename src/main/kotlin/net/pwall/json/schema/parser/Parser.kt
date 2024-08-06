@@ -35,6 +35,9 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 
+import io.kjson.resource.ResourceLoader.AuthorizationFilter
+import io.kjson.resource.ResourceLoader.RedirectionFilter
+
 import net.pwall.json.JSONBoolean
 import net.pwall.json.JSONDecimal
 import net.pwall.json.JSONDouble
@@ -327,7 +330,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             creator: (URI?, JSONPointer, List<JSONSchema>) -> JSONSchema): JSONSchema {
         if (array !is JSONSequence<*>)
             fatal("Compound must take array", uri, pointer)
-        return creator(uri, pointer, array.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
+        return creator(uri, pointer, array.indices.map { i -> parseSchema(json, pointer.child(i), uri) })
     }
 
     private fun parseRef(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): RefSchema {
@@ -381,7 +384,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {
         return if (value is JSONSequence<*>)
-            ItemsArraySchema(uri, pointer, value.mapIndexed { i, _ -> parseSchema(json, pointer.child(i), uri) })
+            ItemsArraySchema(uri, pointer, value.indices.map { i -> parseSchema(json, pointer.child(i), uri) })
         else
             ItemsSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
@@ -506,18 +509,57 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
                 "https://json-schema.org/draft-07/schema")
 
-        val defaultURIResolver: (URI) -> InputStream? = { uri -> uri.toURL().openStream() }
+        val connectionFilters = mutableListOf<(HttpURLConnection) -> HttpURLConnection?>()
+
+        /**
+         * Add a connection filter for HTTP connections.
+         */
+        fun addConnectionFilter(filter: (HttpURLConnection) -> HttpURLConnection?) {
+            connectionFilters.add(filter)
+        }
+
+        /**
+         * Add an authorization filter for HTTP connections.
+         */
+        fun addAuthorizationFilter(host: String, headerName: String, headerValue: String?) {
+            addConnectionFilter(AuthorizationFilter(host, headerName, headerValue))
+        }
+
+        /**
+         * Add a redirection filter for HTTP connections.
+         */
+        fun addRedirectionFilter(fromHost: String, fromPort: Int = -1, toHost: String, toPort: Int = -1) {
+            addConnectionFilter(RedirectionFilter(fromHost, fromPort, toHost, toPort))
+        }
+
+        val defaultURIResolver: (URI) -> InputStream? = { uri ->
+            when (val conn = uri.toURL().openConnection()) {
+                is HttpURLConnection -> {
+                    var httpConn: HttpURLConnection = conn
+                    for (filter in connectionFilters)
+                        httpConn = filter(httpConn) ?: throw RuntimeException("Connection vetoed - $uri")
+                    if (httpConn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                        null
+                    else
+                        httpConn.inputStream
+                }
+                else -> conn.inputStream
+            }
+        }
 
         val defaultExtendedResolver: (URI) -> InputDetails? = { uri ->
             when (val conn = uri.toURL().openConnection()) {
                 is HttpURLConnection -> {
-                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                    var httpConn: HttpURLConnection = conn
+                    for (filter in connectionFilters)
+                        httpConn = filter(httpConn) ?: throw RuntimeException("Connection vetoed - $uri")
+                    if (httpConn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
                         null
                     else {
-                        val contentType = conn.contentType?.split(';')?.map { it.trim() }
+                        val contentType = httpConn.contentType?.split(';')?.map { it.trim() }
                         val charset = contentType?.findStartingFrom(1) { it.startsWith("charset=") }?.drop(8)?.trim()
-                        val reader = charset?.let { conn.inputStream.reader(Charset.forName(it)) } ?:
-                                conn.inputStream.reader()
+                        val reader = charset?.let { httpConn.inputStream.reader(Charset.forName(it)) } ?:
+                                httpConn.inputStream.reader()
                         InputDetails(reader, contentType?.get(0))
                     }
                 }

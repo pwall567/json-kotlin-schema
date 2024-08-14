@@ -105,6 +105,8 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private val schemaCache = mutableMapOf<URI, JSONSchema>()
 
+    private val pendingRefs = mutableMapOf<URI, MutableList<RefSchema>>()
+
     fun preLoad(filename: String) {
         jsonReader.preLoad(filename)
     }
@@ -181,9 +183,9 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
         uri?.let {
             val fragmentURI = uri.withFragment(pointer)
-            schemaCache[fragmentURI]?.let {
-                return if (it !is JSONSchema.False) it else fatal("Recursive \$ref", uri, pointer)
-            }
+            // Always return an existing schema, recursion is handled in parseRef() and below.
+            schemaCache[fragmentURI]?.let { return it }
+            // Create a "dummy entry" to detect recursions before the actual parsing.
             schemaCache[fragmentURI] = JSONSchema.False(uri, pointer)
         }
         val title = schemaJSON.getStringOrNull(uri, "title")
@@ -268,7 +270,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
         if (options.validateDefault && schemaJSON.containsKey("default"))
             validateExample(result, pointer,  json, pointer.child("default"), defaultValidationErrors)
-        uri?.let { schemaCache[uri.withFragment(pointer)] = result }
+        uri?.let {
+            val fragmentUri = uri.withFragment(pointer)
+            schemaCache[fragmentUri] = result
+            // Complete pending (i.e. recursive) RefSchema instances.
+            pendingRefs.remove(fragmentUri)?.forEach { it.target = result }
+        }
         return result
     }
 
@@ -374,12 +381,20 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
         if (!refPointer.exists(refJSON))
             fatal("\$ref not found $refString", uri, pointer)
-        return RefSchema(
+        val target = parseSchema(refJSON, refPointer, refURI)
+        val refSchema = RefSchema(
             uri = uri,
             location = pointer,
-            target = parseSchema(refJSON, refPointer, refURI),
+            target = target,
             fragment = refURIFragment,
         )
+        if (target is JSONSchema.False) {
+            val fragmentUri = target.uri?.withFragment(target.location)
+                ?: fatal("Cannot build fragmentUri for recursive \$ref", uri, pointer)
+            // Register refSchema for future completion when schema becomes available.
+            pendingRefs.computeIfAbsent(fragmentUri) { mutableListOf() } += refSchema
+        }
+        return refSchema
     }
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {

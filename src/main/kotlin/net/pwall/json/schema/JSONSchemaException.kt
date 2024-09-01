@@ -25,7 +25,7 @@
 
 package net.pwall.json.schema
 
-import net.pwall.json.JSONException
+import io.kjson.JSONException
 
 class JSONSchemaException(message: String) : JSONException(message) {
 

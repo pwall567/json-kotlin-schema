@@ -27,8 +27,9 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+
 import net.pwall.json.schema.JSONSchema
 
 class AllOfSchema(uri: URI?, location: JSONPointer, array: List<JSONSchema>) :

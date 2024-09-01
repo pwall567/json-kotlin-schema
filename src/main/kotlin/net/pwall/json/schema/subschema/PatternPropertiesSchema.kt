@@ -27,9 +27,11 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONMapping
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONObject
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
@@ -41,8 +43,8 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("patternProperties")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONMapping<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONObject)
             return true
         for ((propertyPattern, propertySchema) in properties) {
             for (name in instance.keys) {
@@ -57,8 +59,8 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONMapping<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONObject)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
         for ((propertyPattern, propertySchema) in properties) {
@@ -79,8 +81,8 @@ class PatternPropertiesSchema(uri: URI?, location: JSONPointer, val properties: 
 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONMapping<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONObject)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an object")
         val errors = mutableListOf<DetailedOutput>()
         for ((propertyPattern, propertySchema) in properties) {

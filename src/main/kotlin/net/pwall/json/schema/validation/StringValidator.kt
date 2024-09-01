@@ -27,9 +27,11 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONString
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONString
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.pipeline.IntCounter
@@ -46,13 +48,13 @@ class StringValidator(uri: URI?, location: JSONPointer, val condition: Validatio
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(condition.keyword)
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         return instance !is JSONString || validLength(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         return if (instance !is JSONString || validLength(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
                         "String fails length check: ${condition.keyword} $value, was ${instance.unicodeLength()}")

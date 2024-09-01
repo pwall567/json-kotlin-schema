@@ -27,8 +27,10 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
@@ -37,10 +39,10 @@ class ConstValidator(uri: URI?, location: JSONPointer, val value: JSONValue?) : 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("const")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean =
-        instanceLocation.eval(json) == value
+        json[instanceLocation] == value
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
-            BasicErrorEntry? = instanceLocation.eval(json).let { if (it == value) null else
+            BasicErrorEntry? = json[instanceLocation].let { if (it == value) null else
                     createBasicErrorEntry(relativeLocation, instanceLocation,
                             "Does not match constant: ${it.toErrorDisplay()}") }
 

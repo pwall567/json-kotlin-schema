@@ -35,22 +35,22 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 
+import io.kjson.JSONArray
+import io.kjson.JSONBoolean
+import io.kjson.JSONDecimal
+import io.kjson.JSONLong
+import io.kjson.JSONNumber
+import io.kjson.JSONObject
+import io.kjson.JSONPrimitive
+import io.kjson.JSONString
+import io.kjson.JSONValue
+import io.kjson.JSON.asIntOr
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.existsIn
+import io.kjson.pointer.get
 import io.kjson.resource.ResourceLoader.AuthorizationFilter
 import io.kjson.resource.ResourceLoader.RedirectionFilter
 
-import net.pwall.json.JSONBoolean
-import net.pwall.json.JSONDecimal
-import net.pwall.json.JSONDouble
-import net.pwall.json.JSONFloat
-import net.pwall.json.JSONInteger
-import net.pwall.json.JSONLong
-import net.pwall.json.JSONMapping
-import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONString
-import net.pwall.json.JSONValue
-import net.pwall.json.JSONZero
-import net.pwall.json.pointer.JSONPointer
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
 import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
@@ -151,7 +151,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     }
 
     private fun parse(json: JSONValue, uri: URI?): JSONSchema {
-        val schemaVersion = (json as? JSONMapping<*>)?.getStringOrNull(uri, JSONPointer.root.child("\$schema"))
+        val schemaVersion = (json as? JSONObject)?.getStringOrNull(uri, JSONPointer.root.child("\$schema"))
         val pointer = JSONPointer.root
         return when (schemaVersion) {
             in schemaVersion201909 -> parseSchema(json, pointer, uri)
@@ -168,10 +168,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
      * @param   parentUri   the parent URI for the schema
      */
     fun parseSchema(json: JSONValue, pointer: JSONPointer, parentUri: URI?): JSONSchema {
-        val schemaJSON = pointer.eval(json)
+        val schemaJSON = json[pointer]
         if (schemaJSON is JSONBoolean)
-            return booleanSchema(schemaJSON.booleanValue(), parentUri, pointer)
-        if (schemaJSON !is JSONMapping<*>)
+            return booleanSchema(schemaJSON.value, parentUri, pointer)
+        if (schemaJSON !is JSONObject)
             throw JSONSchemaException("Schema is not boolean or object - ${errorPointer(parentUri, pointer)}")
         val id = getIdOrNull(schemaJSON)
         val uri = when {
@@ -206,7 +206,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                         fatal("String expected", uri, childPointer)
                 }
                 "examples" -> {
-                    if (value !is JSONSequence<*>)
+                    if (value !is JSONArray)
                         fatal("Must be array", uri, childPointer)
                 }
                 "\$ref" -> children.add(parseRef(json, childPointer, uri, value))
@@ -260,7 +260,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             if (schemaJSON.containsKey("example"))
                 validateExample(result, pointer, json, pointer.child("example"), examplesValidationErrors)
             if (schemaJSON.containsKey("examples")) {
-                val examplesArray = schemaJSON["examples"] as JSONSequence<*> // checked earlier
+                val examplesArray = schemaJSON["examples"] as JSONArray // checked earlier
                 val examplesPointer = pointer.child("examples")
                 for (i in examplesArray.indices)
                     validateExample(result, pointer, json, examplesPointer.child(i), examplesValidationErrors)
@@ -279,12 +279,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             errorList.add(result)
     }
 
-    private fun getDescription(schemaJSON: JSONMapping<*>, uri: URI?, pointer: JSONPointer): String? {
+    private fun getDescription(schemaJSON: JSONObject, uri: URI?, pointer: JSONPointer): String? {
         val value = schemaJSON["description"] ?: return null
         if (value is JSONString)
             return value.value
         // add controlling flag?
-        if (options.allowDescriptionRef && value is JSONMapping<*> && value.size == 1) {
+        if (options.allowDescriptionRef && value is JSONObject && value.size == 1) {
             val ref = value["\$ref"]
             if (ref is JSONString) {
                 try {
@@ -300,18 +300,18 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private fun parseIf(json: JSONValue, pointer: JSONPointer, uri: URI?): JSONSchema {
         val ifSchema = parseSchema(json, pointer.child("if"), uri)
-        val thenSchema = pointer.child("then").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
-        val elseSchema = pointer.child("else").let { if (it.exists(json)) parseSchema(json, it, uri) else null }
+        val thenSchema = pointer.child("then").let { if (it.existsIn(json)) parseSchema(json, it, uri) else null }
+        val elseSchema = pointer.child("else").let { if (it.existsIn(json)) parseSchema(json, it, uri) else null }
         return IfThenElseSchema(uri, pointer, ifSchema, thenSchema, elseSchema)
     }
 
     private fun parseContains(json: JSONValue, pointer: JSONPointer, uri: URI?): ContainsValidator {
         val containsSchema = parseSchema(json, pointer.child("contains"), uri)
         val minContains = pointer.child("minContains").let {
-            if (it.exists(json)) getNonNegativeInteger(json, uri, it) else null
+            if (it.existsIn(json)) getNonNegativeInteger(json, uri, it) else null
         }
         val maxContains = pointer.child("maxContains").let {
-            if (it.exists(json)) getNonNegativeInteger(json, uri, it) else null
+            if (it.existsIn(json)) getNonNegativeInteger(json, uri, it) else null
         }
         return ContainsValidator(uri, pointer.child("contains"), containsSchema, minContains, maxContains)
     }
@@ -328,7 +328,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private fun parseCombinationSchema(json: JSONValue, pointer: JSONPointer, uri: URI?, array: JSONValue?,
             creator: (URI?, JSONPointer, List<JSONSchema>) -> JSONSchema): JSONSchema {
-        if (array !is JSONSequence<*>)
+        if (array !is JSONArray)
             fatal("Compound must take array", uri, pointer)
         return creator(uri, pointer, array.indices.map { i -> parseSchema(json, pointer.child(i), uri) })
     }
@@ -355,7 +355,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                 refURI = uri
                 refJSON = json
                 refURIFragment = refString.substring(1)
-                refPointer = JSONPointer.fromURIFragment(refString)
+                refPointer = JSONPointer.fromURIFragment(refString.substring(1))
             }
             else -> {
                 // uri with fragment
@@ -369,10 +369,10 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                     refJSON = jsonReader.readJSON(refURI)
                 }
                 refURIFragment = refString.substring(hashIndex + 1)
-                refPointer = JSONPointer.fromURIFragment(refString.substring(hashIndex))
+                refPointer = JSONPointer.fromURIFragment(refString.substring(hashIndex + 1))
             }
         }
-        if (!refPointer.exists(refJSON))
+        if (!refPointer.existsIn(refJSON))
             fatal("\$ref not found $refString", uri, pointer)
         return RefSchema(
             uri = uri,
@@ -383,21 +383,21 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     }
 
     private fun parseItems(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): JSONSchema.SubSchema {
-        return if (value is JSONSequence<*>)
+        return if (value is JSONArray)
             ItemsArraySchema(uri, pointer, value.indices.map { i -> parseSchema(json, pointer.child(i), uri) })
         else
             ItemsSchema(uri, pointer, parseSchema(json, pointer, uri))
     }
 
     private fun parseProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?): PropertiesSchema {
-        if (value !is JSONMapping<*>)
+        if (value !is JSONObject)
             fatal("properties must be object", uri, pointer)
         return PropertiesSchema(uri, pointer, value.keys.map { it to parseSchema(json, pointer.child(it), uri) })
     }
 
     private fun parsePatternProperties(json: JSONValue, pointer: JSONPointer, uri: URI?, value: JSONValue?):
             PatternPropertiesSchema {
-        if (value !is JSONMapping<*>)
+        if (value !is JSONObject)
             fatal("patternProperties must be object", uri, pointer)
         return PatternPropertiesSchema(uri, pointer, value.keys.map { key ->
             val childPointer = pointer.child(key)
@@ -417,7 +417,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     }
 
     private fun parseRequired(pointer: JSONPointer, uri: URI?, value: JSONValue?): RequiredSchema {
-        if (value !is JSONSequence<*>)
+        if (value !is JSONArray)
             fatal("required must be array", uri, pointer)
         return RequiredSchema(uri, pointer, value.mapIndexed { i, entry ->
             if (entry !is JSONString)
@@ -429,7 +429,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseType(pointer: JSONPointer, uri: URI?, value: JSONValue?): TypeValidator {
         val types: List<JSONSchema.Type> = when (value) {
             is JSONString -> listOf(checkType(value, pointer, uri))
-            is JSONSequence<*> -> value.mapIndexed { index, item -> checkType(item, pointer.child(index), uri) }
+            is JSONArray -> value.mapIndexed { index, item -> checkType(item, pointer.child(index), uri) }
             else -> fatal("Invalid type", uri, pointer)
         }
         return TypeValidator(uri, pointer, types)
@@ -437,7 +437,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     private fun checkType(item: JSONValue?, pointer: JSONPointer, uri: URI?): JSONSchema.Type {
         if (item is JSONString) {
-            for (type in JSONSchema.Type.values()) {
+            for (type in JSONSchema.Type.entries) {
                 if (item.value == type.value)
                     return type
             }
@@ -446,21 +446,19 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     }
 
     private fun parseEnum(pointer: JSONPointer, uri: URI?, value: JSONValue?): EnumValidator {
-        if (value !is JSONSequence<*>)
+        if (value !is JSONArray)
             fatal("enum must be array", uri, pointer)
         return EnumValidator(uri, pointer, value)
     }
 
     private fun parseNumberLimit(pointer: JSONPointer, uri: URI?, condition: NumberValidator.ValidationType,
             value: JSONValue?): NumberValidator {
-        if (value !is JSONNumberValue)
+        if (value !is JSONNumber)
             fatal("Must be number (was ${value.toErrorDisplay()})", uri, pointer)
         val number: Number = when (value) {
-            is JSONDouble, // should not happen
-            is JSONFloat,
-            is JSONDecimal -> value.bigDecimalValue()
+            is JSONDecimal -> value.value
             is JSONLong -> value.toLong()
-            else -> value.toInt() // includes JSONInteger, JSONZero
+            else -> value.toInt()
         }
         if (condition == NumberValidator.ValidationType.MULTIPLE_OF && !number.isPositive())
             fatal("multipleOf must be greater than 0", uri, pointer)
@@ -480,7 +478,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseArrayUniqueItems(pointer: JSONPointer, uri: URI?, value: JSONValue?): UniqueItemsValidator? {
         if (value !is JSONBoolean)
             fatal("Must be boolean", uri, pointer)
-        return if (value.booleanValue()) UniqueItemsValidator(uri, pointer) else null
+        return if (value.value) UniqueItemsValidator(uri, pointer) else null
     }
 
     private fun parsePattern(pointer: JSONPointer, uri: URI?, value: JSONValue?): PatternValidator {
@@ -598,41 +596,34 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
         private fun JSONPointer.pointerOrRoot() = if (this == JSONPointer.root) "root" else toString()
 
-        fun getInteger(value: JSONValue?, uri: URI?, pointer: JSONPointer): Int {
-            if (value is JSONZero)
-                return 0
-            if (value is JSONInteger)
-                return value.value
-            fatal("Must be integer", uri, pointer)
-        }
+        fun getInteger(value: JSONValue?, uri: URI?, pointer: JSONPointer): Int =
+            value.asIntOr { fatal("Must be integer", uri, pointer) }
 
         fun getNonNegativeInteger(json: JSONValue, uri: URI?, pointer: JSONPointer): Int {
-            val value = pointer.find(json)
-            if (value is JSONZero)
-                return 0
-            if (value is JSONInteger && value.value >= 0)
-                return value.value
+            val value = json[pointer]
+            if (value is JSONNumber && value.isInt() && value.isNotNegative())
+                return value.toInt()
             fatal("Must be non-negative integer", uri, pointer)
         }
 
-        fun JSONMapping<*>.getStringOrNull(uri: URI?, key: String): String? = get(key)?.let {
+        fun JSONObject.getStringOrNull(uri: URI?, key: String): String? = get(key)?.let {
             if (it is JSONString) it.value else fatal("Must be string", uri, JSONPointer.root.child(key))
         }
 
-        fun JSONMapping<*>.getStringOrNull(uri: URI?, pointer: JSONPointer): String? {
-            if (!pointer.exists(this))
+        fun JSONObject.getStringOrNull(uri: URI?, pointer: JSONPointer): String? {
+            if (!pointer.existsIn(this))
                 return null
-            val value = pointer.eval(this)
+            val value = this[pointer]
             if (value !is JSONString)
                 fatal("Must be string", uri, pointer)
             return value.value
         }
 
         @Suppress("unused")
-        fun JSONMapping<*>.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
-            if (!pointer.exists(this))
+        fun JSONObject.getStringOrDefault(pointer: JSONPointer, default: String?): String? {
+            if (!pointer.existsIn(this))
                 return default
-            val value = pointer.eval(this)
+            val value = this[pointer]
             if (value !is JSONString)
                 throw JSONSchemaException("Incorrect $pointer")
             return value.value
@@ -658,7 +649,13 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
 
         fun getIdOrNull(jsonValue: JSONValue): String? =
-                ((jsonValue as? JSONMapping<*>)?.get("\$id") as? JSONString)?.value
+                ((jsonValue as? JSONObject)?.get("\$id") as? JSONString)?.value
+
+        fun JSONValue.toSimpleValue(): Any? = when (this) {
+            is JSONPrimitive<*> -> value
+            is JSONArray -> map { it?.toSimpleValue() }
+            is JSONObject -> mapValues { it.value?.toSimpleValue() }
+        }
 
     }
 

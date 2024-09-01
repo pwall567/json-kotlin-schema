@@ -29,7 +29,7 @@ import kotlin.test.Test
 import kotlin.test.expect
 import kotlin.test.fail
 
-import net.pwall.json.JSON
+import io.kjson.JSON
 
 class JSONSchemaItemsTest {
 

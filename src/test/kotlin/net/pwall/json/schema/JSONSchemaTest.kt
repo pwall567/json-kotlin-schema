@@ -33,16 +33,16 @@ import kotlin.test.fail
 import java.io.File
 import java.net.URI
 
-import net.pwall.json.JSONObject
-import net.pwall.json.pointer.JSONPointer
-import net.pwall.json.JSON
+import io.kjson.JSON
+import io.kjson.JSONObject
+import io.kjson.pointer.JSONPointer
 
 class JSONSchemaTest {
 
     @Test fun `should validate example schema`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example.json"))
+        val json = JSON.parse(File("src/test/resources/example.json").readText())
         expect(true) { schema.validate(json) }
         expect(true) { schema.validateBasic(json).valid }
         expect(true) { schema.validateDetailed(json).valid }
@@ -69,7 +69,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema in YAML form`() {
         val filename = "src/test/resources/example.schema.yaml"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example.json"))
+        val json = JSON.parse(File("src/test/resources/example.json").readText())
         expect(true) { schema.validate(json) }
         expect(true) { schema.validateBasic(json).valid }
         expect(true) { schema.validateDetailed(json).valid }
@@ -78,7 +78,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema with missing property`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example-error1.json"))
+        val json = JSON.parse(File("src/test/resources/example-error1.json").readText())
         expect(false) { schema.validate(json) }
         val validateResult = schema.validateBasic(json)
         expect(false) { validateResult.valid }
@@ -102,7 +102,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema with wrong property type`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example-error2.json"))
+        val json = JSON.parse(File("src/test/resources/example-error2.json").readText())
         expect(false) { schema.validate(json) }
         val validateResult = schema.validateBasic(json)
         expect(false) { validateResult.valid }
@@ -132,7 +132,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema with value out of range`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example-error3.json"))
+        val json = JSON.parse(File("src/test/resources/example-error3.json").readText())
         expect(false) { schema.validate(json) }
         val validateResult = schema.validateBasic(json)
         expect(false) { validateResult.valid }
@@ -162,7 +162,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema with array item of wrong type`() {
         val filename = "src/test/resources/example.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/example-error4.json"))
+        val json = JSON.parse(File("src/test/resources/example-error4.json").readText())
         expect(false) { schema.validate(json) }
         val validateResult = schema.validateBasic(json)
         expect(false) { validateResult.valid }
@@ -198,7 +198,7 @@ class JSONSchemaTest {
     @Test fun `should validate example schema with reference`() {
         val filename = "src/test/resources/test-ref.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json = JSON.parse(File("src/test/resources/test-ref.json"))
+        val json = JSON.parse(File("src/test/resources/test-ref.json").readText())
         expect(false) { schema.validate(json) }
         val validateResult = schema.validateBasic(json)
         expect(false) { validateResult.valid }
@@ -1020,7 +1020,7 @@ class JSONSchemaTest {
 
     companion object {
 
-        val emptyObject = JSONObject()
+        val emptyObject = JSONObject.EMPTY
         val trueSchema = JSONSchema.True(null, JSONPointer.root)
         val falseSchema = JSONSchema.False(null, JSONPointer.root)
 

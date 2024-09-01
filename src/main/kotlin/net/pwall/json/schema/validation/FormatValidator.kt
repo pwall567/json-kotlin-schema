@@ -25,18 +25,14 @@
 
 package net.pwall.json.schema.validation
 
-import kotlin.math.floor
-
-import java.math.BigDecimal
 import java.net.URI
 
-import net.pwall.json.JSONDecimal
-import net.pwall.json.JSONDouble
-import net.pwall.json.JSONFloat
-import net.pwall.json.JSONLong
-import net.pwall.json.JSONString
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONNumber
+import io.kjson.JSONString
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.validation.JSONValidation
@@ -50,12 +46,12 @@ class FormatValidator(
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("format")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        return checker.check(instanceLocation.eval(json))
+        return checker.check(json[instanceLocation])
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         return if (checker.check(instance)) null else
                 checker.getBasicErrorEntry(this, relativeLocation, instanceLocation, json)
     }
@@ -80,7 +76,7 @@ class FormatValidator(
             return schema.createBasicErrorEntry(
                 relativeLocation = relativeLocation,
                 instanceLocation = instanceLocation,
-                error = "Value fails format check \"$name\", was ${instanceLocation.eval(json)?.toJSON()}",
+                error = "Value fails format check \"$name\", was ${json[instanceLocation]?.toJSON()}",
             )
         }
 
@@ -214,25 +210,7 @@ class FormatValidator(
 
         override val name: String = "int64"
 
-        override fun check(value: JSONValue?): Boolean = when (value) {
-            is JSONDecimal -> {
-                try {
-                    value.bigDecimalValue().setScale(0) in BigDecimal(Long.MIN_VALUE)..BigDecimal(Long.MAX_VALUE)
-                }
-                catch (e: ArithmeticException) {
-                    false
-                }
-            }
-            is JSONDouble -> {
-                val doubleValue = value.value
-                doubleValue == floor(doubleValue) && doubleValue in Long.MIN_VALUE.toDouble()..Long.MAX_VALUE.toDouble()
-            }
-            is JSONFloat -> {
-                val floatValue = value.value
-                floatValue == floor(floatValue) && floatValue in Long.MIN_VALUE.toFloat()..Long.MAX_VALUE.toFloat()
-            }
-            else -> true // includes JSONInteger, JSONLong, JSONZero
-        }
+        override fun check(value: JSONValue?): Boolean = value !is JSONNumber || value.isLong()
 
     }
 
@@ -240,26 +218,7 @@ class FormatValidator(
 
         override val name: String = "int32"
 
-        override fun check(value: JSONValue?): Boolean = when (value) {
-            is JSONLong -> value.value in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()
-            is JSONDecimal -> {
-                try {
-                    value.bigDecimalValue().setScale(0) in BigDecimal(Int.MIN_VALUE)..BigDecimal(Int.MAX_VALUE)
-                }
-                catch (e: ArithmeticException) {
-                    false
-                }
-            }
-            is JSONDouble -> {
-                val doubleValue = value.value
-                doubleValue == floor(doubleValue) && doubleValue in Int.MIN_VALUE.toDouble()..Int.MAX_VALUE.toDouble()
-            }
-            is JSONFloat -> {
-                val floatValue = value.value
-                floatValue == floor(floatValue) && floatValue in Int.MIN_VALUE.toFloat()..Int.MAX_VALUE.toFloat()
-            }
-            else -> true // includes JSONInteger, JSONZero
-        }
+        override fun check(value: JSONValue?): Boolean = value !is JSONNumber || value.isInt()
 
     }
 

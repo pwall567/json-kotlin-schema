@@ -25,22 +25,17 @@
 
 package net.pwall.json.schema.validation
 
-import java.math.BigDecimal
 import java.net.URI
 
-import net.pwall.json.JSONBoolean
-import net.pwall.json.JSONDecimal
-import net.pwall.json.JSONDouble
-import net.pwall.json.JSONFloat
-import net.pwall.json.JSONInteger
-import net.pwall.json.JSONLong
-import net.pwall.json.JSONMapping
-import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONString
-import net.pwall.json.JSONValue
-import net.pwall.json.JSONZero
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONArray
+import io.kjson.JSONBoolean
+import io.kjson.JSONNumber
+import io.kjson.JSONObject
+import io.kjson.JSONString
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
@@ -49,40 +44,19 @@ class TypeValidator(uri: URI?, location: JSONPointer, val types: List<Type>) : J
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("type")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         for (type in types) {
             when (type) {
                 Type.NULL -> if (instance == null) return true
                 Type.BOOLEAN -> if (instance is JSONBoolean) return true
-                Type.OBJECT -> if (instance is JSONMapping<*>) return true
-                Type.ARRAY -> if (instance is JSONSequence<*>) return true
-                Type.NUMBER -> if (instance is JSONNumberValue) return true
+                Type.OBJECT -> if (instance is JSONObject) return true
+                Type.ARRAY -> if (instance is JSONArray) return true
+                Type.NUMBER -> if (instance is JSONNumber) return true
                 Type.STRING -> if (instance is JSONString) return true
-                Type.INTEGER -> if (isInteger(instance)) return true
+                Type.INTEGER -> if (instance is JSONNumber && instance.isIntegral()) return true
             }
         }
         return false
-    }
-
-    private fun isInteger(instance: JSONValue?): Boolean {
-        return when (instance) {
-            is JSONInteger -> true
-            is JSONLong -> true
-            is JSONZero -> true
-            is JSONDecimal -> {
-                val value: BigDecimal = instance.value
-                value.scale() <= 0 || value.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0
-            }
-            is JSONDouble -> {
-                val value: Double = instance.value
-                value.rem(1.0) == 0.0
-            }
-            is JSONFloat -> {
-                val value: Float = instance.value
-                value.rem(1.0F) == 0.0F
-            }
-            else -> false
-        }
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):

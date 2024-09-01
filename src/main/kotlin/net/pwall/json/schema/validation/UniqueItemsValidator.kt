@@ -27,9 +27,11 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONArray
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
@@ -39,14 +41,14 @@ class UniqueItemsValidator(uri: URI?, location: JSONPointer): JSONSchema.Validat
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("uniqueItems")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        return instance !is JSONSequence<*> || uniqueItems(instance)
+        val instance = json[instanceLocation]
+        return instance !is JSONArray || uniqueItems(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
-        return if (instance !is JSONSequence<*> || uniqueItems(instance)) null else
+        val instance = json[instanceLocation]
+        return if (instance !is JSONArray || uniqueItems(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation, "Array items not unique")
     }
 
@@ -54,7 +56,7 @@ class UniqueItemsValidator(uri: URI?, location: JSONPointer): JSONSchema.Validat
 
     companion object {
 
-        fun uniqueItems(array: JSONSequence<*>): Boolean = array.toHashSet().size == array.size
+        fun uniqueItems(array: JSONArray): Boolean = array.toHashSet().size == array.size
 
     }
 

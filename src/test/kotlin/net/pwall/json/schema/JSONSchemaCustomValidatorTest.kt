@@ -28,8 +28,10 @@ package net.pwall.json.schema
 import kotlin.test.Test
 import kotlin.test.expect
 import kotlin.test.fail
-import net.pwall.json.JSON
-import net.pwall.json.JSONString
+
+import io.kjson.JSON
+import io.kjson.JSONString
+
 import net.pwall.json.schema.parser.Parser
 import net.pwall.json.schema.validation.StringValidator
 

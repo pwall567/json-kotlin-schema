@@ -27,26 +27,27 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONArray
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
-class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONSequence<*>) :
-        JSONSchema.Validator(uri, location) {
+class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONArray) : JSONSchema.Validator(uri, location) {
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("enum")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         array.forEach { if (instance == it) return true }
         return false
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
+        val instance = json[instanceLocation]
         array.forEach { if (instance == it) return null }
         return createBasicErrorEntry(relativeLocation, instanceLocation,
                 "Not in enumerated values: ${instance.toErrorDisplay()}")

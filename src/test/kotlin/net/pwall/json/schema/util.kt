@@ -25,38 +25,39 @@
 
 package net.pwall.json.schema
 
-import net.pwall.json.JSONArray
-import net.pwall.json.JSONObject
+import io.kjson.JSONArray
+import io.kjson.JSONObject
+
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
 import net.pwall.json.schema.output.Output
 
-fun Output.toJSON(): JSONObject = JSONObject().also { result ->
-    result.putValue("valid", valid)
-    if (this is BasicOutput) {
+fun Output.toJSON(): JSONObject = JSONObject.build {
+    add("valid", valid)
+    if (this@toJSON is BasicOutput) {
         errors?.let {
-            result.put("errors", JSONArray(it.map { e -> e.toJSON() }))
+            add("errors", JSONArray.from(it.map { e -> e.toJSON() }))
         }
     }
-    if (this is DetailedOutput) {
-        result.putValue("keywordLocation", keywordLocation)
-        absoluteKeywordLocation?.let { result.putValue("absoluteKeywordLocation", it) }
-        result.putValue("instanceLocation", instanceLocation)
-        error?.let { result.putValue("error", it) }
-        annotation?.let { result.putValue("annotation", it) }
+    if (this@toJSON is DetailedOutput) {
+        add("keywordLocation", keywordLocation)
+        absoluteKeywordLocation?.let { add("absoluteKeywordLocation", it) }
+        add("instanceLocation", instanceLocation)
+        error?.let { add("error", it) }
+        annotation?.let { add("annotation", it) }
         errors?.let {
-            result.put("errors", JSONArray(it.map { e -> e.toJSON() }))
+            add("errors", JSONArray.from(it.map { e -> e.toJSON() }))
         }
         annotations?.let {
-            result.put("annotations", JSONArray(it.map { e -> e.toJSON() }))
+            add("annotations", JSONArray.from(it.map { e -> e.toJSON() }))
         }
     }
 }
 
-fun BasicErrorEntry.toJSON(): JSONObject = JSONObject().also { result ->
-    result.putValue("keywordLocation", keywordLocation)
-    absoluteKeywordLocation?.let { result.putValue("absoluteKeywordLocation", it) }
-    result.putValue("instanceLocation", instanceLocation)
-    result.putValue("error", error)
+fun BasicErrorEntry.toJSON(): JSONObject = JSONObject.build {
+    add("keywordLocation", keywordLocation)
+    absoluteKeywordLocation?.let { add("absoluteKeywordLocation", it) }
+    add("instanceLocation", instanceLocation)
+    add("error", error)
 }

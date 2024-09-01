@@ -27,7 +27,9 @@ package net.pwall.json.schema
 
 import kotlin.test.Test
 import kotlin.test.expect
-import net.pwall.json.JSON
+
+import io.kjson.JSON
+
 import net.pwall.json.schema.parser.Parser
 
 class JSONSchemaOneOfTest {

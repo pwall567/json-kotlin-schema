@@ -9,6 +9,11 @@
 
 Kotlin implementation of JSON Schema (Draft-07)
 
+**NOTE:** &ndash; from version 0.49, the underlying JSON and YAML libraries have been switched from
+[`jsonutil`](https://github.com/pwall567/jsonutil) and [`yaml-simple`](https://github.com/pwall567/yaml-simple) to
+[`kjson-core`](https://github.com/pwall567/kjson-core) and [`kjson-yaml`](https://github.com/pwall567/kjson-yaml).
+The change should be transparent to most users.
+
 ## Quick Start
 
 Given the following schema file (Taken from the [Wikipedia article on JSON](https://en.wikipedia.org/wiki/JSON)):
@@ -140,9 +145,7 @@ To use this schema, simply specify a schema file with an extension of `.yaml` or
     val schema = JSONSchema.parseFile("/path/to/example.schema.yaml")
 ```
 
-The YAML library used is [this one](https://github.com/pwall567/yaml-simple).
-It is not a complete implementation of the YAML specification, but it should be more than adequate for the purpose of
-specifying JSON Schema.
+The YAML library used is [this one](https://github.com/pwall567/kjson-yaml).
 
 ## References
 
@@ -273,25 +276,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.48, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.49, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.48</version>
+      <version>0.49</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.48'
+    implementation 'net.pwall.json:json-kotlin-schema:0.49'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.48")
+    implementation("net.pwall.json:json-kotlin-schema:0.49")
 ```
 
 Peter Wall
 
-2024-08-07
+2024-09-02

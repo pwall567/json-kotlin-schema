@@ -29,15 +29,14 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
 
-import net.pwall.json.JSONDecimal
-import net.pwall.json.JSONDouble
-import net.pwall.json.JSONFloat
-import net.pwall.json.JSONInteger
-import net.pwall.json.JSONLong
-import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONValue
-import net.pwall.json.JSONZero
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONDecimal
+import io.kjson.JSONInt
+import io.kjson.JSONLong
+import io.kjson.JSONNumber
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.output.BasicErrorEntry
@@ -56,19 +55,19 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child(condition.keyword)
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        return instance !is JSONNumberValue || validNumber(instance)
+        val instance = json[instanceLocation]
+        return instance !is JSONNumber || validNumber(instance)
     }
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
-        return if (instance !is JSONNumberValue || validNumber(instance)) null else
+        val instance = json[instanceLocation]
+        return if (instance !is JSONNumber || validNumber(instance)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
                         "Number fails check: ${condition.keyword} $value, was $instance")
     }
 
-    private fun validNumber(instance: JSONNumberValue) = when (condition) {
+    private fun validNumber(instance: JSONNumber) = when (condition) {
         ValidationType.MULTIPLE_OF -> multipleOf(instance)
         ValidationType.MAXIMUM -> maximum(instance)
         ValidationType.EXCLUSIVE_MAXIMUM -> exclusiveMaximum(instance)
@@ -76,56 +75,40 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
         ValidationType.EXCLUSIVE_MINIMUM -> exclusiveMinimum(instance)
     }
 
-    private fun multipleOf(instance: JSONNumberValue): Boolean = when (value) {
-        is BigDecimal -> instance.toBigDecimal().rem(value).compareTo(BigDecimal.ZERO) == 0
-        is Double -> instance.toDouble().rem(value) == 0.0
-        is Float -> instance.toFloat().rem(value) == 0.0F
+    private fun multipleOf(instance: JSONNumber): Boolean = when (value) {
+        is BigDecimal -> instance.toDecimal().rem(value).compareTo(BigDecimal.ZERO) == 0
         is Long -> when (instance) {
             is JSONDecimal -> instance.value.rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
-            is JSONDouble -> instance.value.rem(value) == 0.0
-            is JSONFloat -> instance.value.rem(value) == 0.0F
             is JSONLong -> instance.value.rem(value) == 0L
-            is JSONInteger -> instance.toLong().rem(value) == 0L
-            is JSONZero -> true
+            is JSONInt -> instance.toLong().rem(value) == 0L
             else -> throw JSONSchemaException("Impossible type")
         }
         is Int -> when (instance) {
             is JSONDecimal -> instance.value.rem(BigDecimal(value)).compareTo(BigDecimal.ZERO) == 0
-            is JSONDouble -> instance.value.rem(value) == 0.0
-            is JSONFloat -> instance.value.rem(value) == 0.0F
             is JSONLong -> instance.value.rem(value) == 0L
-            is JSONInteger -> instance.toLong().rem(value) == 0L
-            is JSONZero -> true
+            is JSONInt -> instance.toLong().rem(value) == 0L
             else -> throw JSONSchemaException("Impossible type")
         }
         else -> throw JSONSchemaException("Impossible type")
     }
 
-    private fun maximum(instance: JSONNumberValue): Boolean = when (instance) {
+    private fun maximum(instance: JSONNumber): Boolean = when (instance) {
         is JSONDecimal -> instance.value <= value.toBigDecimal()
-        is JSONDouble -> instance.value <= value.toDouble()
-        is JSONFloat -> instance.value <= value.toFloat()
         else -> instance.toLong() <= value.toLong()
     }
 
-    private fun exclusiveMaximum(instance: JSONNumberValue): Boolean = when (instance) {
+    private fun exclusiveMaximum(instance: JSONNumber): Boolean = when (instance) {
         is JSONDecimal -> instance.value < value.toBigDecimal()
-        is JSONDouble -> instance.value < value.toDouble()
-        is JSONFloat -> instance.value < value.toFloat()
         else -> instance.toLong() < value.toLong()
     }
 
-    private fun minimum(instance: JSONNumberValue): Boolean = when (instance) {
+    private fun minimum(instance: JSONNumber): Boolean = when (instance) {
         is JSONDecimal -> instance.value >= value.toBigDecimal()
-        is JSONDouble -> instance.value >= value.toDouble()
-        is JSONFloat -> instance.value >= value.toFloat()
         else -> instance.toLong() >= value.toLong()
     }
 
-    private fun exclusiveMinimum(instance: JSONNumberValue): Boolean = when (instance) {
+    private fun exclusiveMinimum(instance: JSONNumber): Boolean = when (instance) {
         is JSONDecimal -> instance.value > value.toBigDecimal()
-        is JSONDouble -> instance.value > value.toDouble()
-        is JSONFloat -> instance.value > value.toFloat()
         else -> instance.toLong() > value.toLong()
     }
 
@@ -137,16 +120,6 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
         else -> BigDecimal(this.toLong())
     }
 
-    private fun JSONNumberValue.toBigDecimal(): BigDecimal = when (this) {
-        is JSONDecimal -> this.value
-        is JSONDouble -> BigDecimal(this.value)
-        is JSONFloat -> BigDecimal(this.value.toDouble())
-        is JSONLong -> BigDecimal(this.value)
-        is JSONInteger -> BigDecimal(this.value)
-        is JSONZero -> BigDecimal.ZERO
-        else -> throw JSONSchemaException("Incorrect JSON value")
-    }
-
     override fun equals(other: Any?): Boolean = this === other ||
             other is NumberValidator && super.equals(other) && value == other.value && condition == other.condition
 
@@ -154,10 +127,10 @@ class NumberValidator(uri: URI?, location: JSONPointer, val value: Number, val c
 
     companion object {
 
-        val typeKeywords: List<String> = ValidationType.values().map { it.keyword }
+        val typeKeywords: List<String> = ValidationType.entries.map { it.keyword }
 
         fun findType(keyword: String): ValidationType {
-            ValidationType.values().forEach { if (it.keyword == keyword) return it }
+            ValidationType.entries.forEach { if (it.keyword == keyword) return it }
             throw RuntimeException("Can't find validation type - should not happen")
         }
 

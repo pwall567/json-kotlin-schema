@@ -27,9 +27,11 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONArray
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
@@ -41,8 +43,8 @@ class ItemsArraySchema(uri: URI?, location: JSONPointer, val itemSchemaList: Lis
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("items")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return true
         for (i in 0 until minOf(instance.size, itemSchemaList.size))
             if (!itemSchemaList[i].validate(json, instanceLocation.child(i)))
@@ -52,8 +54,8 @@ class ItemsArraySchema(uri: URI?, location: JSONPointer, val itemSchemaList: Lis
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
         for (i in 0 until minOf(instance.size, itemSchemaList.size)) {
@@ -69,8 +71,8 @@ class ItemsArraySchema(uri: URI?, location: JSONPointer, val itemSchemaList: Lis
 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an array")
         val errors = mutableListOf<DetailedOutput>()
         for (i in 0 until minOf(instance.size, itemSchemaList.size)) {

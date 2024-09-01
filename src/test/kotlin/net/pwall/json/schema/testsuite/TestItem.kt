@@ -25,7 +25,7 @@
 
 package net.pwall.json.schema.testsuite
 
-import net.pwall.json.JSONValue
+import io.kjson.JSONValue
 
 data class TestItem(
         val description: String,

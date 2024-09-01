@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.49] - 2024-09-02
+### Changed
+- almost all classes: Switched from `jsonutil` library to `kjson-core`, and from `yaml-simple` to `kjson-yaml`
+- `pom.xml`: updated dependency versions
+
 ## [0.48] - 2024-08-07
 ### Added
 - `build.yml`, `deploy.yml`: converted project to GitHub Actions

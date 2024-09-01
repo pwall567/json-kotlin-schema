@@ -28,14 +28,15 @@ package net.pwall.json.schema
 import java.io.File
 import java.net.URI
 
-import net.pwall.json.JSON
-import net.pwall.json.JSONBoolean
-import net.pwall.json.JSONMapping
-import net.pwall.json.JSONNumberValue
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONString
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSON
+import io.kjson.JSONArray
+import io.kjson.JSONBoolean
+import io.kjson.JSONNumber
+import io.kjson.JSONObject
+import io.kjson.JSONString
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
@@ -296,14 +297,14 @@ sealed class JSONSchema(
             return this
         }
 
-        fun JSONPointer.schemaURIFragment() = toURIFragment().replace("%24", "\$")
+        fun JSONPointer.schemaURIFragment() = "#${toURIFragment()}"
 
         fun JSONValue?.toErrorDisplay(): String = when (this) {
             null -> "null"
-            is JSONMapping<*> -> "object"
-            is JSONSequence<*> -> "array"
+            is JSONObject -> "object"
+            is JSONArray -> "array"
             is JSONBoolean,
-            is JSONNumberValue -> toString()
+            is JSONNumber -> toString()
             is JSONString -> {
                 val s = toJSON()
                 if (s.length > 40) "${s.take(16)} ... ${s.takeLast(16)}" else s

@@ -31,8 +31,9 @@ import kotlin.test.fail
 
 import java.io.File
 
-import net.pwall.json.parseJSON
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.parseJSON
+import io.kjson.pointer.JSONPointer
+
 import net.pwall.json.schema.parser.Parser
 
 class TestSuiteTests {
@@ -55,7 +56,7 @@ class TestSuiteTests {
         baseDirectory.listFiles()?.forEach { file ->
             if (file.isFile) {
                 println("***File ${file.name}")
-                val groups = file.readText().parseJSON<List<TestGroup>>() ?: fail("File contains null")
+                val groups = file.readText().parseJSON<List<TestGroup>>()
                 if (skipFiles.any { it == file.name }) {
                     println("FILE SKIPPED\n")
                     totalSkipped += groups.size

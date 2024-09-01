@@ -26,9 +26,12 @@
 package net.pwall.json.schema.validation
 
 import java.net.URI
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+
+import io.kjson.JSONArray
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 
@@ -38,8 +41,8 @@ class ContainsValidator(uri: URI?, location: JSONPointer, private val containsSc
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("contains")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return true
         var count = 0
         for (i in instance.indices) {
@@ -61,8 +64,8 @@ class ContainsValidator(uri: URI?, location: JSONPointer, private val containsSc
 
     override fun getErrorEntry(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicErrorEntry? {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return null
         var count = 0
         for (i in instance.indices) {

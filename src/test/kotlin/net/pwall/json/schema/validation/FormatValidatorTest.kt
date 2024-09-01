@@ -28,53 +28,36 @@ package net.pwall.json.schema.validation
 import kotlin.test.Test
 import kotlin.test.expect
 
-import net.pwall.json.JSONBoolean
-import net.pwall.json.JSONDecimal
-import net.pwall.json.JSONDouble
-import net.pwall.json.JSONFloat
-import net.pwall.json.JSONInteger
-import net.pwall.json.JSONLong
-import net.pwall.json.JSONObject
-import net.pwall.json.JSONString
-import net.pwall.json.JSONZero
+import io.kjson.JSONBoolean
+import io.kjson.JSONDecimal
+import io.kjson.JSONInt
+import io.kjson.JSONLong
+import io.kjson.JSONObject
+import io.kjson.JSONString
 
 class FormatValidatorTest {
 
     @Test fun `should validate int64 correctly`() {
         expect(true) { FormatValidator.Int64FormatChecker.check(JSONString("test")) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONInteger(12345)) }
+        expect(true) { FormatValidator.Int64FormatChecker.check(JSONInt(12345)) }
         expect(true) { FormatValidator.Int64FormatChecker.check(JSONLong(12345)) }
         expect(true) { FormatValidator.Int64FormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONObject()) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONZero.ZERO) }
+        expect(true) { FormatValidator.Int64FormatChecker.check(JSONObject.EMPTY) }
         expect(true) { FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.00")) }
         expect(false) { FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.50")) }
         expect(false) { FormatValidator.Int64FormatChecker.check(JSONDecimal("123456789123456789123456789")) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONDouble(12345.00)) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONDouble(12345.50)) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONDouble(12345e27)) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONFloat(12345.00F)) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONFloat(12345.50F)) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONFloat(12345e27F)) }
     }
 
     @Test fun `should validate int32 correctly`() {
         expect(true) { FormatValidator.Int32FormatChecker.check(JSONString("test")) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONInteger(12345)) }
+        expect(true) { FormatValidator.Int32FormatChecker.check(JSONInt(12345)) }
         expect(true) { FormatValidator.Int32FormatChecker.check(JSONLong(12345)) }
         expect(false) { FormatValidator.Int32FormatChecker.check(JSONLong(12345678912345)) }
         expect(true) { FormatValidator.Int32FormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONObject()) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONZero.ZERO) }
+        expect(true) { FormatValidator.Int32FormatChecker.check(JSONObject.EMPTY) }
         expect(true) { FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.00")) }
         expect(false) { FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.50")) }
         expect(false) { FormatValidator.Int32FormatChecker.check(JSONDecimal("123456789123456789")) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONDouble(12345.00)) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONDouble(12345.50)) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONDouble(12345e27)) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONFloat(12345.00F)) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONFloat(12345.50F)) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONFloat(12345e27F)) }
     }
 
     @Test fun `should validate date-time correctly`() {
@@ -85,11 +68,10 @@ class FormatValidatorTest {
         expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23")) }
         expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("")) }
         expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("wrong")) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONInteger(0)) }
+        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONInt(0)) }
         expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONLong(-1)) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONZero.ZERO) }
         expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONObject()) }
+        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONObject.EMPTY) }
     }
 
     @Test fun `should validate date correctly`() {
@@ -97,11 +79,10 @@ class FormatValidatorTest {
         expect(false) { FormatValidator.DateFormatChecker.check(JSONString("2021-01-23T22:29:54+11:00")) }
         expect(false) { FormatValidator.DateFormatChecker.check(JSONString("")) }
         expect(false) { FormatValidator.DateFormatChecker.check(JSONString("wrong")) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONInteger(0)) }
+        expect(true) { FormatValidator.DateFormatChecker.check(JSONInt(0)) }
         expect(true) { FormatValidator.DateFormatChecker.check(JSONLong(-1)) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONZero.ZERO) }
         expect(true) { FormatValidator.DateFormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONObject()) }
+        expect(true) { FormatValidator.DateFormatChecker.check(JSONObject.EMPTY) }
     }
 
 }

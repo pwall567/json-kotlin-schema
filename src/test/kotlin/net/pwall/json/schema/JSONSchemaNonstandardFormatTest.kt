@@ -31,8 +31,9 @@ import kotlin.test.fail
 
 import java.net.URI
 
-import net.pwall.json.JSON
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSON
+import io.kjson.pointer.JSONPointer
+
 import net.pwall.json.schema.parser.Parser
 import net.pwall.json.schema.validation.FormatValidator
 import net.pwall.json.schema.validation.StringValidator

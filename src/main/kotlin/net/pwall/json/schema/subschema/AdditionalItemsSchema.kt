@@ -27,9 +27,11 @@ package net.pwall.json.schema.subschema
 
 import java.net.URI
 
-import net.pwall.json.JSONSequence
-import net.pwall.json.JSONValue
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSONArray
+import io.kjson.JSONValue
+import io.kjson.pointer.JSONPointer
+import io.kjson.pointer.get
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import net.pwall.json.schema.output.BasicOutput
@@ -49,8 +51,8 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("additionalItems")
 
     override fun validate(json: JSONValue?, instanceLocation: JSONPointer): Boolean {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return true
         if (itemsSchema == null) {
             itemsArraySchema?.let {
@@ -66,8 +68,8 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
 
     override fun validateBasic(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             BasicOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return BasicOutput.trueOutput
         val errors = mutableListOf<BasicErrorEntry>()
         if (itemsSchema == null) {
@@ -92,8 +94,8 @@ class AdditionalItemsSchema(private val parent: General, uri: URI?, location: JS
 
     override fun validateDetailed(relativeLocation: JSONPointer, json: JSONValue?, instanceLocation: JSONPointer):
             DetailedOutput {
-        val instance = instanceLocation.eval(json)
-        if (instance !is JSONSequence<*>)
+        val instance = json[instanceLocation]
+        if (instance !is JSONArray)
             return createAnnotation(relativeLocation, instanceLocation, "Value is not an array")
         val errors = mutableListOf<DetailedOutput>()
         if (itemsSchema == null) {

@@ -40,8 +40,9 @@ import java.math.BigInteger
 import java.net.URI
 import java.nio.file.FileSystems
 
-import net.pwall.json.JSON
-import net.pwall.json.pointer.JSONPointer
+import io.kjson.JSON
+import io.kjson.pointer.JSONPointer
+
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.parser.Parser.Companion.defaultExtendedResolver
@@ -85,7 +86,6 @@ class ParserTest {
     @Test fun `should fail on invalid schema`() {
         val filename = "src/test/resources/invalid-1.schema.json"
         with(assertFailsWith<JSONSchemaException> { JSONSchema.parseFile(filename) }.message) {
-            assertTrue(this != null)
             assertTrue(startsWith("Schema is not boolean or object"))
         }
     }
@@ -134,14 +134,14 @@ class ParserTest {
             fail("id unexpected schema type")
         val refSchema = (idSchema.children.find { it is RefSchema }) as RefSchema?
         expect("/\$defs/personId") { refSchema?.fragment }
-        val person = JSON.parse(File("src/test/resources/person.json"))
+        val person = JSON.parse(File("src/test/resources/person.json").readText())
         expect(true) { schema.validate(person) }
-        val wrongPerson = JSON.parse(File("src/test/resources/person-invalid-uuid.json"))
+        val wrongPerson = JSON.parse(File("src/test/resources/person-invalid-uuid.json").readText())
         expect(false) { schema.validate(wrongPerson) }
     }
 
     @Test fun `should parse individual subschema from larger file`() {
-        val json = JSON.parse(File("src/test/resources/example.schema.json"))
+        val json = JSON.parse(File("src/test/resources/example.schema.json").readText()) ?: fail()
         val schema = Parser().parseSchema(json, JSONPointer("/properties/stock"), URI("http://pwall.net/test"))
         expect(true) { schema.validate(JSON.parse("""{"warehouse":1,"retail":2}""")) }
     }

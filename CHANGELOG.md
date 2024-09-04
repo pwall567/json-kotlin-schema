@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.50] - 2024-09-04
+### Changed
+- `pom.xml`: updated dependency versions
+
 ## [0.49] - 2024-09-02
 ### Changed
 - almost all classes: Switched from `jsonutil` library to `kjson-core`, and from `yaml-simple` to `kjson-yaml`

@@ -64,13 +64,13 @@ class ParserTest {
 
     @Test fun `should parse true schema`() {
         val filename = "src/test/resources/true.schema.json"
-        val uri = URI("file://${File(filename).absolutePath}")
+        val uri = File(filename).absoluteFile.toURI()
         expect(JSONSchema.True(uri, JSONPointer.root)) { JSONSchema.parseFile(filename) }
     }
 
     @Test fun `should parse false schema`() {
         val filename = "src/test/resources/false.schema.json"
-        val uri = URI("file://${File(filename).absolutePath}")
+        val uri = File(filename).absoluteFile.toURI()
         expect(JSONSchema.False(uri, JSONPointer.root)) { JSONSchema.parseFile(filename) }
     }
 

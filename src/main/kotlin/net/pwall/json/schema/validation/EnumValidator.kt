@@ -27,6 +27,7 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
+import io.kjson.JSON.displayValue
 import io.kjson.JSONArray
 import io.kjson.JSONValue
 import io.kjson.pointer.JSONPointer
@@ -50,7 +51,7 @@ class EnumValidator(uri: URI?, location: JSONPointer, val array: JSONArray) : JS
         val instance = json[instanceLocation]
         array.forEach { if (instance == it) return null }
         return createBasicErrorEntry(relativeLocation, instanceLocation,
-                "Not in enumerated values: ${instance.toErrorDisplay()}")
+                "Not in enumerated values: ${instance.displayValue()}")
     }
 
     override fun equals(other: Any?): Boolean =

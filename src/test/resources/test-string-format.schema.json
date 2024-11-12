@@ -25,6 +25,9 @@
     "uriReferenceTest": {
       "format": "uri-reference"
     },
+    "uriTemplateTest": {
+      "format": "uri-template"
+    },
     "ipv4Test": {
       "format": "ipv4"
     },

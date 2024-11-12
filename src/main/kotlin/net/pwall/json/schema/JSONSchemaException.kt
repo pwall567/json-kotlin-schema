@@ -2,7 +2,7 @@
  * @(#) JSONSchemaException.kt
  *
  * json-kotlin-schema Kotlin implementation of JSON Schema
- * Copyright (c) 2020 Peter Wall
+ * Copyright (c) 2020, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,10 @@ package net.pwall.json.schema
 
 import io.kjson.JSONException
 
-class JSONSchemaException(message: String) : JSONException(message) {
+class JSONSchemaException(message: String, key: Any? = null) : JSONException(message, key) {
 
-    constructor(message: String, throwable: Throwable) : this(message) {
-        initCause(throwable)
+    constructor(message: String, throwable: Throwable, key: Any? = null) : this(message, key) {
+        withCause(throwable)
     }
 
 }

@@ -27,6 +27,7 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
+import io.kjson.JSON.displayValue
 import io.kjson.JSONString
 import io.kjson.JSONValue
 import io.kjson.pointer.JSONPointer
@@ -49,7 +50,7 @@ class PatternValidator(uri: URI?, location: JSONPointer, val regex: Regex) : JSO
         val instance = json[instanceLocation]
         return if (instance !is JSONString || regex.containsMatchIn(instance.value)) null else
                 createBasicErrorEntry(relativeLocation, instanceLocation,
-                        "String doesn't match pattern $regex - ${instance.toErrorDisplay()}")
+                        "String doesn't match pattern $regex - ${instance.displayValue()}")
     }
 
     override fun equals(other: Any?): Boolean =

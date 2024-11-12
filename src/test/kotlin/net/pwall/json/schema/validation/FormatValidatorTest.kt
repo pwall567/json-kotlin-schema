@@ -60,29 +60,4 @@ class FormatValidatorTest {
         expect(false) { FormatValidator.Int32FormatChecker.check(JSONDecimal("123456789123456789")) }
     }
 
-    @Test fun `should validate date-time correctly`() {
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23T22:29:54+11:00")) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23t22:29:54.123+11:00")) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23T11:29:54Z")) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23T11:29:54z")) }
-        expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("2021-01-23")) }
-        expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("")) }
-        expect(false) { FormatValidator.DateTimeFormatChecker.check(JSONString("wrong")) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONInt(0)) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONLong(-1)) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.DateTimeFormatChecker.check(JSONObject.EMPTY) }
-    }
-
-    @Test fun `should validate date correctly`() {
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONString("2021-01-23")) }
-        expect(false) { FormatValidator.DateFormatChecker.check(JSONString("2021-01-23T22:29:54+11:00")) }
-        expect(false) { FormatValidator.DateFormatChecker.check(JSONString("")) }
-        expect(false) { FormatValidator.DateFormatChecker.check(JSONString("wrong")) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONInt(0)) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONLong(-1)) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.DateFormatChecker.check(JSONObject.EMPTY) }
-    }
-
 }

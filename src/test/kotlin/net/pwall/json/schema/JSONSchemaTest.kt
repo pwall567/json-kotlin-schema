@@ -27,6 +27,9 @@ package net.pwall.json.schema
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -334,7 +337,7 @@ class JSONSchemaTest {
             expect("#/properties/aaa/enum") { it.keywordLocation }
             expect("http://pwall.net/test-enum#/properties/aaa/enum") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("Not in enumerated values: \"ZZZZZZZZZZZZZZZ ... ZZZZZZZZZZZZZZZ\"") { it.error }
+            expect("Not in enumerated values: \"ZZZZZZZZ ... ZZZZZZZZ\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json2).valid }
     }
@@ -368,7 +371,7 @@ class JSONSchemaTest {
             expect("#/properties/aaa/const") { it.keywordLocation }
             expect("http://pwall.net/test-const#/properties/aaa/const") { it.absoluteKeywordLocation }
             expect("#/aaa") { it.instanceLocation }
-            expect("Does not match constant: \"ZZZZZZZZZZZZZZZ ... ZZZZZZZZZZZZZZZ\"") { it.error }
+            expect("Does not match constant: \"ZZZZZZZZ ... ZZZZZZZZ\"") { it.error }
         }
         expect(false) { schema.validateDetailed(json2).valid }
     }
@@ -444,93 +447,176 @@ class JSONSchemaTest {
     @Test fun `should validate string format`() {
         val filename = "src/test/resources/test-string-format.schema.json"
         val schema = JSONSchema.parseFile(filename)
-        val json1 = JSON.parse("""{"dateTimeTest":"2020-07-22T19:29:33.456+10:00"}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
-        val json2 = JSON.parse("""{"dateTimeTest":"wrong"}""")
-        expect(false) { schema.validate(json2) }
-        val validateResult2 = schema.validateBasic(json2)
-        expect(false) { validateResult2.valid }
-        val errors2 = validateResult2.errors ?: fail()
-        expect(3) { errors2.size }
-        errors2[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"dateTimeTest":"2020-07-22T19:29:33.456+10:00"}""")) {
+            assertTrue(schema.validate(this))
+            assertTrue(schema.validateBasic(this).valid)
+            assertTrue(schema.validateDetailed(this).valid)
         }
-        errors2[1].let {
-            expect("#/properties/dateTimeTest") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/dateTimeTest") { it.absoluteKeywordLocation }
-            expect("#/dateTimeTest") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"dateTimeTest":"wrong"}""")) {
+            assertFalse(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertFalse(valid)
+                with(errors) {
+                    assertNotNull(this)
+                    expect(3) { size }
+                    with(this[0]) {
+                        expect("#") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#") { absoluteKeywordLocation }
+                        expect("#") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[1]) {
+                        expect("#/properties/dateTimeTest") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/dateTimeTest") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/dateTimeTest") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[2]) {
+                        expect("#/properties/dateTimeTest/format") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/dateTimeTest/format") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/dateTimeTest") { instanceLocation }
+                        expect("Value fails format check \"date-time\", was \"wrong\"") { error }
+                    }
+                }
+            }
+            with(schema.validateDetailed(this)) {
+                assertFalse(valid)
+            }
         }
-        errors2[2].let {
-            expect("#/properties/dateTimeTest/format") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/dateTimeTest/format") { it.absoluteKeywordLocation }
-            expect("#/dateTimeTest") { it.instanceLocation }
-            expect("Value fails format check \"date-time\", was \"wrong\"") { it.error }
+        with(JSON.parse("""{"dateTest":"2020-07-22"}""")) {
+            assertTrue(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertTrue(valid)
+            }
+            with(schema.validateDetailed(this)) {
+                assertTrue(valid)
+            }
         }
-        expect(false) { schema.validateDetailed(json2).valid }
-        val json3 = JSON.parse("""{"dateTest":"2020-07-22"}""")
-        expect(true) { schema.validate(json3) }
-        expect(true) { schema.validateBasic(json3).valid }
-        expect(true) { schema.validateDetailed(json3).valid }
-        val json4 = JSON.parse("""{"dateTest":"wrong"}""")
-        expect(false) { schema.validate(json4) }
-        val validateResult4 = schema.validateBasic(json4)
-        expect(false) { validateResult4.valid }
-        val errors4 = validateResult4.errors ?: fail()
-        expect(3) { errors4.size }
-        errors4[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"dateTest":"wrong"}""")) {
+            assertFalse(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertFalse(valid)
+                with(errors) {
+                    assertNotNull(this)
+                    expect(3) { size }
+                    with(this[0]) {
+                        expect("#") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#") { absoluteKeywordLocation }
+                        expect("#") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[1]) {
+                        expect("#/properties/dateTest") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/dateTest") { absoluteKeywordLocation }
+                        expect("#/dateTest") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[2]) {
+                        expect("#/properties/dateTest/format") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/dateTest/format") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/dateTest") { instanceLocation }
+                        expect("Value fails format check \"date\", was \"wrong\"") { error }
+                    }
+                }
+            }
+            with(schema.validateDetailed(this)) {
+                assertFalse(valid)
+            }
         }
-        errors4[1].let {
-            expect("#/properties/dateTest") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/dateTest") { it.absoluteKeywordLocation }
-            expect("#/dateTest") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"durationTest":"P1M"}""")) {
+            assertTrue(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertTrue(valid)
+            }
+            with(schema.validateDetailed(this)) {
+                assertTrue(valid)
+            }
         }
-        errors4[2].let {
-            expect("#/properties/dateTest/format") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/dateTest/format") { it.absoluteKeywordLocation }
-            expect("#/dateTest") { it.instanceLocation }
-            expect("Value fails format check \"date\", was \"wrong\"") { it.error }
+        with(JSON.parse("""{"durationTest":"wrong"}""")) {
+            assertFalse(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertFalse(valid)
+                with(errors) {
+                    assertNotNull(this)
+                    expect(3) { size }
+                    with(this[0]) {
+                        expect("#") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#") { absoluteKeywordLocation }
+                        expect("#") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[1]) {
+                        expect("#/properties/durationTest") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/durationTest") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/durationTest") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[2]) {
+                        expect("#/properties/durationTest/format") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/durationTest/format") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/durationTest") { instanceLocation }
+                        expect("Value fails format check \"duration\", was \"wrong\"") { error }
+                    }
+                }
+            }
+            with(schema.validateDetailed(this)) {
+                assertFalse(valid)
+            }
         }
-        expect(false) { schema.validateDetailed(json4).valid }
-        val json5 = JSON.parse("""{"durationTest":"P1M"}""")
-        expect(true) { schema.validate(json5) }
-        expect(true) { schema.validateBasic(json5).valid }
-        expect(true) { schema.validateDetailed(json5).valid }
-        val json6 = JSON.parse("""{"durationTest":"wrong"}""")
-        expect(false) { schema.validate(json6) }
-        val validateResult6 = schema.validateBasic(json6)
-        expect(false) { validateResult6.valid }
-        val errors6 = validateResult6.errors ?: fail()
-        expect(3) { errors6.size }
-        errors6[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"uriTemplateTest":"http://example.com/customer/{customerId}"}""")) {
+            assertTrue(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertTrue(valid)
+            }
+            with(schema.validateDetailed(this)) {
+                assertTrue(valid)
+            }
         }
-        errors6[1].let {
-            expect("#/properties/durationTest") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/durationTest") { it.absoluteKeywordLocation }
-            expect("#/durationTest") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+        with(JSON.parse("""{"uriTemplateTest":"incorrect template"}""")) {
+            assertFalse(schema.validate(this))
+            with(schema.validateBasic(this)) {
+                assertFalse(valid)
+                with(errors) {
+                    assertNotNull(this)
+                    expect(3) { size }
+                    with(this[0]) {
+                        expect("#") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#") { absoluteKeywordLocation }
+                        expect("#") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[1]) {
+                        expect("#/properties/uriTemplateTest") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/uriTemplateTest") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/uriTemplateTest") { instanceLocation }
+                        expect(JSONSchema.subSchemaErrorMessage) { error }
+                    }
+                    with(this[2]) {
+                        expect("#/properties/uriTemplateTest/format") { keywordLocation }
+                        expect("http://pwall.net/test-string-format#/properties/uriTemplateTest/format") {
+                            absoluteKeywordLocation
+                        }
+                        expect("#/uriTemplateTest") { instanceLocation }
+                        expect("Value fails format check \"uri-template\", was \"incorrect template\"") { error }
+                    }
+                }
+            }
+            with(schema.validateDetailed(this)) {
+                assertFalse(valid)
+            }
         }
-        errors6[2].let {
-            expect("#/properties/durationTest/format") { it.keywordLocation }
-            expect("http://pwall.net/test-string-format#/properties/durationTest/format") { it.absoluteKeywordLocation }
-            expect("#/durationTest") { it.instanceLocation }
-            expect("Value fails format check \"duration\", was \"wrong\"") { it.error }
-        }
-        expect(false) { schema.validateDetailed(json6).valid }
     }
 
     @Test fun `should validate schema with anyOf`() {
@@ -912,16 +998,25 @@ class JSONSchemaTest {
 
     @Test fun `check assumptions about URIs`() {
         val file = File("src/test/resources/example.json")
-        val uri1 = URI("file://${file.absolutePath}")
-        expect("file://${file.absolutePath}") { uri1.toString() }
+        val uri1 = file.absoluteFile.toURI()
+        if (File.separatorChar == '\\')
+            expect("file:/${file.absolutePath.replace('\\', '/')}") { uri1.toString() }
+        else
+            expect("file:${file.absolutePath}") { uri1.toString() }
         expect("file") { uri1.scheme }
-        expect(file.absolutePath) { uri1.path }
+        if (File.separatorChar == '\\')
+            expect("/${file.absolutePath.replace('\\', '/')}") { uri1.path }
+        else
+            expect(file.absolutePath) { uri1.path }
         expect(null) { uri1.fragment }
         expect(null) { uri1.host }
         expect(-1) { uri1.port }
         expect(null) { uri1.userInfo }
         expect(null) { uri1.query }
-        expect("//${file.absolutePath}") { uri1.schemeSpecificPart }
+        if (File.separatorChar == '\\')
+            expect("/${file.absolutePath.replace('\\', '/')}") { uri1.schemeSpecificPart }
+        else
+            expect(file.absolutePath) { uri1.schemeSpecificPart }
         val uri2 = uri1.resolve("http://pwall.net/schema/true1")
         expect("http://pwall.net/schema/true1") { uri2.toString() }
         expect("http") { uri2.scheme }

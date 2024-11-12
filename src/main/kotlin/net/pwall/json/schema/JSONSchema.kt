@@ -29,11 +29,6 @@ import java.io.File
 import java.net.URI
 
 import io.kjson.JSON
-import io.kjson.JSONArray
-import io.kjson.JSONBoolean
-import io.kjson.JSONNumber
-import io.kjson.JSONObject
-import io.kjson.JSONString
 import io.kjson.JSONValue
 import io.kjson.pointer.JSONPointer
 
@@ -298,19 +293,6 @@ sealed class JSONSchema(
         }
 
         fun JSONPointer.schemaURIFragment() = "#${toURIFragment()}"
-
-        fun JSONValue?.toErrorDisplay(): String = when (this) {
-            null -> "null"
-            is JSONObject -> "object"
-            is JSONArray -> "array"
-            is JSONBoolean,
-            is JSONNumber -> toString()
-            is JSONString -> {
-                val s = toJSON()
-                if (s.length > 40) "${s.take(16)} ... ${s.takeLast(16)}" else s
-            }
-            else -> "unknown"
-        }
 
     }
 

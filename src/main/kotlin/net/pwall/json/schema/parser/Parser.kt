@@ -31,6 +31,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URI
+import java.net.URLConnection
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
@@ -45,6 +46,7 @@ import io.kjson.JSONPrimitive
 import io.kjson.JSONString
 import io.kjson.JSONValue
 import io.kjson.JSON.asIntOr
+import io.kjson.JSON.displayValue
 import io.kjson.pointer.JSONPointer
 import io.kjson.pointer.existsIn
 import io.kjson.pointer.get
@@ -53,7 +55,6 @@ import io.kjson.resource.ResourceLoader.RedirectionFilter
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
-import net.pwall.json.schema.JSONSchema.Companion.toErrorDisplay
 import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.subschema.AdditionalItemsSchema
@@ -80,6 +81,7 @@ import net.pwall.json.schema.validation.PropertiesValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 import net.pwall.json.schema.validation.UniqueItemsValidator
+import net.pwall.text.Wildcard
 
 class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream? = defaultURIResolver) {
 
@@ -454,7 +456,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
     private fun parseNumberLimit(pointer: JSONPointer, uri: URI?, condition: NumberValidator.ValidationType,
             value: JSONValue?): NumberValidator {
         if (value !is JSONNumber)
-            fatal("Must be number (was ${value.toErrorDisplay()})", uri, pointer)
+            fatal("Must be number (was ${value.displayValue()})", uri, pointer)
         val number: Number = when (value) {
             is JSONDecimal -> value.value
             is JSONLong -> value.toLong()
@@ -488,7 +490,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
             Regex(value.value)
         } catch (e: Exception) {
             val msg = e.message?.let { "- ${it.substringBefore('\n').trim()}" } ?: ""
-            fatal("Pattern invalid $msg (${value.toErrorDisplay()})", uri, pointer)
+            fatal("Pattern invalid $msg (${value.displayValue()})", uri, pointer)
         }
         return PatternValidator(uri, pointer, regex)
     }
@@ -507,12 +509,12 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
                 "https://json-schema.org/draft-07/schema")
 
-        val connectionFilters = mutableListOf<(HttpURLConnection) -> HttpURLConnection?>()
+        val connectionFilters = mutableListOf<(URLConnection) -> URLConnection?>()
 
         /**
          * Add a connection filter for HTTP connections.
          */
-        fun addConnectionFilter(filter: (HttpURLConnection) -> HttpURLConnection?) {
+        fun addConnectionFilter(filter: (URLConnection) -> URLConnection?) {
             connectionFilters.add(filter)
         }
 
@@ -520,7 +522,7 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
          * Add an authorization filter for HTTP connections.
          */
         fun addAuthorizationFilter(host: String, headerName: String, headerValue: String?) {
-            addConnectionFilter(AuthorizationFilter(host, headerName, headerValue))
+            addConnectionFilter(AuthorizationFilter(Wildcard(host), headerName, headerValue))
         }
 
         /**
@@ -531,33 +533,33 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         }
 
         val defaultURIResolver: (URI) -> InputStream? = { uri ->
-            when (val conn = uri.toURL().openConnection()) {
+            var conn: URLConnection = uri.toURL().openConnection()
+            for (filter in connectionFilters)
+                conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
+            when (conn) {
                 is HttpURLConnection -> {
-                    var httpConn: HttpURLConnection = conn
-                    for (filter in connectionFilters)
-                        httpConn = filter(httpConn) ?: throw RuntimeException("Connection vetoed - $uri")
-                    if (httpConn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
                         null
                     else
-                        httpConn.inputStream
+                        conn.inputStream
                 }
                 else -> conn.inputStream
             }
         }
 
         val defaultExtendedResolver: (URI) -> InputDetails? = { uri ->
-            when (val conn = uri.toURL().openConnection()) {
+            var conn: URLConnection = uri.toURL().openConnection()
+            for (filter in connectionFilters)
+                conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
+            when (conn) {
                 is HttpURLConnection -> {
-                    var httpConn: HttpURLConnection = conn
-                    for (filter in connectionFilters)
-                        httpConn = filter(httpConn) ?: throw RuntimeException("Connection vetoed - $uri")
-                    if (httpConn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
                         null
                     else {
-                        val contentType = httpConn.contentType?.split(';')?.map { it.trim() }
+                        val contentType = conn.contentType?.split(';')?.map { it.trim() }
                         val charset = contentType?.findStartingFrom(1) { it.startsWith("charset=") }?.drop(8)?.trim()
-                        val reader = charset?.let { httpConn.inputStream.reader(Charset.forName(it)) } ?:
-                                httpConn.inputStream.reader()
+                        val reader = charset?.let { conn.inputStream.reader(Charset.forName(it)) } ?:
+                                conn.inputStream.reader()
                         InputDetails(reader, contentType?.get(0))
                     }
                 }

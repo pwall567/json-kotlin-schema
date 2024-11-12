@@ -2,6 +2,13 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.51] - 2024-11-13
+### Changed
+- `FormatValidator`: switched to `json-validation` 2.0, added `format` type `uri-template`
+- `JSONSchema`: switched to shared error display function in `kjson-core`
+- `pom.xml`: updated dependency versions
+- tests: make allowance for Windows File URLs
+
 ## [0.50] - 2024-09-04
 ### Changed
 - `pom.xml`: updated dependency versions

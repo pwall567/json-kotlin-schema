@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.52] - 2024-11-20
+### Changed
+- `pom.xml`: updated dependency version
+
 ## [0.51] - 2024-11-13
 ### Changed
 - `FormatValidator`: switched to `json-validation` 2.0, added `format` type `uri-template`

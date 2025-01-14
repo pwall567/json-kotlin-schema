@@ -26,23 +26,24 @@
 package net.pwall.json.schema.parser
 
 import kotlin.test.Test
-import kotlin.test.expect
 
 import java.net.URI
+
+import io.kstuff.test.shouldBe
 
 import net.pwall.json.schema.parser.JSONReader.Companion.extendedPath
 
 class JSONReaderTest {
 
     @Test fun `should extract path from non-standard URI`() {
-        expect("/dummy.path") { URI("file:/dummy.path").extendedPath() }
-        expect("/dummy.path") { URI("file:/dummy.path#frag1").extendedPath() }
-        expect("/remote.path") { URI("https://example.com/remote.path").extendedPath() }
-        expect("/remote.path") { URI("https://example.com/remote.path?x=1").extendedPath() }
-        expect("/remote.path") { URI("https://example.com/remote.path?x=1#frag1").extendedPath() }
-        expect("/jar.path") { URI("jar:file:/path.to.jar!/jar.path").extendedPath() }
-        expect("/jar.path") { URI("jar:file:/path.to.jar!/jar.path#frag2").extendedPath() }
-        expect("UNKNOWN") { URI("urn:uuid:adc71b0e-ab57-11ee-b333-f346650819c3").extendedPath() }
+        URI("file:/dummy.path").extendedPath() shouldBe "/dummy.path"
+        URI("file:/dummy.path#frag1").extendedPath() shouldBe "/dummy.path"
+        URI("https://example.com/remote.path").extendedPath() shouldBe "/remote.path"
+        URI("https://example.com/remote.path?x=1").extendedPath() shouldBe "/remote.path"
+        URI("https://example.com/remote.path?x=1#frag1").extendedPath() shouldBe "/remote.path"
+        URI("jar:file:/path.to.jar!/jar.path").extendedPath() shouldBe "/jar.path"
+        URI("jar:file:/path.to.jar!/jar.path#frag2").extendedPath() shouldBe "/jar.path"
+        URI("urn:uuid:adc71b0e-ab57-11ee-b333-f346650819c3").extendedPath() shouldBe "UNKNOWN"
     }
 
 }

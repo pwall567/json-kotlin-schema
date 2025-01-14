@@ -50,8 +50,7 @@ import io.kjson.JSON.displayValue
 import io.kjson.pointer.JSONPointer
 import io.kjson.pointer.existsIn
 import io.kjson.pointer.get
-import io.kjson.resource.ResourceLoader.AuthorizationFilter
-import io.kjson.resource.ResourceLoader.RedirectionFilter
+import io.kjson.resource.ResourceLoader
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
@@ -83,7 +82,7 @@ import net.pwall.json.schema.validation.TypeValidator
 import net.pwall.json.schema.validation.UniqueItemsValidator
 import net.pwall.text.Wildcard
 
-class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream? = defaultURIResolver) {
+class Parser(var options: Options = Options(), uriResolver: ((URI) -> InputStream?)? = null) {
 
     data class Options(
         var allowDescriptionRef: Boolean = false,
@@ -99,7 +98,44 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
 
     var nonstandardFormatHandler: (String) -> FormatValidator.FormatChecker? = { _ -> null }
 
-    val jsonReader = JSONReader(uriResolver)
+    private val defaultURIResolver: (URI) -> InputStream? = { uri ->
+        var conn: URLConnection = uri.toURL().openConnection()
+        for (filter in connectionFilters)
+            conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
+        when (conn) {
+            is HttpURLConnection -> {
+                if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                    null
+                else
+                    conn.inputStream
+            }
+            else -> conn.inputStream
+        }
+    }
+
+    val defaultExtendedResolver: (URI) -> InputDetails? = { uri ->
+        var conn: URLConnection = uri.toURL().openConnection()
+        for (filter in connectionFilters)
+            conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
+        when (conn) {
+            is HttpURLConnection -> {
+                if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+                    null
+                else {
+                    val contentType = conn.contentType?.split(';')?.map { it.trim() }
+                    val charset = contentType?.findStartingFrom(1) { it.startsWith("charset=") }?.drop(8)?.trim()
+                    val reader = charset?.let { conn.inputStream.reader(Charset.forName(it)) } ?:
+                    conn.inputStream.reader()
+                    InputDetails(reader, contentType?.get(0))
+                }
+            }
+            else -> InputDetails(conn.inputStream.reader())
+        }
+    }
+
+    val connectionFilters = mutableListOf<(URLConnection) -> URLConnection?>()
+
+    val jsonReader = JSONReader(uriResolver ?: defaultURIResolver)
 
     fun setExtendedResolver(extendedResolver: (URI) -> InputDetails?) {
         jsonReader.extendedResolver = extendedResolver
@@ -499,6 +535,34 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
         return parseSchema(json, pointer, parentUri) // temporary - treat as 201909
     }
 
+    /**
+     * Add a connection filter for HTTP connections.
+     */
+    fun addConnectionFilter(filter: (URLConnection) -> URLConnection?) {
+        connectionFilters.add(filter)
+    }
+
+    /**
+     * Add an authorization filter for HTTP connections.
+     */
+    fun addAuthorizationFilter(host: String, headerName: String, headerValue: String?) {
+        addConnectionFilter(ResourceLoader.AuthorizationFilter(Wildcard(host), headerName, headerValue))
+    }
+
+    /**
+     * Add a redirection filter for HTTP connections based on host and port.
+     */
+    fun addRedirectionFilter(fromHost: String, fromPort: Int = -1, toHost: String, toPort: Int = -1) {
+        addConnectionFilter(ResourceLoader.RedirectionFilter(fromHost, fromPort, toHost, toPort))
+    }
+
+    /**
+     * Add a redirection filter for HTTP connections based on URL prefix.
+     */
+    fun addRedirectionFilter(fromPrefix: String, toPrefix: String) {
+        addConnectionFilter(ResourceLoader.PrefixRedirectionFilter(fromPrefix, toPrefix))
+    }
+
     companion object {
 
         @Suppress("unused")
@@ -508,64 +572,6 @@ class Parser(var options: Options = Options(), uriResolver: (URI) -> InputStream
                 "https://json-schema.org/draft/2019-09/schema")
         val schemaVersionDraft07 = listOf("http://json-schema.org/draft-07/schema",
                 "https://json-schema.org/draft-07/schema")
-
-        val connectionFilters = mutableListOf<(URLConnection) -> URLConnection?>()
-
-        /**
-         * Add a connection filter for HTTP connections.
-         */
-        fun addConnectionFilter(filter: (URLConnection) -> URLConnection?) {
-            connectionFilters.add(filter)
-        }
-
-        /**
-         * Add an authorization filter for HTTP connections.
-         */
-        fun addAuthorizationFilter(host: String, headerName: String, headerValue: String?) {
-            addConnectionFilter(AuthorizationFilter(Wildcard(host), headerName, headerValue))
-        }
-
-        /**
-         * Add a redirection filter for HTTP connections.
-         */
-        fun addRedirectionFilter(fromHost: String, fromPort: Int = -1, toHost: String, toPort: Int = -1) {
-            addConnectionFilter(RedirectionFilter(fromHost, fromPort, toHost, toPort))
-        }
-
-        val defaultURIResolver: (URI) -> InputStream? = { uri ->
-            var conn: URLConnection = uri.toURL().openConnection()
-            for (filter in connectionFilters)
-                conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
-            when (conn) {
-                is HttpURLConnection -> {
-                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
-                        null
-                    else
-                        conn.inputStream
-                }
-                else -> conn.inputStream
-            }
-        }
-
-        val defaultExtendedResolver: (URI) -> InputDetails? = { uri ->
-            var conn: URLConnection = uri.toURL().openConnection()
-            for (filter in connectionFilters)
-                conn = filter(conn) ?: throw RuntimeException("Connection vetoed - $uri")
-            when (conn) {
-                is HttpURLConnection -> {
-                    if (conn.responseCode == HttpURLConnection.HTTP_NOT_FOUND)
-                        null
-                    else {
-                        val contentType = conn.contentType?.split(';')?.map { it.trim() }
-                        val charset = contentType?.findStartingFrom(1) { it.startsWith("charset=") }?.drop(8)?.trim()
-                        val reader = charset?.let { conn.inputStream.reader(Charset.forName(it)) } ?:
-                                conn.inputStream.reader()
-                        InputDetails(reader, contentType?.get(0))
-                    }
-                }
-                else -> InputDetails(conn.inputStream.reader())
-            }
-        }
 
         private inline fun <T> List<T>.findStartingFrom(index: Int = 0, predicate: (T) -> Boolean): T? {
             for (i in index until this.size)

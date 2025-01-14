@@ -26,10 +26,11 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
-import kotlin.test.expect
 import kotlin.test.fail
 
 import java.net.URI
+
+import io.kstuff.test.shouldBe
 
 import io.kjson.JSON
 import io.kjson.pointer.JSONPointer
@@ -46,38 +47,38 @@ class JSONSchemaNonstandardFormatTest {
         parser.nonstandardFormatHandler = { keyword ->
             if (keyword == "non-standard")
                 FormatValidator.DelegatingFormatChecker(keyword,
-                        StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1))
+                    StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1))
             else
                 null
         }
         val filename = "src/test/resources/test-nonstandard-format.schema.json"
         val schema = parser.parseFile(filename)
         val json1 = JSON.parse("""{"aaa":"Q"}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
         val json2 = JSON.parse("""{"aaa":""}""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult = schema.validateBasic(json2)
-        expect(false) { validateResult.valid }
+        validateResult.valid shouldBe false
         val errors = validateResult.errors ?: fail()
-        expect(3) { errors.size }
+        errors.size shouldBe 3
         errors[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[2].let {
-            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
-            expect("https://example.com/config.json#/x-f/0") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect("String fails length check: minLength 1, was 0") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/format/non-standard"
+            it.absoluteKeywordLocation shouldBe "https://example.com/config.json#/x-f/0"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe "String fails length check: minLength 1, was 0"
         }
     }
 
@@ -87,63 +88,63 @@ class JSONSchemaNonstandardFormatTest {
         parser.nonstandardFormatHandler = { keyword ->
             when (keyword) {
                 "non-standard" -> FormatValidator.DelegatingFormatChecker(keyword,
-                        StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1),
-                        StringValidator(configURI, JSONPointer("/x-f/1"), StringValidator.ValidationType.MAX_LENGTH, 3))
+                    StringValidator(configURI, JSONPointer("/x-f/0"), StringValidator.ValidationType.MIN_LENGTH, 1),
+                    StringValidator(configURI, JSONPointer("/x-f/1"), StringValidator.ValidationType.MAX_LENGTH, 3))
                 else -> null
             }
         }
         val filename = "src/test/resources/test-nonstandard-format.schema.json"
         val schema = parser.parseFile(filename)
         val json1 = JSON.parse("""{"aaa":"Q"}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
         val json2 = JSON.parse("""{"aaa":""}""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult2 = schema.validateBasic(json2)
-        expect(false) { validateResult2.valid }
+        validateResult2.valid shouldBe false
         val errors2 = validateResult2.errors ?: fail()
-        expect(3) { errors2.size }
+        errors2.size shouldBe 3
         errors2[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors2[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors2[2].let {
-            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
-            expect("https://example.com/config.json#/x-f/0") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect("String fails length check: minLength 1, was 0") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/format/non-standard"
+            it.absoluteKeywordLocation shouldBe "https://example.com/config.json#/x-f/0"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe "String fails length check: minLength 1, was 0"
         }
         val json3 = JSON.parse("""{"aaa":"XXXX"}""")
-        expect(false) { schema.validate(json3) }
+        schema.validate(json3) shouldBe false
         val validateResult3 = schema.validateBasic(json3)
-        expect(false) { validateResult3.valid }
+        validateResult3.valid shouldBe false
         val errors3 = validateResult3.errors ?: fail()
-        expect(3) { errors3.size }
+        errors3.size shouldBe 3
         errors3[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors3[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-nonstandard-format#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-nonstandard-format#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors3[2].let {
-            expect("#/properties/aaa/format/non-standard") { it.keywordLocation }
-            expect("https://example.com/config.json#/x-f/1") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect("String fails length check: maxLength 3, was 4") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/format/non-standard"
+            it.absoluteKeywordLocation shouldBe "https://example.com/config.json#/x-f/1"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe "String fails length check: maxLength 3, was 4"
         }
     }
 

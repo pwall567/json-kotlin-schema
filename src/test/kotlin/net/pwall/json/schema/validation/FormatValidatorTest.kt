@@ -26,7 +26,8 @@
 package net.pwall.json.schema.validation
 
 import kotlin.test.Test
-import kotlin.test.expect
+
+import io.kstuff.test.shouldBe
 
 import io.kjson.JSONBoolean
 import io.kjson.JSONDecimal
@@ -38,26 +39,26 @@ import io.kjson.JSONString
 class FormatValidatorTest {
 
     @Test fun `should validate int64 correctly`() {
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONString("test")) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONInt(12345)) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONLong(12345)) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONObject.EMPTY) }
-        expect(true) { FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.00")) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.50")) }
-        expect(false) { FormatValidator.Int64FormatChecker.check(JSONDecimal("123456789123456789123456789")) }
+        FormatValidator.Int64FormatChecker.check(JSONString("test")) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONInt(12345)) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONLong(12345)) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONBoolean.TRUE) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONObject.EMPTY) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.00")) shouldBe true
+        FormatValidator.Int64FormatChecker.check(JSONDecimal("12345.50")) shouldBe false
+        FormatValidator.Int64FormatChecker.check(JSONDecimal("123456789123456789123456789")) shouldBe false
     }
 
     @Test fun `should validate int32 correctly`() {
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONString("test")) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONInt(12345)) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONLong(12345)) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONLong(12345678912345)) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONBoolean.TRUE) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONObject.EMPTY) }
-        expect(true) { FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.00")) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.50")) }
-        expect(false) { FormatValidator.Int32FormatChecker.check(JSONDecimal("123456789123456789")) }
+        FormatValidator.Int32FormatChecker.check(JSONString("test")) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONInt(12345)) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONLong(12345)) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONLong(12345678912345)) shouldBe false
+        FormatValidator.Int32FormatChecker.check(JSONBoolean.TRUE) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONObject.EMPTY) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.00")) shouldBe true
+        FormatValidator.Int32FormatChecker.check(JSONDecimal("12345.50")) shouldBe false
+        FormatValidator.Int32FormatChecker.check(JSONDecimal("123456789123456789")) shouldBe false
     }
 
 }

@@ -26,10 +26,10 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
-import kotlin.test.expect
 import kotlin.test.fail
 
 import io.kjson.JSON
+import io.kstuff.test.shouldBe
 
 class JSONSchemaItemsTest {
 
@@ -37,196 +37,196 @@ class JSONSchemaItemsTest {
         val filename = "src/test/resources/test-item.schema.json"
         val schema = JSONSchema.parseFile(filename)
         val json1 = JSON.parse("""{"aaa":[1]}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
+        schema.validateDetailed(json1).valid shouldBe true
         val json2 = JSON.parse("""{"aaa":[-1]}""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult = schema.validateBasic(json2)
-        expect(false) { validateResult.valid }
+        validateResult.valid shouldBe false
         val errors = validateResult.errors ?: fail()
-        expect(4) { errors.size }
+        errors.size shouldBe 4
         errors[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-item#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-item#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[2].let {
-            expect("#/properties/aaa/items") { it.keywordLocation }
-            expect("http://pwall.net/test-item#/properties/aaa/items") { it.absoluteKeywordLocation }
-            expect("#/aaa/0") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/items"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item#/properties/aaa/items"
+            it.instanceLocation shouldBe "#/aaa/0"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[3].let {
-            expect("#/properties/aaa/items/minimum") { it.keywordLocation }
-            expect("http://pwall.net/test-item#/properties/aaa/items/minimum") { it.absoluteKeywordLocation }
-            expect("#/aaa/0") { it.instanceLocation }
-            expect("Number fails check: minimum 0, was -1") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/items/minimum"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item#/properties/aaa/items/minimum"
+            it.instanceLocation shouldBe "#/aaa/0"
+            it.error shouldBe "Number fails check: minimum 0, was -1"
         }
-        expect(false) { schema.validateDetailed(json2).valid }
+        schema.validateDetailed(json2).valid shouldBe false
     }
 
     @Test fun `should validate items of array with multiple validations`() {
         val filename = "src/test/resources/test-item-array.schema.json"
         val schema = JSONSchema.parseFile(filename)
         val json1 = JSON.parse("""{"aaa":[1,11]}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
+        schema.validateDetailed(json1).valid shouldBe true
         val json2 = JSON.parse("""{"aaa":[1,11,1]}""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult = schema.validateBasic(json2)
-        expect(false) { validateResult.valid }
+        validateResult.valid shouldBe false
         val errors = validateResult.errors ?: fail()
-        expect(5) { errors.size }
+        errors.size shouldBe 5
         errors[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-item-array#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item-array#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-item-array#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item-array#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[2].let {
-            expect("#/properties/aaa/additionalItems") { it.keywordLocation }
-            expect("http://pwall.net/test-item-array#/properties/aaa/additionalItems") { it.absoluteKeywordLocation }
-            expect("#/aaa/2") { it.instanceLocation }
-            expect("Additional item 2 found but was invalid") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/additionalItems"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item-array#/properties/aaa/additionalItems"
+            it.instanceLocation shouldBe "#/aaa/2"
+            it.error shouldBe "Additional item 2 found but was invalid"
         }
         errors[3].let {
-            expect("#/properties/aaa/additionalItems") { it.keywordLocation }
-            expect("http://pwall.net/test-item-array#/properties/aaa/additionalItems") { it.absoluteKeywordLocation }
-            expect("#/aaa/2") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/additionalItems"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-item-array#/properties/aaa/additionalItems"
+            it.instanceLocation shouldBe "#/aaa/2"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[4].let {
-            expect("#/properties/aaa/additionalItems/exclusiveMaximum") { it.keywordLocation }
-            expect("http://pwall.net/test-item-array#/properties/aaa/additionalItems/exclusiveMaximum") {
-                    it.absoluteKeywordLocation }
-            expect("#/aaa/2") { it.instanceLocation }
-            expect("Number fails check: exclusiveMaximum 0, was 1") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/additionalItems/exclusiveMaximum"
+            it.absoluteKeywordLocation shouldBe
+                    "http://pwall.net/test-item-array#/properties/aaa/additionalItems/exclusiveMaximum"
+            it.instanceLocation shouldBe "#/aaa/2"
+            it.error shouldBe "Number fails check: exclusiveMaximum 0, was 1"
         }
-        expect(false) { schema.validateDetailed(json2).valid }
+        schema.validateDetailed(json2).valid shouldBe false
     }
 
     @Test fun `should validate items of array with uniqueItems`() {
         val filename = "src/test/resources/test-unique-item.schema.json"
         val schema = JSONSchema.parseFile(filename)
         val json1 = JSON.parse("""{"aaa":[1,2,3]}""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
+        schema.validateDetailed(json1).valid shouldBe true
         val json2 = JSON.parse("""{"aaa":[1,2,1]}""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult = schema.validateBasic(json2)
-        expect(false) { validateResult.valid }
+        validateResult.valid shouldBe false
         val errors = validateResult.errors ?: fail()
-        expect(3) { errors.size }
+        errors.size shouldBe 3
         errors[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-unique-item#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-unique-item#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[1].let {
-            expect("#/properties/aaa") { it.keywordLocation }
-            expect("http://pwall.net/test-unique-item#/properties/aaa") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-unique-item#/properties/aaa"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[2].let {
-            expect("#/properties/aaa/uniqueItems") { it.keywordLocation }
-            expect("http://pwall.net/test-unique-item#/properties/aaa/uniqueItems") { it.absoluteKeywordLocation }
-            expect("#/aaa") { it.instanceLocation }
-            expect("Array items not unique") { it.error }
+            it.keywordLocation shouldBe "#/properties/aaa/uniqueItems"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-unique-item#/properties/aaa/uniqueItems"
+            it.instanceLocation shouldBe "#/aaa"
+            it.error shouldBe "Array items not unique"
         }
-        expect(false) { schema.validateDetailed(json2).valid }
+        schema.validateDetailed(json2).valid shouldBe false
     }
 
     @Test fun `should validate array with contains`() {
         val filename = "src/test/resources/test-contains.schema.json"
         val schema = JSONSchema.parseFile(filename)
         val json1 = JSON.parse("""[1,2,5]""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
+        schema.validateDetailed(json1).valid shouldBe true
         val json2 = JSON.parse("""[1,2,3]""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult = schema.validateBasic(json2)
-        expect(false) { validateResult.valid }
+        validateResult.valid shouldBe false
         val errors = validateResult.errors ?: fail()
-        expect(2) { errors.size }
+        errors.size shouldBe 2
         errors[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-contains#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors[1].let {
-            expect("#/contains") { it.keywordLocation }
-            expect("http://pwall.net/test-contains#/contains") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect("No matching entry") { it.error }
+            it.keywordLocation shouldBe "#/contains"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains#/contains"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe "No matching entry"
         }
-        expect(false) { schema.validateDetailed(json2).valid }
+        schema.validateDetailed(json2).valid shouldBe false
     }
 
     @Test fun `should validate array with contains and min and max`() {
         val filename = "src/test/resources/test-contains-minmax.schema.json"
         val schema = JSONSchema.parseFile(filename)
         val json1 = JSON.parse("""[1,2,5,5]""")
-        expect(true) { schema.validate(json1) }
-        expect(true) { schema.validateBasic(json1).valid }
-        expect(true) { schema.validateDetailed(json1).valid }
+        schema.validate(json1) shouldBe true
+        schema.validateBasic(json1).valid shouldBe true
+        schema.validateDetailed(json1).valid shouldBe true
         val json2 = JSON.parse("""[1,2,5]""")
-        expect(false) { schema.validate(json2) }
+        schema.validate(json2) shouldBe false
         val validateResult1 = schema.validateBasic(json2)
-        expect(false) { validateResult1.valid }
+        validateResult1.valid shouldBe false
         val errors1 = validateResult1.errors ?: fail()
-        expect(2) { errors1.size }
+        errors1.size shouldBe 2
         errors1[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains-minmax#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors1[1].let {
-            expect("#/minContains") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#/minContains") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect("Matching entry minimum 2, was 1") { it.error }
+            it.keywordLocation shouldBe "#/minContains"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains-minmax#/minContains"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe "Matching entry minimum 2, was 1"
         }
-        expect(false) { schema.validateDetailed(json2).valid }
+        schema.validateDetailed(json2).valid shouldBe false
         val json3 = JSON.parse("""[1,2,5,5,5,5]""")
-        expect(false) { schema.validate(json3) }
+        schema.validate(json3) shouldBe false
         val validateResult2 = schema.validateBasic(json3)
-        expect(false) { validateResult2.valid }
+        validateResult2.valid shouldBe false
         val errors2 = validateResult2.errors ?: fail()
-        expect(2) { errors2.size }
+        errors2.size shouldBe 2
         errors2[0].let {
-            expect("#") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect(JSONSchema.subSchemaErrorMessage) { it.error }
+            it.keywordLocation shouldBe "#"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains-minmax#"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe JSONSchema.subSchemaErrorMessage
         }
         errors2[1].let {
-            expect("#/maxContains") { it.keywordLocation }
-            expect("http://pwall.net/test-contains-minmax#/maxContains") { it.absoluteKeywordLocation }
-            expect("#") { it.instanceLocation }
-            expect("Matching entry maximum 3, was 4") { it.error }
+            it.keywordLocation shouldBe "#/maxContains"
+            it.absoluteKeywordLocation shouldBe "http://pwall.net/test-contains-minmax#/maxContains"
+            it.instanceLocation shouldBe "#"
+            it.error shouldBe "Matching entry maximum 3, was 4"
         }
-        expect(false) { schema.validateDetailed(json3).valid }
+        schema.validateDetailed(json3).valid shouldBe false
     }
 
 }

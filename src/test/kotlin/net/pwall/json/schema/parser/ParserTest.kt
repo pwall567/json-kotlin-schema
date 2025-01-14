@@ -26,12 +26,6 @@
 package net.pwall.json.schema.parser
 
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
-import kotlin.test.expect
 import kotlin.test.fail
 
 import java.io.File
@@ -40,38 +34,45 @@ import java.math.BigInteger
 import java.net.URI
 import java.nio.file.FileSystems
 
+import io.kstuff.test.shouldBe
+import io.kstuff.test.shouldBeSameInstance
+import io.kstuff.test.shouldBeType
+import io.kstuff.test.shouldStartWith
+import io.kstuff.test.shouldThrow
+
 import io.kjson.JSON
 import io.kjson.pointer.JSONPointer
+import io.kjson.resource.ResourceLoader
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
-import net.pwall.json.schema.parser.Parser.Companion.defaultExtendedResolver
 import net.pwall.json.schema.parser.Parser.Companion.isPositive
 import net.pwall.json.schema.subschema.PropertiesSchema
 import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.TypeValidator
+import net.pwall.text.Wildcard
 
 class ParserTest {
 
     @Test fun `should parse empty schema`() {
         val filename = "src/test/resources/empty.schema.json"
         val expected = JSONSchema.General("http://json-schema.org/draft/2019-09/schema", null, null,
-                URI("http://pwall.net/schema/test/empty"), JSONPointer.root, emptyList())
-        expect(expected) { JSONSchema.parseFile(filename) }
+            URI("http://pwall.net/schema/test/empty"), JSONPointer.root, emptyList())
+        JSONSchema.parseFile(filename) shouldBe expected
     }
 
     @Test fun `should parse true schema`() {
         val filename = "src/test/resources/true.schema.json"
         val uri = File(filename).absoluteFile.toURI()
-        expect(JSONSchema.True(uri, JSONPointer.root)) { JSONSchema.parseFile(filename) }
+        JSONSchema.parseFile(filename) shouldBe JSONSchema.True(uri, JSONPointer.root)
     }
 
     @Test fun `should parse false schema`() {
         val filename = "src/test/resources/false.schema.json"
         val uri = File(filename).absoluteFile.toURI()
-        expect(JSONSchema.False(uri, JSONPointer.root)) { JSONSchema.parseFile(filename) }
+        JSONSchema.parseFile(filename) shouldBe JSONSchema.False(uri, JSONPointer.root)
     }
 
     @Test fun `should parse test schema with type null`() {
@@ -79,14 +80,14 @@ class ParserTest {
         val uri = URI("http://pwall.net/schema/test/type-null")
         val typeTest = TypeValidator(uri, JSONPointer.root.child("type"), listOf(JSONSchema.Type.NULL))
         val expected = JSONSchema.General("http://json-schema.org/draft/2019-09/schema", null, null, uri,
-                JSONPointer.root, listOf(typeTest))
-        expect(expected) { JSONSchema.parseFile(filename) }
+            JSONPointer.root, listOf(typeTest))
+        JSONSchema.parseFile(filename) shouldBe expected
     }
 
     @Test fun `should fail on invalid schema`() {
         val filename = "src/test/resources/invalid-1.schema.json"
-        with(assertFailsWith<JSONSchemaException> { JSONSchema.parseFile(filename) }.message) {
-            assertTrue(startsWith("Schema is not boolean or object"))
+        shouldThrow<JSONSchemaException> { JSONSchema.parseFile(filename) }.let {
+            it.message shouldStartWith "Schema is not boolean or object"
         }
     }
 
@@ -95,9 +96,9 @@ class ParserTest {
         val parser = Parser()
         parser.preLoad(dirName)
         val uriString = "http://pwall.net/test/schema/person"
-        expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
+        parser.parseURI(uriString).uri.toString() shouldBe uriString
         val uri = URI(uriString)
-        expect(true) { parser.parse(uri).uri == uri }
+        parser.parse(uri).uri shouldBe uri
     }
 
     @Test fun `should pre-load directory using Path`() {
@@ -106,9 +107,9 @@ class ParserTest {
         val parser = Parser()
         parser.preLoad(path)
         val uriString = "http://pwall.net/test/schema/person"
-        expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
+        parser.parseURI(uriString).uri.toString() shouldBe uriString
         val uri = URI(uriString)
-        expect(true) { parser.parse(uri).uri == uri }
+        parser.parse(uri).uri shouldBe uri
     }
 
     @Test fun `should pre-load individual file`() {
@@ -116,9 +117,9 @@ class ParserTest {
         val parser = JSONSchema.parser
         parser.preLoad(File(fileName))
         val uriString = "http://pwall.net/test"
-        expect(true) { parser.parseURI(uriString).uri.toString() == uriString }
+        parser.parseURI(uriString).uri.toString() shouldBe uriString
         val uri = URI(uriString)
-        expect(true) { parser.parse(uri).uri == uri }
+        parser.parse(uri).uri shouldBe uri
     }
 
     @Test fun `should parse reference following pre-load`() {
@@ -126,50 +127,47 @@ class ParserTest {
         val parser = Parser()
         parser.preLoad(dirName)
         val schema = parser.parseFile("$dirName/person/person.schema.json")
-        if (schema !is JSONSchema.General)
-            fail("Unexpected schema type")
+        schema.shouldBeType<JSONSchema.General>()
         val propertySchema = (schema.children.find { it is PropertiesSchema }) as PropertiesSchema?
         val idSchema = propertySchema?.properties?.find { it.first == "id" }?.second
-        if (idSchema !is JSONSchema.General)
-            fail("id unexpected schema type")
+        idSchema.shouldBeType<JSONSchema.General>()
         val refSchema = (idSchema.children.find { it is RefSchema }) as RefSchema?
-        expect("/\$defs/personId") { refSchema?.fragment }
+        refSchema?.fragment shouldBe "/\$defs/personId"
         val person = JSON.parse(File("src/test/resources/person.json").readText())
-        expect(true) { schema.validate(person) }
+        schema.validate(person) shouldBe true
         val wrongPerson = JSON.parse(File("src/test/resources/person-invalid-uuid.json").readText())
-        expect(false) { schema.validate(wrongPerson) }
+        schema.validate(wrongPerson) shouldBe false
     }
 
     @Test fun `should parse individual subschema from larger file`() {
         val json = JSON.parse(File("src/test/resources/example.schema.json").readText()) ?: fail()
         val schema = Parser().parseSchema(json, JSONPointer("/properties/stock"), URI("http://pwall.net/test"))
-        expect(true) { schema.validate(JSON.parse("""{"warehouse":1,"retail":2}""")) }
+        schema.validate(JSON.parse("""{"warehouse":1,"retail":2}""")) shouldBe true
     }
 
     @Test fun `should parse schema with description in external file`() {
         val parser = Parser()
         parser.options.allowDescriptionRef = true
         val schema = parser.parseFile("src/test/resources/test-description-ref.schema.yaml")
-        if (schema !is JSONSchema.General)
-            fail("Unexpected schema type")
+        schema.shouldBeType<JSONSchema.General>()
         val description = schema.description ?: fail("Description is null")
-        expect(true) { description.startsWith("This is an example ") }
+        description.startsWith("This is an example ") shouldBe true
     }
 
     @Test fun `should parse a schema from a string`() {
         val string = """{"enum":[1,2,4]}"""
         val schema = Parser().parse(string)
-        assertTrue(schema is JSONSchema.General)
-        expect(1) { schema.children.size }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.children.size shouldBe 1
         val child = schema.children[0]
-        assertTrue(child is EnumValidator)
+        child.shouldBeType<EnumValidator>()
     }
 
     @Test fun `should parse a schema from a string with a URI`() {
         val string = """{"enum":[1,2,4]}"""
         val uri = URI.create("http://test.com/test")
         val schema = JSONSchema.parse(string, uri)
-        expect(uri) { schema.uri }
+        schema.uri shouldBe uri
     }
 
     @Test fun `should cache parsed object in JSONReader`() {
@@ -177,7 +175,7 @@ class ParserTest {
         val file = File("src/test/resources/example.json")
         val object1 = parser.jsonReader.readJSON(file)
         val object2 = parser.jsonReader.readJSON(file)
-        assertSame(object1, object2)
+        object2 shouldBeSameInstance object1
     }
 
     @Test fun `should parse schema from an opaque URI providing JSON without content type`() {
@@ -186,8 +184,8 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader()) }
         val schema = parser.parse(uri)
-        assertIs<JSONSchema.General>(schema)
-        expect("Product") { schema.title }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.title shouldBe "Product"
     }
 
     @Test fun `should parse schema from an opaque URI providing JSON with content type`() {
@@ -196,8 +194,8 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader(), "application/json") }
         val schema = parser.parse(uri)
-        assertIs<JSONSchema.General>(schema)
-        expect("Product") { schema.title }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.title shouldBe "Product"
     }
 
     @Test fun `should parse schema from an opaque URI providing YAML with content type`() {
@@ -206,69 +204,69 @@ class ParserTest {
         val parser = Parser()
         parser.setExtendedResolver { InputDetails(file.reader(), "application/yaml") }
         val schema = parser.parse(uri)
-        assertIs<JSONSchema.General>(schema)
-        expect("Product") { schema.title }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.title shouldBe "Product"
     }
 
     @Test fun `should parse schema from a jar URI providing JSON`() {
         val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.json")
         val schema = Parser().parse(uri)
-        assertIs<JSONSchema.General>(schema)
-        expect("Product") { schema.title }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.title shouldBe "Product"
     }
 
     @Test fun `should parse schema from a jar URI providing YAML`() {
         val uri = URI.create("jar:file:src/test/resources/jar/example.jar!/example.schema.yaml")
         val schema = Parser().parse(uri)
-        assertIs<JSONSchema.General>(schema)
-        expect("Product") { schema.title }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.title shouldBe "Product"
     }
 
     @Test fun `should read schema using HTTP`() {
         val parser = Parser()
-        parser.setExtendedResolver(defaultExtendedResolver)
+        parser.setExtendedResolver(parser.defaultExtendedResolver)
         val schema = parser.parse(URI("http://kjson.io/json/http/testhttp1.json"))
-        assertTrue(schema is JSONSchema.General)
-        expect(2) { schema.children.size }
+        schema.shouldBeType<JSONSchema.General>()
+        schema.children.size shouldBe 2
         with(schema.children[0]) {
-            assertTrue(this is TypeValidator)
-            expect(listOf(JSONSchema.Type.OBJECT)) { types }
+            shouldBeType<TypeValidator>()
+            types shouldBe listOf(JSONSchema.Type.OBJECT)
         }
         with(schema.children[1]) {
-            assertTrue(this is PropertiesSchema)
-            expect(1) { properties.size }
+            shouldBeType<PropertiesSchema>()
+            properties.size shouldBe 1
             with(properties[0]) {
-                expect("xxx") { first }
+                first shouldBe "xxx"
                 with(second) {
-                    assertTrue(this is JSONSchema.General)
-                    expect(1) { children.size }
+                    shouldBeType<JSONSchema.General>()
+                    children.size shouldBe 1
                     with(children[0]) {
-                        assertTrue(this is RefSchema)
+                        shouldBeType<RefSchema>()
                         with(target) {
-                            assertTrue(this is JSONSchema.General)
-                            expect(3) { children.size }
+                            shouldBeType<JSONSchema.General>()
+                            children.size shouldBe 3
                             with(children[0]) {
-                                assertTrue(this is TypeValidator)
-                                expect(listOf(JSONSchema.Type.OBJECT)) { types }
+                                shouldBeType<TypeValidator>()
+                                types shouldBe listOf(JSONSchema.Type.OBJECT)
                             }
                             with(children[1]) {
-                                assertTrue(this is PropertiesSchema)
-                                expect(1) { properties.size }
+                                shouldBeType<PropertiesSchema>()
+                                properties.size shouldBe 1
                                 with(properties[0]) {
-                                    expect("aaa") { first }
+                                    first shouldBe "aaa"
                                     with(second) {
-                                        assertTrue(this is JSONSchema.General)
-                                        expect(1) { children.size }
+                                        shouldBeType<JSONSchema.General>()
+                                        children.size shouldBe 1
                                         with(children[0]) {
-                                            assertTrue(this is TypeValidator)
-                                            expect(listOf(JSONSchema.Type.INTEGER)) { types }
+                                            shouldBeType<TypeValidator>()
+                                            types shouldBe listOf(JSONSchema.Type.INTEGER)
                                         }
                                     }
                                 }
                             }
                             with(children[2]) {
-                                assertTrue(this is RequiredSchema)
-                                expect(listOf("aaa")) { properties }
+                                shouldBeType<RequiredSchema>()
+                                properties shouldBe listOf("aaa")
                             }
                         }
                     }
@@ -283,41 +281,95 @@ class ParserTest {
 
     @Test fun `should test isPositive correctly`() {
         val bigDecimal1 = BigDecimal("0.1")
-        assertTrue(bigDecimal1.isPositive())
+        bigDecimal1.isPositive() shouldBe true
         val bigDecimal2 = BigDecimal.ZERO
-        assertFalse(bigDecimal2.isPositive())
+        bigDecimal2.isPositive() shouldBe false
         val bigDecimal3 = BigDecimal("-999")
-        assertFalse(bigDecimal3.isPositive())
+        bigDecimal3.isPositive() shouldBe false
         val bigInteger1 = BigInteger.ONE
-        assertTrue(bigInteger1.isPositive())
+        bigInteger1.isPositive() shouldBe true
         val bigInteger2 = BigInteger.ZERO
-        assertFalse(bigInteger2.isPositive())
+        bigInteger2.isPositive() shouldBe false
         val bigInteger3 = BigInteger("-9")
-        assertFalse(bigInteger3.isPositive())
+        bigInteger3.isPositive() shouldBe false
         val double1 = 0.1
-        assertTrue(double1.isPositive())
+        double1.isPositive() shouldBe true
         val double2 = 0.0
-        assertFalse(double2.isPositive())
+        double2.isPositive() shouldBe false
         val double3 = -9.0
-        assertFalse(double3.isPositive())
+        double3.isPositive() shouldBe false
         val float1 = 0.1F
-        assertTrue((float1.isPositive()))
+        (float1.isPositive()) shouldBe true
         val float2 = 0.0F
-        assertFalse((float2.isPositive()))
+        (float2.isPositive()) shouldBe false
         val float3 = -10.0F
-        assertFalse((float3.isPositive()))
+        (float3.isPositive()) shouldBe false
         val long1 = 1L
-        assertTrue(long1.isPositive())
+        long1.isPositive() shouldBe true
         val long2 = 0L
-        assertFalse(long2.isPositive())
+        long2.isPositive() shouldBe false
         val long3 = -8L
-        assertFalse(long3.isPositive())
+        long3.isPositive() shouldBe false
         val int1 = 1
-        assertTrue(int1.isPositive())
+        int1.isPositive() shouldBe true
         val int2 = 0
-        assertFalse(int2.isPositive())
+        int2.isPositive() shouldBe false
         val int3 = -5
-        assertFalse(int3.isPositive())
+        int3.isPositive() shouldBe false
+    }
+
+    @Test fun `should add authorization filter`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addConnectionFilter(
+            ResourceLoader.AuthorizationFilter(Wildcard("*.example.com"), "Authorization", "TEST")
+        )
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.AuthorizationFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
+    }
+
+    @Test fun `should add authorization filter using convenience function`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addAuthorizationFilter("*.example.com", "Authorization", "TEST")
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.AuthorizationFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
+    }
+
+    @Test fun `should add host-and-port-based redirection filter`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addRedirectionFilter(
+            fromHost = "example.com",
+            fromPort = -1,
+            toHost = "localhost",
+            toPort = 8080,
+        )
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.RedirectionFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
+    }
+
+    @Test fun `should add prefix-based redirection filter`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addRedirectionFilter(
+            fromPrefix = "https://example.com/schema",
+            toPrefix = "http://localhost:8080/schema/",
+        )
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.PrefixRedirectionFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
     }
 
 }

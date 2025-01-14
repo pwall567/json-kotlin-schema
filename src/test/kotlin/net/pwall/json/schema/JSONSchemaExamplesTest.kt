@@ -26,10 +26,9 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-import kotlin.test.expect
+
+import io.kstuff.test.shouldBe
+import io.kstuff.test.shouldBeNonNull
 
 import net.pwall.json.schema.parser.Parser
 
@@ -40,7 +39,7 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        assertTrue(parser.examplesValidationErrors.isEmpty())
+        parser.examplesValidationErrors.isEmpty() shouldBe true
     }
 
     @Test fun `should validate invalid example`() {
@@ -48,31 +47,29 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(1) { parser.examplesValidationErrors.size }
+        parser.examplesValidationErrors.size shouldBe 1
         with(parser.examplesValidationErrors[0]) {
-            assertFalse(valid)
+            valid shouldBe false
             with(errors) {
-                assertNotNull(this)
-                expect(3) { size }
+                shouldBeNonNull()
+                size shouldBe 3
                 with(this[0]) {
-                    expect("#") { keywordLocation }
-                    expect("http://pwall.net/test-example-invalid#") { absoluteKeywordLocation }
-                    expect("#/example") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-example-invalid#"
+                    instanceLocation shouldBe "#/example"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/properties/aaa") { keywordLocation }
-                    expect("http://pwall.net/test-example-invalid#/properties/aaa") { absoluteKeywordLocation }
-                    expect("#/example/aaa") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#/properties/aaa"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-example-invalid#/properties/aaa"
+                    instanceLocation shouldBe "#/example/aaa"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[2]) {
-                    expect("#/properties/aaa/minLength") { keywordLocation }
-                    expect("http://pwall.net/test-example-invalid#/properties/aaa/minLength") {
-                        absoluteKeywordLocation
-                    }
-                    expect("#/example/aaa") { instanceLocation }
-                    expect("String fails length check: minLength 3, was 2") { error }
+                    keywordLocation shouldBe "#/properties/aaa/minLength"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-example-invalid#/properties/aaa/minLength"
+                    instanceLocation shouldBe "#/example/aaa"
+                    error shouldBe "String fails length check: minLength 3, was 2"
                 }
             }
         }
@@ -83,23 +80,23 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(1) { parser.examplesValidationErrors.size }
+        parser.examplesValidationErrors.size shouldBe 1
         with(parser.examplesValidationErrors[0]) {
-            assertFalse(valid)
+            valid shouldBe false
             with(errors) {
-                assertNotNull(this)
-                expect(2) { size }
+                shouldBeNonNull()
+                size shouldBe 2
                 with(this[0]) {
-                    expect("#") { keywordLocation }
-                    expect("http://pwall.net/test-example-invalid-2#") { absoluteKeywordLocation }
-                    expect("#/example") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-example-invalid-2#"
+                    instanceLocation shouldBe "#/example"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/minimum") { keywordLocation }
-                    expect("http://pwall.net/test-example-invalid-2#/minimum") { absoluteKeywordLocation }
-                    expect("#/example") { instanceLocation }
-                    expect("Number fails check: minimum 20, was 19") { error }
+                    keywordLocation shouldBe "#/minimum"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-example-invalid-2#/minimum"
+                    instanceLocation shouldBe "#/example"
+                    error shouldBe "Number fails check: minimum 20, was 19"
                 }
             }
         }
@@ -110,7 +107,7 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        assertTrue(parser.examplesValidationErrors.isEmpty())
+        parser.examplesValidationErrors.isEmpty() shouldBe true
     }
 
     @Test fun `should validate invalid examples`() {
@@ -118,81 +115,77 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateExamples = true
         parser.parseFile(filename)
-        expect(3) { parser.examplesValidationErrors.size }
+        parser.examplesValidationErrors.size shouldBe 3
         with(parser.examplesValidationErrors[0]) {
-            assertFalse(valid)
+            valid shouldBe false
             with(errors) {
-                assertNotNull(this)
-                expect(2) { size }
+                shouldBeNonNull()
+                size shouldBe 2
                 with(this[0]) {
-                    expect("#/properties/bbb") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/bbb") { absoluteKeywordLocation }
-                    expect("#/properties/bbb/examples/0") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#/properties/bbb"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/bbb"
+                    instanceLocation shouldBe "#/properties/bbb/examples/0"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/properties/bbb/minimum") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/bbb/minimum") { absoluteKeywordLocation }
-                    expect("#/properties/bbb/examples/0") { instanceLocation }
-                    expect("Number fails check: minimum 0, was -1") { error }
+                    keywordLocation shouldBe "#/properties/bbb/minimum"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/bbb/minimum"
+                    instanceLocation shouldBe "#/properties/bbb/examples/0"
+                    error shouldBe "Number fails check: minimum 0, was -1"
                 }
             }
         }
         with(parser.examplesValidationErrors[1]) {
             with(errors) {
-                assertNotNull(this)
-                expect(3) { size }
+                shouldBeNonNull()
+                size shouldBe 3
                 with(this[0]) {
-                    expect("#") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#") { absoluteKeywordLocation }
-                    expect("#/examples/2") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#"
+                    instanceLocation shouldBe "#/examples/2"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/properties/aaa") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/aaa") { absoluteKeywordLocation }
-                    expect("#/examples/2/aaa") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#/properties/aaa"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/aaa"
+                    instanceLocation shouldBe "#/examples/2/aaa"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[2]) {
-                    expect("#/properties/aaa/minLength") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/aaa/minLength") {
-                        absoluteKeywordLocation
-                    }
-                    expect("#/examples/2/aaa") { instanceLocation }
-                    expect("String fails length check: minLength 3, was 2") { error }
+                    keywordLocation shouldBe "#/properties/aaa/minLength"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/aaa/minLength"
+                    instanceLocation shouldBe "#/examples/2/aaa"
+                    error shouldBe "String fails length check: minLength 3, was 2"
                 }
             }
         }
         with(parser.examplesValidationErrors[2]) {
             with(errors) {
-                assertNotNull(this)
-                expect(4) { size }
+                shouldBeNonNull()
+                size shouldBe 4
                 with(this[0]) {
-                    expect("#") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#") { absoluteKeywordLocation }
-                    expect("#/examples/3") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#"
+                    instanceLocation shouldBe "#/examples/3"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/properties/bbb") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/bbb") { absoluteKeywordLocation }
-                    expect("#/examples/3/bbb") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#/properties/bbb"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/bbb"
+                    instanceLocation shouldBe "#/examples/3/bbb"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[2]) {
-                    expect("#/properties/bbb/minimum") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/properties/bbb/minimum") {
-                        absoluteKeywordLocation
-                    }
-                    expect("#/examples/3/bbb") { instanceLocation }
-                    expect("Number fails check: minimum 0, was -2") { error }
+                    keywordLocation shouldBe "#/properties/bbb/minimum"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/properties/bbb/minimum"
+                    instanceLocation shouldBe "#/examples/3/bbb"
+                    error shouldBe "Number fails check: minimum 0, was -2"
                 }
                 with(this[3]) {
-                    expect("#/required/0") { keywordLocation }
-                    expect("http://pwall.net/test-examples-invalid#/required") { absoluteKeywordLocation }
-                    expect("#/examples/3") { instanceLocation }
-                    expect("Required property \"aaa\" not found") { error }
+                    keywordLocation shouldBe "#/required/0"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-examples-invalid#/required"
+                    instanceLocation shouldBe "#/examples/3"
+                    error shouldBe "Required property \"aaa\" not found"
                 }
             }
         }
@@ -203,7 +196,7 @@ class JSONSchemaExamplesTest {
         Parser().apply {
             options.validateDefault = true
             parseFile(filename)
-            assertTrue(defaultValidationErrors.isEmpty())
+            defaultValidationErrors.isEmpty() shouldBe true
         }
     }
 
@@ -212,23 +205,23 @@ class JSONSchemaExamplesTest {
         val parser = Parser()
         parser.options.validateDefault = true
         parser.parseFile(filename)
-        expect(1) { parser.defaultValidationErrors.size }
+        parser.defaultValidationErrors.size shouldBe 1
         with(parser.defaultValidationErrors[0]) {
-            assertFalse(valid)
+            valid shouldBe false
             with(errors) {
-                assertNotNull(this)
-                expect(2) { size }
+                shouldBeNonNull()
+                size shouldBe 2
                 with(this[0]) {
-                    expect("#/properties/aaa") { keywordLocation }
-                    expect("http://pwall.net/test-default-invalid#/properties/aaa") { absoluteKeywordLocation }
-                    expect("#/properties/aaa/default") { instanceLocation }
-                    expect(JSONSchema.subSchemaErrorMessage) { error }
+                    keywordLocation shouldBe "#/properties/aaa"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-default-invalid#/properties/aaa"
+                    instanceLocation shouldBe "#/properties/aaa/default"
+                    error shouldBe JSONSchema.subSchemaErrorMessage
                 }
                 with(this[1]) {
-                    expect("#/properties/aaa/minimum") { keywordLocation }
-                    expect("http://pwall.net/test-default-invalid#/properties/aaa/minimum") { absoluteKeywordLocation }
-                    expect("#/properties/aaa/default") { instanceLocation }
-                    expect("Number fails check: minimum 20, was 15") { error }
+                    keywordLocation shouldBe "#/properties/aaa/minimum"
+                    absoluteKeywordLocation shouldBe "http://pwall.net/test-default-invalid#/properties/aaa/minimum"
+                    instanceLocation shouldBe "#/properties/aaa/default"
+                    error shouldBe "Number fails check: minimum 20, was 15"
                 }
             }
         }

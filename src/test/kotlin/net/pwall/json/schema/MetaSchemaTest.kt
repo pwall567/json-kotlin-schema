@@ -26,13 +26,13 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
-import kotlin.test.expect
 
 import java.io.File
 
+import io.kstuff.test.shouldBe
+
 import io.kjson.JSON
 import io.kjson.JSONBoolean
-
 import net.pwall.json.schema.parser.Parser
 
 class MetaSchemaTest {
@@ -51,78 +51,78 @@ class MetaSchemaTest {
     @Test fun `should validate example schema against meta-schema`() {
         val exampleSchemaFile = File("src/test/resources/example.schema.json")
         val exampleSchema = JSON.parse(exampleSchemaFile.readText())
-        expect(true) { metaSchema.validate(exampleSchema) }
+        metaSchema.validate(exampleSchema) shouldBe true
     }
 
     @Test fun `should validate person schema against meta-schema`() {
         val personSchemaFile = File("src/test/resources/test1/person/person.schema.json")
         val personSchema = JSON.parse(personSchemaFile.readText())
-        expect(true) { metaSchema.validate(personSchema) }
+        metaSchema.validate(personSchema) shouldBe true
     }
 
     @Test fun `should validate utility schema against meta-schema`() {
         val utilitySchemaFile = File("src/test/resources/test1/utility.schema.json")
         val utilitySchema = JSON.parse(utilitySchemaFile.readText())
-        expect(true) { metaSchema.validate(utilitySchema) }
+        metaSchema.validate(utilitySchema) shouldBe true
     }
 
     @Test fun `should validate empty schema against meta-schema`() {
         val emptySchemaFile = File("src/test/resources/empty.schema.json")
         val emptySchema = JSON.parse(emptySchemaFile.readText())
-        expect(true) { metaSchema.validate(emptySchema) }
+        metaSchema.validate(emptySchema) shouldBe true
     }
 
     @Test fun `should validate test-additional schema against meta-schema`() {
         val testAdditionalSchemaFile = File("src/test/resources/test-additional.schema.json")
         val testAdditionalSchema = JSON.parse(testAdditionalSchemaFile.readText())
-        expect(true) { metaSchema.validate(testAdditionalSchema) }
+        metaSchema.validate(testAdditionalSchema) shouldBe true
     }
 
     @Test fun `should validate test-additional-false schema against meta-schema`() {
         val testAdditionalFalseSchemaFile = File("src/test/resources/test-additional-false.schema.json")
         val testAdditionalFalseSchema = JSON.parse(testAdditionalFalseSchemaFile.readText())
-        expect(true) { metaSchema.validate(testAdditionalFalseSchema) }
+        metaSchema.validate(testAdditionalFalseSchema) shouldBe true
     }
 
     @Test fun `should validate test-const schema against meta-schema`() {
         val testConstSchemaFile = File("src/test/resources/test-const.schema.json")
         val testConstSchema = JSON.parse(testConstSchemaFile.readText())
-        expect(true) { metaSchema.validate(testConstSchema) }
+        metaSchema.validate(testConstSchema) shouldBe true
     }
 
     @Test fun `should validate test-enum schema against meta-schema`() {
         val testEnumSchemaFile = File("src/test/resources/test-enum.schema.json")
         val testEnumSchema = JSON.parse(testEnumSchemaFile.readText())
-        expect(true) { metaSchema.validate(testEnumSchema) }
+        metaSchema.validate(testEnumSchema) shouldBe true
     }
 
     @Test fun `should validate test-if-then-else schema against meta-schema`() {
         val testIfThenElseSchemaFile = File("src/test/resources/test-if-then-else.schema.json")
         val testIfThenElseSchema = JSON.parse(testIfThenElseSchemaFile.readText())
-        expect(true) { metaSchema.validate(testIfThenElseSchema) }
+        metaSchema.validate(testIfThenElseSchema) shouldBe true
     }
 
     @Test fun `should validate test-item schema against meta-schema`() {
         val testItemSchemaFile = File("src/test/resources/test-item.schema.json")
         val testItemSchema = JSON.parse(testItemSchemaFile.readText())
-        expect(true) { metaSchema.validate(testItemSchema) }
+        metaSchema.validate(testItemSchema) shouldBe true
     }
 
     @Test fun `should validate test-item-array schema against meta-schema`() {
         val testItemArraySchemaFile = File("src/test/resources/test-item-array.schema.json")
         val testItemArraySchema = JSON.parse(testItemArraySchemaFile.readText())
-        expect(true) { metaSchema.validate(testItemArraySchema) }
+        metaSchema.validate(testItemArraySchema) shouldBe true
     }
 
     @Test fun `should validate test-not schema against meta-schema`() {
         val testNotSchemaFile = File("src/test/resources/test-not.schema.json")
         val testNotSchema = JSON.parse(testNotSchemaFile.readText())
-        expect(true) { metaSchema.validate(testNotSchema) }
+        metaSchema.validate(testNotSchema) shouldBe true
     }
 
     @Test fun `should validate boolean value against meta-schema`() {
-        expect(true) { metaSchema.validate(JSONBoolean.TRUE) }
-        expect(true) { metaSchema.validate(JSONBoolean.FALSE) }
+        metaSchema.validate(JSONBoolean.TRUE) shouldBe true
+        metaSchema.validate(JSONBoolean.FALSE) shouldBe true
     }
 
     companion object {

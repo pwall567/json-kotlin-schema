@@ -26,10 +26,10 @@
 package net.pwall.json.schema
 
 import kotlin.test.Test
-import kotlin.test.expect
+
+import io.kstuff.test.shouldBe
 
 import io.kjson.JSON
-
 import net.pwall.json.schema.parser.Parser
 
 class JSONSchemaOneOfTest {
@@ -43,8 +43,8 @@ class JSONSchemaOneOfTest {
         }
         val filename = "src/test/resources/test-oneof.schema.json"
         val schema = parser.parseFile(filename)
-        expect(true) { schema.validate(JSON.parse(domestic)) }
-        expect(true) { schema.validate(JSON.parse(international)) }
+        schema.validate(JSON.parse(domestic)) shouldBe true
+        schema.validate(JSON.parse(international)) shouldBe true
     }
 
     companion object {

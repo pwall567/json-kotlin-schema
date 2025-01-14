@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.52</version>
+  <version>0.53</version>
   <name>Kotlin implementation of JSON Schema (Draft-07)</name>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
@@ -88,7 +88,7 @@
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>resource-loader</artifactId>
-      <version>5.3</version>
+      <version>6.0</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
@@ -99,14 +99,19 @@
       <artifactId>kotlin-reflect</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-test-junit</artifactId>
+      <groupId>io.kjson</groupId>
+      <artifactId>kjson</artifactId>
+      <version>9.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.kjson</groupId>
-      <artifactId>kjson</artifactId>
-      <version>9.1</version>
+      <groupId>io.kstuff</groupId>
+      <artifactId>should-test</artifactId>
+      <version>4.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

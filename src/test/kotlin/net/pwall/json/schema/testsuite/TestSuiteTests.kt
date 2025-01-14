@@ -26,10 +26,10 @@
 package net.pwall.json.schema.testsuite
 
 import kotlin.test.Test
-import kotlin.test.expect
-import kotlin.test.fail
 
 import java.io.File
+
+import io.kstuff.test.shouldBe
 
 import io.kjson.parseJSON
 import io.kjson.pointer.JSONPointer
@@ -99,7 +99,7 @@ class TestSuiteTests {
         println()
         println("Total passed: $totalPassed; failed: $totalFailed, skipped $totalSkipped")
         println()
-        expect(0) { totalFailed }
+        totalFailed shouldBe 0
     }
 
     companion object {

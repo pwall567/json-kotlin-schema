@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.53] - 2025-01-15
+### Changed
+- `Parser`: moved filter mechanism from companion object to instance
+- `pom.xml`: updated dependency versions
+- tests: converted to `should-test` library
+
 ## [0.52] - 2024-11-20
 ### Changed
 - `pom.xml`: updated dependency version

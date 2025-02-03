@@ -51,6 +51,7 @@ import io.kjson.pointer.JSONPointer
 import io.kjson.pointer.existsIn
 import io.kjson.pointer.get
 import io.kjson.resource.ResourceLoader
+import io.kstuff.text.Wildcard
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
@@ -80,7 +81,6 @@ import net.pwall.json.schema.validation.PropertiesValidator
 import net.pwall.json.schema.validation.StringValidator
 import net.pwall.json.schema.validation.TypeValidator
 import net.pwall.json.schema.validation.UniqueItemsValidator
-import net.pwall.text.Wildcard
 
 class Parser(var options: Options = Options(), uriResolver: ((URI) -> InputStream?)? = null) {
 

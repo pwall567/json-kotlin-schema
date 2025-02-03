@@ -1,10 +1,8 @@
-![Stop the war in Ukraine](https://pwall.net/ukraine1.png)
-
 # json-kotlin-schema
 
 [![Build Status](https://github.com/pwall567/json-kotlin-schema/actions/workflows/build.yml/badge.svg)](https://github.com/pwall567/json-kotlin-schema/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v1.9.24&color=7f52ff&logo=kotlin&logoColor=7f52ff)](https://github.com/JetBrains/kotlin/releases/tag/v1.9.24)
+[![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v2.0.21&color=7f52ff&logo=kotlin&logoColor=7f52ff)](https://github.com/JetBrains/kotlin/releases/tag/v2.0.21)
 [![Maven Central](https://img.shields.io/maven-central/v/net.pwall.json/json-kotlin-schema?label=Maven%20Central)](https://search.maven.org/search?q=g:%22net.pwall.json%22%20AND%20a:%22json-kotlin-schema%22)
 
 Kotlin implementation of JSON Schema (Draft-07)
@@ -276,25 +274,25 @@ More documentation to follow.
 
 ## Dependency Specification
 
-The latest version of the library is 0.53, and it may be obtained from the Maven Central repository.
+The latest version of the library is 0.54, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>net.pwall.json</groupId>
       <artifactId>json-kotlin-schema</artifactId>
-      <version>0.53</version>
+      <version>0.54</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'net.pwall.json:json-kotlin-schema:0.53'
+    implementation 'net.pwall.json:json-kotlin-schema:0.54'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("net.pwall.json:json-kotlin-schema:0.53")
+    implementation("net.pwall.json:json-kotlin-schema:0.54")
 ```
 
 Peter Wall
 
-2025-01-15
+2025-02-03

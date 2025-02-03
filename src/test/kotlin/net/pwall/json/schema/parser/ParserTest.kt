@@ -43,6 +43,7 @@ import io.kstuff.test.shouldThrow
 import io.kjson.JSON
 import io.kjson.pointer.JSONPointer
 import io.kjson.resource.ResourceLoader
+import io.kstuff.text.Wildcard
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
@@ -52,7 +53,6 @@ import net.pwall.json.schema.subschema.RefSchema
 import net.pwall.json.schema.subschema.RequiredSchema
 import net.pwall.json.schema.validation.EnumValidator
 import net.pwall.json.schema.validation.TypeValidator
-import net.pwall.text.Wildcard
 
 class ParserTest {
 

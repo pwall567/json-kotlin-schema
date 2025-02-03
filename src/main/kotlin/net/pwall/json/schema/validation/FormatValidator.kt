@@ -36,7 +36,7 @@ import io.kjson.pointer.get
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
-import net.pwall.json.validation.JSONValidation
+import io.jstuff.json.validation.JSONValidation
 
 class FormatValidator(
     uri: URI?,

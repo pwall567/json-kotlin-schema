@@ -27,6 +27,9 @@ package net.pwall.json.schema.validation
 
 import java.net.URI
 
+import io.jstuff.pipeline.IntCounter
+import io.jstuff.pipeline.codec.UTF16_CodePoint
+
 import io.kjson.JSONString
 import io.kjson.JSONValue
 import io.kjson.pointer.JSONPointer
@@ -34,8 +37,6 @@ import io.kjson.pointer.get
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
-import net.pwall.pipeline.IntCounter
-import net.pwall.pipeline.codec.UTF16_CodePoint
 
 class StringValidator(uri: URI?, location: JSONPointer, val condition: ValidationType, val value: Int) :
         JSONSchema.Validator(uri, location) {

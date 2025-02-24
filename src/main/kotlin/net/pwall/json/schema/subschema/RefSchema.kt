@@ -31,11 +31,20 @@ import io.kjson.JSONValue
 import io.kjson.pointer.JSONPointer
 
 import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.JSONSchemaException
 import net.pwall.json.schema.output.BasicOutput
 import net.pwall.json.schema.output.DetailedOutput
 
-class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema, val fragment: String?) :
+class RefSchema(uri: URI?, location: JSONPointer, target: JSONSchema, val fragment: String?) :
         JSONSchema.SubSchema(uri, location) {
+
+    var target: JSONSchema = target
+        set(value) {
+            if (field !is False) {
+                throw JSONSchemaException("Modification of resolved RefSchema target is prohibited")
+            }
+            field = value
+        }
 
     override fun childLocation(pointer: JSONPointer): JSONPointer = pointer.child("\$ref")
 
@@ -58,5 +67,25 @@ class RefSchema(uri: URI?, location: JSONPointer, val target: JSONSchema, val fr
             other is RefSchema && super.equals(other) && target == other.target
 
     override fun hashCode(): Int = super.hashCode() xor target.hashCode()
+
+    private var toStringVisiting = false
+
+    /**
+     * toString() implementation with loop protection.
+     * The var "toStringVisiting" is set to true before construction of the resulting String.
+     * When it is found to be already set, the contents will not be evaluated recursively.
+     */
+    override fun toString(): String {
+        return if (toStringVisiting) {
+            "RefSchema(<recursive access>)"
+        } else {
+            try {
+                toStringVisiting = true
+                "RefSchema(uri=$uri, location=$location, fragment=$fragment, target=$target)"
+            } finally {
+                toStringVisiting = false
+            }
+        }
+    }
 
 }

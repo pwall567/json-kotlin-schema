@@ -36,6 +36,7 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 
+import io.jstuff.text.StringMatcher
 import io.kjson.JSONArray
 import io.kjson.JSONBoolean
 import io.kjson.JSONDecimal
@@ -51,7 +52,6 @@ import io.kjson.pointer.JSONPointer
 import io.kjson.pointer.existsIn
 import io.kjson.pointer.get
 import io.kjson.resource.ResourceLoader
-import io.kstuff.text.Wildcard
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchema.Companion.booleanSchema
@@ -543,17 +543,31 @@ class Parser(var options: Options = Options(), uriResolver: ((URI) -> InputStrea
     }
 
     /**
-     * Add an authorization filter for HTTP connections.
+     * Add an authorization filter for HTTP connections using (possibly wildcarded) host name.
      */
     fun addAuthorizationFilter(host: String, headerName: String, headerValue: String?) {
-        addConnectionFilter(ResourceLoader.AuthorizationFilter(Wildcard(host), headerName, headerValue))
+        addConnectionFilter(ResourceLoader.AuthorizationFilter(StringMatcher.wildcard(host), headerName, headerValue))
+    }
+
+    /**
+     * Add an authorization filter for HTTP connections using [StringMatcher].
+     */
+    fun addAuthorizationFilter(hostMatcher: StringMatcher, headerName: String, headerValue: String?) {
+        addConnectionFilter(ResourceLoader.AuthorizationFilter(hostMatcher, headerName, headerValue))
     }
 
     /**
      * Add a redirection filter for HTTP connections based on host and port.
      */
     fun addRedirectionFilter(fromHost: String, fromPort: Int = -1, toHost: String, toPort: Int = -1) {
-        addConnectionFilter(ResourceLoader.RedirectionFilter(fromHost, fromPort, toHost, toPort))
+        addConnectionFilter(ResourceLoader.RedirectionFilter(StringMatcher.simple(fromHost), fromPort, toHost, toPort))
+    }
+
+    /**
+     * Add a redirection filter for HTTP connections based on host and port using [StringMatcher].
+     */
+    fun addRedirectionFilter(fromHostMatcher: StringMatcher, fromPort: Int = -1, toHost: String, toPort: Int = -1) {
+        addConnectionFilter(ResourceLoader.RedirectionFilter(fromHostMatcher, fromPort, toHost, toPort))
     }
 
     /**

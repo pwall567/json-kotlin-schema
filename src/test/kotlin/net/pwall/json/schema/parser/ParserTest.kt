@@ -40,10 +40,10 @@ import io.kstuff.test.shouldBeType
 import io.kstuff.test.shouldStartWith
 import io.kstuff.test.shouldThrow
 
+import io.jstuff.text.StringMatcher
 import io.kjson.JSON
 import io.kjson.pointer.JSONPointer
 import io.kjson.resource.ResourceLoader
-import io.kstuff.text.Wildcard
 
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.JSONSchemaException
@@ -322,7 +322,7 @@ class ParserTest {
         val parser = Parser()
         parser.connectionFilters.size shouldBe 0
         parser.addConnectionFilter(
-            ResourceLoader.AuthorizationFilter(Wildcard("*.example.com"), "Authorization", "TEST")
+            ResourceLoader.AuthorizationFilter(StringMatcher.wildcard("*.example.com"), "Authorization", "TEST")
         )
         parser.connectionFilters.size shouldBe 1
         with(parser.connectionFilters[0]) {
@@ -342,11 +342,38 @@ class ParserTest {
         }
     }
 
+    @Test fun `should add authorization filter using convenience function and StringMatcher`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addAuthorizationFilter(StringMatcher.wildcard("*.example.com"), "Authorization", "TEST")
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.AuthorizationFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
+    }
+
     @Test fun `should add host-and-port-based redirection filter`() {
         val parser = Parser()
         parser.connectionFilters.size shouldBe 0
         parser.addRedirectionFilter(
             fromHost = "example.com",
+            fromPort = -1,
+            toHost = "localhost",
+            toPort = 8080,
+        )
+        parser.connectionFilters.size shouldBe 1
+        with(parser.connectionFilters[0]) {
+            shouldBeType<ResourceLoader.RedirectionFilter>()
+            // this test is just rudimentary; the functionality is tested in the resource-loader project
+        }
+    }
+
+    @Test fun `should add host-and-port-based redirection filter and StringMatcher`() {
+        val parser = Parser()
+        parser.connectionFilters.size shouldBe 0
+        parser.addRedirectionFilter(
+            fromHostMatcher = StringMatcher.simple("example.com"),
             fromPort = -1,
             toHost = "localhost",
             toPort = 8080,

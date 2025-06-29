@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>net.pwall.json</groupId>
   <artifactId>json-kotlin-schema</artifactId>
-  <version>0.57</version>
+  <version>0.58</version>
   <name>Kotlin implementation of JSON Schema (Draft-07)</name>
   <description>JSON Schema validation for Kotlin</description>
   <packaging>jar</packaging>
   <url>https://github.com/pwall567/json-kotlin-schema</url>
 
   <parent>
-    <groupId>net.pwall.maven</groupId>
-    <artifactId>maven-kotlin</artifactId>
-    <version>8.0</version>
+    <groupId>io.kstuff</groupId>
+    <artifactId>kstuff-maven</artifactId>
+    <version>2.0</version>
   </parent>
 
   <properties>
@@ -69,17 +69,17 @@
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-pointer</artifactId>
-      <version>8.10</version>
+      <version>8.12</version>
     </dependency>
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-yaml</artifactId>
-      <version>3.11</version>
+      <version>3.15</version>
     </dependency>
     <dependency>
       <groupId>io.jstuff</groupId>
       <artifactId>pipelines</artifactId>
-      <version>6.0</version>
+      <version>7.0</version>
     </dependency>
     <dependency>
       <groupId>io.jstuff</groupId>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>resource-loader</artifactId>
-      <version>6.4</version>
+      <version>6.5</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson</artifactId>
-      <version>9.9</version>
+      <version>9.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>

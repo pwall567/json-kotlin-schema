@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [0.58] - 2026-06-04
+### Changed
+- `pom.xml`: changed parent POM to `io.kstuff:kstuff-maven:2.0`
+- `pom.xml`: updated dependency versions
+- `pom.xml`: removed unnecessary dependency on `kotlin-reflect`
+
 ## [0.57] - 2025-06-29
 ### Changed
 - `pom.xml`: updated dependency versions

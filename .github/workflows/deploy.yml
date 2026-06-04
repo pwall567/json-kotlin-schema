@@ -13,7 +13,7 @@ jobs:
         distribution: temurin
         java-version: '8'
         cache: maven
-        server-id: ossrh
+        server-id: central
         server-username: MAVEN_USERNAME
         server-password: MAVEN_PASSWORD
         gpg-passphrase: MAVEN_GPG_PASSPHRASE

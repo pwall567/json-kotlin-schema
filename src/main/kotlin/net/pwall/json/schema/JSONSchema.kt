@@ -128,6 +128,9 @@ sealed class JSONSchema(
 
     override fun hashCode(): Int = uri.hashCode() xor location.hashCode()
 
+    override fun toString() =
+        "${this::class.java.simpleName}(uri=$uri, location=$location, description=$description, title=$title)"
+
     @Suppress("EqualsOrHashCode")
     class True(uri: URI?, location: JSONPointer) : JSONSchema(uri, location) {
 
@@ -262,6 +265,9 @@ sealed class JSONSchema(
 
         override fun hashCode(): Int = super.hashCode() xor schemaVersion.hashCode() xor title.hashCode() xor
                 description.hashCode() xor children.hashCode()
+
+        override fun toString() = "General(uri=$uri, location=$location, " +
+                "schemaVersion='$schemaVersion', title=$title, description=$description, children=$children)}"
 
     }
 

@@ -213,7 +213,7 @@ class JSONReader(val uriResolver: (URI) -> InputStream?) {
 
         fun URI.extendedPath(): String = when (scheme) {
             "file", "http", "https" -> path
-            "jar" -> schemeSpecificPart.substringBefore("?").substringAfter("!")
+            "jar", "nested" -> schemeSpecificPart.substringBefore("?").substringAfter("!")
             else -> "UNKNOWN"
         }
 
